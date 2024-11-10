@@ -2,12 +2,8 @@ import React from "react";
 import { Form, Input, Button, Divider } from "antd";
 import { FcGoogle } from "react-icons/fc";
 
-const StudentSignup1 = () => {
-  const [form] = Form.useForm(); // Create a form instance
-
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
+const UserSignupStep01 = ({ onFinish }) => {
+  const [form] = Form.useForm();
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
@@ -31,7 +27,7 @@ const StudentSignup1 = () => {
         <Divider className="my-8" style={{ color: "black", borderColor: "black" }}>Or</Divider>
 
         <Form
-          form={form} // Bind the form instance
+          form={form}
           name="register"
           initialValues={{ remember: true }}
           onFinish={onFinish}
@@ -120,8 +116,8 @@ const StudentSignup1 = () => {
                 block
                 className="mb-4 bg-green-700 rounded-full"
                 disabled={
-                  !form.isFieldsTouched(true) || // Check if fields have been touched
-                  form.getFieldsError().filter(({ errors }) => errors.length).length > 0 // Check for validation errors
+                  !form.isFieldsTouched(true) ||
+                  form.getFieldsError().filter(({ errors }) => errors.length).length > 0
                 }
               >
                 SignUp
@@ -134,4 +130,4 @@ const StudentSignup1 = () => {
   );
 };
 
-export default StudentSignup1;
+export default UserSignupStep01;
