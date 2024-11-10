@@ -1,6 +1,6 @@
 import React from "react";
 import { Form, Input, notification } from "antd";
-import CustomButton from "./CustomButton";
+import CustomButton from "./CustomBtn";
 
 const UserSignupStep02 = ({ onFinish }) => {
   const [form] = Form.useForm();
