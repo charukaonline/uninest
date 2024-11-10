@@ -2,26 +2,27 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'antd';
 
-function Btn({
-                 btnName,
-                 btnType = 'button',
-                 color,
-                 hoverColor,
-                 textColor,
-                 hoverTextColor,
-                 onClick,
-                 onDoubleClick,
-                 onFocus,
-                 onBlur,
-                 disabled = false,
-                 loading = false,
-                 icon,
-                 shape = 'default',
-                 size = 'default',
-                 style = {},
-                 className = '',
-                 ariaLabel = ''
-             }) {
+function CustomButton({
+    btnName,
+    btnType = 'default', // Ant Design button type (e.g., 'primary', 'default')
+    htmlType = 'button',  // HTML button type (e.g., 'button', 'submit', 'reset')
+    color,
+    hoverColor,
+    textColor,
+    hoverTextColor,
+    onClick,
+    onDoubleClick,
+    onFocus,
+    onBlur,
+    disabled = false,
+    loading = false,
+    icon,
+    shape = 'default',
+    size = 'default',
+    style = {},
+    className = '',
+    ariaLabel = ''
+}) {
     const [isHovered, setIsHovered] = useState(false);
 
     const handleMouseEnter = () => setIsHovered(true);
@@ -53,20 +54,21 @@ function Btn({
 
     return (
         <Button
-            type={btnType}
+            type={btnType} // Ant Design button type
+            htmlType={htmlType} // HTML button type
             className={`p-5 text-base font-bold rounded-full shadow ${className}`}
             onClick={handleClick}
             onDoubleClick={handleDoubleClick}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             disabled={disabled}
             loading={loading}
             shape={shape}
             size={size}
             icon={icon}
             aria-label={ariaLabel}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
             style={{
                 backgroundColor: isHovered ? hoverColor : color,
                 color: isHovered ? hoverTextColor : textColor,
@@ -80,9 +82,10 @@ function Btn({
     );
 }
 
-Btn.propTypes = {
+CustomButton.propTypes = {
     btnName: PropTypes.string.isRequired,
-    btnType: PropTypes.string,
+    btnType: PropTypes.oneOf(['primary', 'default', 'dashed', 'text', 'link']),
+    htmlType: PropTypes.oneOf(['button', 'submit', 'reset']),
     color: PropTypes.string,
     hoverColor: PropTypes.string,
     textColor: PropTypes.string,
@@ -95,10 +98,10 @@ Btn.propTypes = {
     loading: PropTypes.bool,
     icon: PropTypes.node,
     shape: PropTypes.string,
-    size: PropTypes.string,
+    size: PropTypes.oneOf(['small', 'middle', 'large']),
     style: PropTypes.object,
     className: PropTypes.string,
     ariaLabel: PropTypes.string
 };
 
-export default Btn;
+export default CustomButton;

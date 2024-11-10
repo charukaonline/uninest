@@ -1,16 +1,19 @@
-import React, { useState } from "react";
-import { Form, Input } from "antd";
-import Btn from "./button"; 
+import React from "react";
+import { Form, Input, notification } from "antd";
+import CustomButton from "./CustomButton";
 
-const StudentSignup2 = () => {
+const UserSignupStep02 = ({ onFinish }) => {
   const [form] = Form.useForm();
-
-  const onFinish = (values) => {
-    console.log("Form submitted:", values);
-  };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Form submission failed:", errorInfo);
+  };
+
+  const openNotification = (type, message, description) => {
+    notification[type]({
+      message: message,
+      description: description,
+    });
   };
 
   return (
@@ -35,11 +38,15 @@ const StudentSignup2 = () => {
           </Form.Item>
 
           <Form.Item>
-            <Btn
+            <CustomButton
               btnName="Continue"
-              btnType="button"
+              btnType="primary"
+              htmlType="submit"
               color="#006845"
+              textColor={"white"}
+              hoverTextColor={"white"}
               hoverColor="#15803d"
+              onClick={() => openNotification("success", 'Registration Successful', 'Your account has been created successfully!')}
             />
           </Form.Item>
         </Form>
@@ -48,4 +55,4 @@ const StudentSignup2 = () => {
   );
 };
 
-export default StudentSignup2;
+export default UserSignupStep02;

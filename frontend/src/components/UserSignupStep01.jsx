@@ -2,12 +2,8 @@ import React from "react";
 import { Form, Input, Button, Divider } from "antd";
 import { FcGoogle } from "react-icons/fc";
 
-const StudentSignup1 = () => {
+const UserSignupStep01 = ({ onFinish }) => {
   const [form] = Form.useForm();
-
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
@@ -120,8 +116,8 @@ const StudentSignup1 = () => {
                 block
                 className="mb-4 bg-green-700 rounded-full"
                 disabled={
-                  !form.isFieldsTouched(true) || 
-                  form.getFieldsError().filter(({ errors }) => errors.length).length > 0 
+                  !form.isFieldsTouched(true) ||
+                  form.getFieldsError().filter(({ errors }) => errors.length).length > 0
                 }
               >
                 SignUp
@@ -134,4 +130,4 @@ const StudentSignup1 = () => {
   );
 };
 
-export default StudentSignup1;
+export default UserSignupStep01;
