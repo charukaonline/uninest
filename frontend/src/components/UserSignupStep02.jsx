@@ -1,4 +1,6 @@
+// eslint-disable-next-line no-unused-vars
 import React from "react";
+import PropTypes from "prop-types";
 import { Form, Input, notification } from "antd";
 import CustomButton from "./CustomBtn";
 
@@ -53,6 +55,9 @@ const UserSignupStep02 = ({ onFinish }) => {
       </div>
     </div>
   );
+};
+UserSignupStep02.propTypes = {
+  onFinish: PropTypes.func.isRequired,
 };
 
 export default UserSignupStep02;

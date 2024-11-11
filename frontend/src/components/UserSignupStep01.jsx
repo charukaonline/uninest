@@ -1,5 +1,7 @@
+// eslint-disable-next-line no-unused-vars
 import React from "react";
 import { Form, Input, Button, Divider } from "antd";
+import PropTypes from 'prop-types';
 import { FcGoogle } from "react-icons/fc";
 
 const UserSignupStep01 = ({ onFinish }) => {
@@ -128,6 +130,9 @@ const UserSignupStep01 = ({ onFinish }) => {
       </div>
     </div>
   );
+};
+UserSignupStep01.propTypes = {
+  onFinish: PropTypes.func.isRequired,
 };
 
 export default UserSignupStep01;
