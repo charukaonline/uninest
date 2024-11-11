@@ -1,7 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-
 import UserSignupPage from "./pages/UserSignupPage";
-import Home from "./pages/Home";
 
 function App() {
   return (
@@ -9,7 +7,7 @@ function App() {
       <Routes>
 
         {/* Main pages */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={"Landing page"} />
 
         {/* Student signup and signin */}
         <Route path="/auth/user-signup" element={<UserSignupPage />} />
