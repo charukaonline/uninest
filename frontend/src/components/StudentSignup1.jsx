@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form, Input, Divider } from "antd";
 import { FcGoogle } from "react-icons/fc";
-import Btn from "./custombutton";
+import Btn from "./CustomBtn.jsx";
 
 const StudentSignup1 = () => {
   const [form] = Form.useForm();
