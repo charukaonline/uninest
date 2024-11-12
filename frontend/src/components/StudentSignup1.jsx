@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form, Input, Divider } from "antd";
 import { FcGoogle } from "react-icons/fc";
-import Btn from "./CustomBtn.jsx";
+import Btn from "./custombutton";
 
 const StudentSignup1 = () => {
   const [form] = Form.useForm();
@@ -64,7 +64,7 @@ const StudentSignup1 = () => {
                 rules={[{ required: true, message: "Please input your email!" }]}
                 className={"font-medium"}
             >
-              <Input style={{borderColor: "#006845", borderWidth:"1px", outline: "none", }} placeholder={"Email Addresss"}/>
+              <Input style={{borderColor: "#006845", borderWidth:"1.6px", outline: "none", }} placeholder={"Email Addresss"}/>
             </Form.Item>
 
             <Form.Item
@@ -73,7 +73,7 @@ const StudentSignup1 = () => {
                 rules={[{ required: true, message: "Please input your username!" }]}
                 className={"font-medium"}
             >
-              <Input style={{borderColor: "#006845", borderWidth:"1px", outline: "none", }} placeholder={"Username"}/>
+              <Input style={{borderColor: "#006845", borderWidth:"1.6px", outline: "none", }} placeholder={"Username"}/>
             </Form.Item>
 
             <Form.Item
@@ -86,7 +86,7 @@ const StudentSignup1 = () => {
                 className={"font-medium"}
                 hasFeedback
             >
-              <Input.Password style={{borderColor: "#006845", borderWidth:"1px", outline: "none", }} placeholder={"Password"} />
+              <Input.Password style={{borderColor: "#006845", borderWidth:"1.6px", outline: "none", }} placeholder={"Password"} />
             </Form.Item>
 
             <Form.Item
@@ -107,7 +107,7 @@ const StudentSignup1 = () => {
                 className={"font-medium"}
                 hasFeedback
             >
-              <Input.Password style={{borderColor: "#006845", borderWidth:"1px", outline: "none", }} placeholder={"Re-Enter Password"} />
+              <Input.Password style={{borderColor: "#006845", borderWidth:"1.6px", outline: "none", }} placeholder={"Re-Enter Password"} />
             </Form.Item>
 
             <Form.Item
