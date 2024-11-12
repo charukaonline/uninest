@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Form, Input } from "antd";
 import Btn from "./custombutton.jsx";
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 const StudentSignup2 = () => {
   const [form] = Form.useForm();
@@ -44,8 +46,11 @@ const StudentSignup2 = () => {
                   textColor={"white"}
                   hoverTextColor={"white"}
                   className="w-full"
+                
               />
+
             </Form.Item>
+           
           </Form>
         </div>
       </div>
