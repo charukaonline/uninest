@@ -30,9 +30,9 @@ const StudentSignup2 = () => {
                 label="Please enter the university you belong to"
                 name="university"
                 rules={[{ required: true, message: "Please enter your university" }]}
-                style={{outline: "none"}}
+                className={"font-medium"}
             >
-              <Input />
+              <Input style={{borderColor: "#006845", borderWidth:"1px", outline: "none", }}  placeholder="University" />
             </Form.Item>
 
             <Form.Item>
@@ -43,6 +43,7 @@ const StudentSignup2 = () => {
                   hoverColor="#15803d"
                   textColor={"white"}
                   hoverTextColor={"white"}
+                  className="w-full"
               />
             </Form.Item>
           </Form>
