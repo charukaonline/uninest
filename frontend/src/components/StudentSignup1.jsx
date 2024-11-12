@@ -62,16 +62,18 @@ const StudentSignup1 = () => {
                 label="Email Address"
                 name="email"
                 rules={[{ required: true, message: "Please input your email!" }]}
+                className={"font-medium"}
             >
-              <Input />
+              <Input style={{borderColor: "#006845", borderWidth:"1px", outline: "none", }} placeholder={"Email Addresss"}/>
             </Form.Item>
 
             <Form.Item
                 label="User name"
                 name="username"
                 rules={[{ required: true, message: "Please input your username!" }]}
+                className={"font-medium"}
             >
-              <Input />
+              <Input style={{borderColor: "#006845", borderWidth:"1px", outline: "none", }} placeholder={"Username"}/>
             </Form.Item>
 
             <Form.Item
@@ -81,9 +83,10 @@ const StudentSignup1 = () => {
                   { required: true, message: "Please input your password!" },
                   { min: 8, message: "Password must be at least 8 characters long!" },
                 ]}
+                className={"font-medium"}
                 hasFeedback
             >
-              <Input.Password />
+              <Input.Password style={{borderColor: "#006845", borderWidth:"1px", outline: "none", }} placeholder={"Password"} />
             </Form.Item>
 
             <Form.Item
@@ -101,9 +104,10 @@ const StudentSignup1 = () => {
                     },
                   }),
                 ]}
+                className={"font-medium"}
                 hasFeedback
             >
-              <Input.Password />
+              <Input.Password style={{borderColor: "#006845", borderWidth:"1px", outline: "none", }} placeholder={"Re-Enter Password"} />
             </Form.Item>
 
             <Form.Item
