@@ -1,5 +1,6 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react';
-import Logo from '../assets/logo.svg';
+import Logo from '../../public/uninest_logo.png';
 import CustomButton from './CustomBtn';
 
 const Header2 = () => {
