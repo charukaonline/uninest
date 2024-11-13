@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react';
-import Logo from '../../public/uninest_logo.png';
+import Logo from '../../public/uninestLogo.png';
 import CustomButton from './CustomBtn';
 
 const Header2 = () => {
@@ -34,7 +34,7 @@ const Header2 = () => {
           </button>
 
           {/* Logo */}
-          <img src={Logo} alt="UniNest Logo" className="h-20 w-auto ml-2" />
+          <img src={Logo} alt="UniNest Logo" className="h-20 w-auto ml-2 mr-10" />
           {/* <h1 className="text-2xl font-bold text-[#006845] ml-2">UniNest</h1> */}
         </div>
 
