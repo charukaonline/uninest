@@ -34,8 +34,8 @@ const Header2 = () => {
           </button>
 
           {/* Logo */}
-          <img src={Logo} alt="UniNest Logo" className="h-10 w-auto ml-2" />
-          <h1 className="text-2xl font-bold text-[#006845] ml-2">UniNest</h1>
+          <img src={Logo} alt="UniNest Logo" className="h-20 w-auto ml-2" />
+          {/* <h1 className="text-2xl font-bold text-[#006845] ml-2">UniNest</h1> */}
         </div>
 
         {/* Desktop Navigation with right margin */}
