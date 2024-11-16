@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import { BiShow, BiHide } from 'react-icons/bi';
 
-function LoginRegister() {
+function StudentLogin() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({
@@ -116,7 +116,7 @@ function LoginRegister() {
 
             {/* Toggle to Register */}
             <div className="text-center text-gray-200">
-              Don't have an account?
+              Don&apos;t have an account?
               <button
                 className="font-bold text-white hover:underline ml-1"
                 onClick={() => setIsLogin(false)}
@@ -134,4 +134,4 @@ function LoginRegister() {
   );
 }
 
-export default LoginRegister;
+export default StudentLogin;
