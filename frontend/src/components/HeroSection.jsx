@@ -28,7 +28,7 @@ function HeroSection() {
               <input
                 type="text"
                 placeholder="What University are you belongs to?"
-                className="w-full px-4 py-3 text-center text-gray-700 bg-gray-200 placeholder-gray-500 focus:outline-none focus:bg-gray-100"
+                className="w-full px-4 py-3 text-gray-700 bg-gray-200 placeholder-gray-500 focus:outline-none focus:bg-gray-100"
               />
             </div>
             {/* Divider (|) */}

@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import UserSignupPage from "./pages/UserSignupPage";
 import Home from "./pages/Home";
 import Layout from "./components/Layout";
-import StudentLogin from "./pages/UserSignin";
+import StudentLogin from "./pages/UserSigninPage";
 
 function App() {
   return (
