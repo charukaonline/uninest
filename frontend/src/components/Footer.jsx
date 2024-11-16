@@ -15,7 +15,7 @@ const Footer = () => {
         <div className=' justify-center items-start'>
           <div className=' flex justify-center'>
             <div className=" p-2">
-              <img src="/uninest_logo.png" alt="Uninest Logo" className='h-52' />
+              <img src="/uninestLogo.png" alt="Uninest Logo" className='h-52' />
             </div>
           </div>
         </div>
@@ -52,7 +52,7 @@ const Footer = () => {
 
       <div className="bg-[#006845] text-center text-white flex justify-between p-4 px-10">
         <div>
-          <span className="text-md">©{currentYear} UniNest. All rights reserved</span>
+          <span className="text-md">© {currentYear} UniNest. All rights reserved</span>
         </div>
         <div className="flex justify-center md:justify-start space-x-6">
           <Link to="/"><FaFacebookF className="text-white hover:text-[#eee] size-5" /></Link>

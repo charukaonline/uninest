@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { BiShow, BiHide } from "react-icons/bi";
 
-function StudentLogin() {
+function UserSigninPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({
     email: "",
@@ -144,4 +144,4 @@ function StudentLogin() {
   );
 }
 
-export default StudentLogin;
+export default UserSigninPage;

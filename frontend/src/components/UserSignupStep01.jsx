@@ -1,8 +1,9 @@
 // eslint-disable-next-line no-unused-vars
 import React from "react";
-import { Form, Input, Button, Divider } from "antd";
+import { Form, Input, Divider } from "antd";
 import PropTypes from 'prop-types';
 import { FcGoogle } from "react-icons/fc";
+import { Button } from "./ui/button";
 
 const UserSignupStep01 = ({ onFinish }) => {
   const [form] = Form.useForm();
@@ -11,22 +12,37 @@ const UserSignupStep01 = ({ onFinish }) => {
     console.log("Failed:", errorInfo);
   };
 
-  return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white shadow-md rounded-md">
-        <div className="mt-4 text-right text-xs">
-          Already have an account? <a href="#" className="underline">Login Now</a>
-        </div><br />
-        <Button
-          type="primary"
-          icon={<FcGoogle />}
-          block
-          className="mb-4 bg-green-800 rounded-full"
-        >
-          Continue with Google
-        </Button>
+  const googleButtonStyle = {
+    backgroundColor: isGoogleHovered ? "#15803d" : "#006845",
+    color: "white",
+    borderRadius: "999px",
+    border: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "8px",
+    width: "100%",
+    cursor: "pointer",
+  };
 
-        <Divider className="my-8" style={{ color: "black", borderColor: "black" }}>Or</Divider>
+  return (
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
+      <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-md">
+        <div className="text-right text-xs">
+          Already have an account? <a href="#" className="underline">Login Now</a>
+        </div>
+        <br />
+
+        <button
+          style={googleButtonStyle}
+          onMouseEnter={() => setIsGoogleHovered(true)}
+          onMouseLeave={() => setIsGoogleHovered(false)}
+        >
+          <FcGoogle className="mr-2" />
+          <div className="font-bold text-base">Continue with Google</div>
+        </button>
+
+        <Divider className="my-6 sm:my-8" style={{ color: "black", borderColor: "black" }}>Or</Divider>
 
         <Form
           form={form}
@@ -36,21 +52,24 @@ const UserSignupStep01 = ({ onFinish }) => {
           onFinishFailed={onFinishFailed}
           layout="vertical"
         >
-          <h2 className="text-xl font-semibold mb-4">Create an Account</h2>
+          <h2 className="text-xl font-semibold mb-4 text-center">Create an Account</h2>
+
           <Form.Item
             label="Email Address"
             name="email"
             rules={[{ required: true, message: "Please input your email!" }]}
+            className={"font-medium"}
           >
-            <Input />
+            <Input style={{ borderColor: "#006845", borderWidth: "1px", outline: "none", }} placeholder={"Email Addresss"} />
           </Form.Item>
 
           <Form.Item
             label="User name"
             name="username"
             rules={[{ required: true, message: "Please input your username!" }]}
+            className={"font-medium"}
           >
-            <Input />
+            <Input style={{ borderColor: "#006845", borderWidth: "1px", outline: "none", }} placeholder={"Username"} />
           </Form.Item>
 
           <Form.Item
@@ -60,29 +79,31 @@ const UserSignupStep01 = ({ onFinish }) => {
               { required: true, message: "Please input your password!" },
               { min: 8, message: "Password must be at least 8 characters long!" },
             ]}
+            className={"font-medium"}
             hasFeedback
           >
-            <Input.Password />
+            <Input.Password style={{ borderColor: "#006845", borderWidth: "1px", outline: "none", }} placeholder={"Password"} />
           </Form.Item>
 
           <Form.Item
             label="Confirm Password"
             name="confirmPassword"
-            dependencies={['password']}
+            dependencies={["password"]}
             rules={[
               { required: true, message: "Please confirm your password!" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
+                  if (!value || getFieldValue("password") === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Passwords do not match!'));
+                  return Promise.reject(new Error("Passwords do not match!"));
                 },
               }),
             ]}
+            className={"font-medium"}
             hasFeedback
           >
-            <Input.Password />
+            <Input.Password style={{ borderColor: "#006845", borderWidth: "1px", outline: "none", }} placeholder={"Re-Enter Password"} />
           </Form.Item>
 
           <Form.Item
@@ -98,11 +119,7 @@ const UserSignupStep01 = ({ onFinish }) => {
             ]}
           >
             <div className="mt-4 text-xs flex items-center">
-              <input
-                type="checkbox"
-                id="checkbox"
-                className="accent-green-700 mr-2"
-              />
+              <input type="checkbox" id="checkbox" className="accent-green-700 mr-2" />
               <label htmlFor="checkbox">
                 By creating an account, I agree to our{" "}
                 <a href="#" className="underline">Terms of use</a> and <a href="#" className="underline">Privacy Policy</a>
@@ -110,11 +127,13 @@ const UserSignupStep01 = ({ onFinish }) => {
             </div>
           </Form.Item>
 
-          <Form.Item shouldUpdate>
-            {() => (
+          <Form.Item>
+            <div
+              onMouseEnter={() => setIsSignUpHovered(true)}
+              onMouseLeave={() => setIsSignUpHovered(false)}
+            >
               <Button
-                type="primary"
-                htmlType="submit"
+                type="submit"
                 block
                 className="mb-4 bg-green-700 rounded-full"
                 disabled={
@@ -124,7 +143,7 @@ const UserSignupStep01 = ({ onFinish }) => {
               >
                 SignUp
               </Button>
-            )}
+            </div>
           </Form.Item>
         </Form>
       </div>
