@@ -7,6 +7,18 @@ export default {
   ],
   theme: {
   	extend: {
+		boxShadow: {
+			'text': '0 0 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.3)', // Custom text shadow
+		  },
+		  fontFamily: {
+			sans: ['Inter', 'sans-serif'],
+			sans: ['Roboto', 'sans-serif'],
+			colors: {
+			  primary: "#006845",
+			  secondary: "#16A34A",
+			  lightGreen: "#E5F9E0",
+			},
+		  },
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
