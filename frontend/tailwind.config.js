@@ -14,9 +14,9 @@ export default {
 			sans: ['Inter', 'sans-serif'],
 			sans: ['Roboto', 'sans-serif'],
 			colors: {
-			  primary: "#1E3A34", // Replace with the green color from your design
-			  secondary: "#16A34A", // Darker green for buttons
-			  lightGreen: "#E5F9E0", // Light green background
+			  primary: "#006845",
+			  secondary: "#16A34A",
+			  lightGreen: "#E5F9E0",
 			},
 		  },
   		borderRadius: {
