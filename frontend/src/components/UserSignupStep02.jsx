@@ -3,6 +3,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Form, Input, notification } from "antd";
 import CustomButton from "./CustomBtn";
+import 'react-phone-input-2/lib/style.css';
 
 const UserSignupStep02 = ({ onFinish }) => {
   const [form] = Form.useForm();
@@ -19,8 +20,8 @@ const UserSignupStep02 = ({ onFinish }) => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white shadow-md rounded-md">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
+      <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-md">
         <h2 className="text-2xl font-semibold mb-6 text-left">
           By the way, which Uni?
         </h2>
@@ -35,8 +36,9 @@ const UserSignupStep02 = ({ onFinish }) => {
             label="Please enter the university you belong to"
             name="university"
             rules={[{ required: true, message: "Please enter your university" }]}
+            className={"font-medium"}
           >
-            <Input />
+            <Input style={{ borderColor: "#006845", borderWidth: "1px", outline: "none", }} placeholder="University" />
           </Form.Item>
 
           <Form.Item>
@@ -50,7 +52,9 @@ const UserSignupStep02 = ({ onFinish }) => {
               hoverColor="#15803d"
               onClick={() => openNotification("success", 'Registration Successful', 'Your account has been created successfully!')}
             />
+
           </Form.Item>
+
         </Form>
       </div>
     </div>
