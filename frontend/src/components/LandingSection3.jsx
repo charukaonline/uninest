@@ -1,5 +1,5 @@
 import React from "react";
-import BordingImage from '/bording.jpg'; // Import image
+import BordingImage from '/bording.jpg';
 
 const LandingSection3 = () => {
   return (
@@ -10,8 +10,7 @@ const LandingSection3 = () => {
           Best Place to List Your Boarding House
         </h2>
         <p className="text-gray-600 leading-relaxed">
-          The best place to list your boarding house is on our website! With user-friendly features and wide reach, we help you connect with potential tenants quickly and effectively. Whether you’re targeting short-term or long-term stays, our platform ensures maximum visibility and a hassle-free experience. List your property today!
-        </p>
+        Find the perfect boarding house effortlessly with our comprehensive platform. Whether you’re a tenant searching for a cozy stay or a property owner looking to list your boarding house, we provide an easy-to-use, reliable, and efficient solution to connect you with the right people. Your next boarding house is just a click away!        </p>
         <div className="flex items-center justify-center md:justify-start space-x-4">
           <button className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
             Get Started
