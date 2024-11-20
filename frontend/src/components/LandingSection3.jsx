@@ -1,5 +1,5 @@
 import React from "react";
-import BordingImage from '../images/bording.jpg'; // Import image
+import BordingImage from '/bording.jpg'; // Import image
 
 const LandingSection3 = () => {
   return (
