@@ -1,6 +1,7 @@
+// eslint-disable-next-line no-unused-vars
 import React from "react";
 import { Divider } from "antd";
-import ContactForm from "./contactform";
+import ContactForm from "./HomeContactSection";
 
 const LeftParagraph = () => {
   return (

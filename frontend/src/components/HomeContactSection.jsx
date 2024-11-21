@@ -137,7 +137,7 @@ const ContactForm = () => {
           </div>
 
           <div className="text-center">
-           <Btn
+           <CustomButton
            btnName="Submit"
            btnType="Submit"
            color="#006845"
@@ -145,7 +145,7 @@ const ContactForm = () => {
            textColor="White"
            hoverTextColor="white"
            >
-           </Btn>
+           </CustomButton>
           </div>
         </form>
       </div>
