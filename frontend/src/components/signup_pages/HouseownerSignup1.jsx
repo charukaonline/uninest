@@ -7,7 +7,7 @@ import 'react-phone-input-2/lib/style.css';
 
 const SignupForm = () => {
   const [form] = Form.useForm();
-  const [hovered, setHovered] = useState(false);
+  // const [hovered, setHovered] = useState(false);
 
   const onFinish = (values) => {
     console.log('Success:', values);
