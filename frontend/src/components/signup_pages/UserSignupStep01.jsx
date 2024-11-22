@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate for naviga
 import { Form, Input, Divider } from "antd";
 import PropTypes from "prop-types";
 import { FcGoogle } from "react-icons/fc";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 const UserSignupStep01 = ({ onFinish }) => {
   const [form] = Form.useForm();
@@ -130,9 +130,7 @@ const UserSignupStep01 = ({ onFinish }) => {
                   value
                     ? Promise.resolve()
                     : Promise.reject(
-                        new Error(
-                          "You must accept the terms and conditions!"
-                        )
+                        new Error("You must accept the terms and conditions!")
                       ),
               },
             ]}

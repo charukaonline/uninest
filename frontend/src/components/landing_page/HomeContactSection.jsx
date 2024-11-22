@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import CustomButton from "./CustomBtn";
-import PhoneInput from 'react-phone-input-2';
-import 'react-phone-input-2/lib/style.css';
+import CustomButton from "../CustomBtn";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -35,7 +35,7 @@ const ContactForm = () => {
           }
         `}
       </style>
-      
+
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
           Feel free to reach us anytime!
@@ -104,18 +104,18 @@ const ContactForm = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Phone (Optional)
             </label>
-           <PhoneInput
-           country={'lk'}
-           inputStyle={{
-            width:'100%',
-            padding: '0.5rem',
-            borderRadius: '0.375rem',
-            borderColor: '#006845',
-            outline: 'none',
-           }}
-           onFocus={(e)=>(e.target.style.borderColor = '#006845')}
-           onBlur={(e)=>(e.target.style.borderColor = '#006845')}
-           />
+            <PhoneInput
+              country={"lk"}
+              inputStyle={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "0.375rem",
+                borderColor: "#006845",
+                outline: "none",
+              }}
+              onFocus={(e) => (e.target.style.borderColor = "#006845")}
+              onBlur={(e) => (e.target.style.borderColor = "#006845")}
+            />
           </div>
 
           <div>
@@ -137,15 +137,14 @@ const ContactForm = () => {
           </div>
 
           <div className="text-center">
-           <CustomButton
-           btnName="Submit"
-           btnType="Submit"
-           color="#006845"
-           hoverColor="#15803d"
-           textColor="White"
-           hoverTextColor="white"
-           >
-           </CustomButton>
+            <CustomButton
+              btnName="Submit"
+              btnType="Submit"
+              color="#006845"
+              hoverColor="#15803d"
+              textColor="White"
+              hoverTextColor="white"
+            ></CustomButton>
           </div>
         </form>
       </div>

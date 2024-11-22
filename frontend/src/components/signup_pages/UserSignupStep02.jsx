@@ -2,8 +2,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Form, Input, notification } from "antd";
-import CustomButton from "./CustomBtn";
-import 'react-phone-input-2/lib/style.css';
+import CustomButton from "../CustomBtn";
+import "react-phone-input-2/lib/style.css";
 
 const UserSignupStep02 = ({ onFinish }) => {
   const [form] = Form.useForm();
@@ -35,10 +35,19 @@ const UserSignupStep02 = ({ onFinish }) => {
           <Form.Item
             label="Please enter the university you belong to"
             name="university"
-            rules={[{ required: true, message: "Please enter your university" }]}
+            rules={[
+              { required: true, message: "Please enter your university" },
+            ]}
             className={"font-medium"}
           >
-            <Input style={{ borderColor: "#006845", borderWidth: "1px", outline: "none", }} placeholder="University" />
+            <Input
+              style={{
+                borderColor: "#006845",
+                borderWidth: "1px",
+                outline: "none",
+              }}
+              placeholder="University"
+            />
           </Form.Item>
 
           <Form.Item>
@@ -50,11 +59,15 @@ const UserSignupStep02 = ({ onFinish }) => {
               textColor={"white"}
               hoverTextColor={"white"}
               hoverColor="#15803d"
-              onClick={() => openNotification("success", 'Registration Successful', 'Your account has been created successfully!')}
+              onClick={() =>
+                openNotification(
+                  "success",
+                  "Registration Successful",
+                  "Your account has been created successfully!"
+                )
+              }
             />
-
           </Form.Item>
-
         </Form>
       </div>
     </div>
