@@ -1,36 +1,32 @@
 // eslint-disable-next-line no-unused-vars
-import React, { useEffect, useState } from 'react';
-import UserSignupStep01 from '../components/UserSignupStep01';
-import UserSignupStep02 from '../components/UserSignupStep02';
+import React, { useEffect, useState } from "react";
+import UserSignupStep01 from "../components/signup_pages/UserSignupStep01";
+import UserSignupStep02 from "../components/signup_pages/UserSignupStep02";
 
 const UserSignupPage = () => {
-    const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState({});
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({});
 
-    const handleFirstStepSubmit = (values) => {
-        setFormData(prevData => ({ ...prevData, ...values }));
-        setStep(2);
-    };
+  const handleFirstStepSubmit = (values) => {
+    setFormData((prevData) => ({ ...prevData, ...values }));
+    setStep(2);
+  };
 
-    const handleSecondStepSubmit = (values) => {
-        const completeData = { ...formData, ...values };
-        console.log("Complete data submitted: ", completeData);
-    };
+  const handleSecondStepSubmit = (values) => {
+    const completeData = { ...formData, ...values };
+    console.log("Complete data submitted: ", completeData);
+  };
 
-    useEffect(() => {
-        document.title = "UniNest | User Signup";
-    }, []);
+  useEffect(() => {
+    document.title = "UniNest | User Signup";
+  }, []);
 
-    return (
-        <div>
-            {step === 1 && (
-                <UserSignupStep01 onFinish={handleFirstStepSubmit} />
-            )}
-            {step === 2 && (
-                <UserSignupStep02 onFinish={handleSecondStepSubmit} />
-            )}
-        </div>
-    );
+  return (
+    <div>
+      {step === 1 && <UserSignupStep01 onFinish={handleFirstStepSubmit} />}
+      {step === 2 && <UserSignupStep02 onFinish={handleSecondStepSubmit} />}
+    </div>
+  );
 };
 
 export default UserSignupPage;

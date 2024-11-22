@@ -1,13 +1,15 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import { Form, Input, Divider } from "antd";
 import PropTypes from "prop-types";
 import { FcGoogle } from "react-icons/fc";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 const UserSignupStep01 = ({ onFinish }) => {
   const [form] = Form.useForm();
   const [isGoogleHovered, setIsGoogleHovered] = useState(false);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const onFinishFailed = (errorInfo) => {
     console.log("Form submission failed:", errorInfo);
@@ -18,7 +20,14 @@ const UserSignupStep01 = ({ onFinish }) => {
       <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-md">
         <div className="text-right text-xs">
           Already have an account?{" "}
-          <a href="#" className="underline">
+          <a
+            href="#"
+            className="underline"
+            onClick={(e) => {
+              e.preventDefault(); // Prevent default anchor behavior
+              navigate("/auth/user-signin"); // Redirect to the login route
+            }}
+          >
             Login Now
           </a>
         </div>
@@ -113,28 +122,44 @@ const UserSignupStep01 = ({ onFinish }) => {
           </Form.Item>
 
           <Form.Item
-                name="agreement"
-                valuePropName="checked"
-                rules={[
-                  {
-                    validator: (_, value) =>
-                        value
-                            ? Promise.resolve()
-                            : Promise.reject(new Error("You must accept the terms and conditions!")),
-                  },
-                ]}
-            >
-              <div className="mt-4 text-xs flex items-center">
-                <input type="checkbox" id="checkbox" className="accent-green-700 mr-2" />
-                <label htmlFor="checkbox">
-                  By creating an account, I agree to our{" "}
-                  <a href="#" className="underline">Terms of use</a> and <a href="#" className="underline">Privacy Policy</a>
-                </label>
-              </div>
-            </Form.Item>
+            name="agreement"
+            valuePropName="checked"
+            rules={[
+              {
+                validator: (_, value) =>
+                  value
+                    ? Promise.resolve()
+                    : Promise.reject(
+                        new Error("You must accept the terms and conditions!")
+                      ),
+              },
+            ]}
+          >
+            <div className="mt-4 text-xs flex items-center">
+              <input
+                type="checkbox"
+                id="checkbox"
+                className="accent-green-700 mr-2"
+              />
+              <label htmlFor="checkbox">
+                By creating an account, I agree to our{" "}
+                <a href="#" className="underline">
+                  Terms of use
+                </a>{" "}
+                and{" "}
+                <a href="#" className="underline">
+                  Privacy Policy
+                </a>
+              </label>
+            </div>
+          </Form.Item>
 
           <Form.Item>
-            <Button type="submit" block className="bg-green-700 rounded-full w-full ">
+            <Button
+              type="submit"
+              block
+              className="bg-green-700 rounded-full w-full "
+            >
               Sign Up
             </Button>
           </Form.Item>
