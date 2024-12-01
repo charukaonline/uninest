@@ -12,7 +12,8 @@ const LeftParagraph = () => {
         </h2>
         <Divider className="border-t-2 border-white w-1/4 md:w-1/4 mx-auto md:mx-0" />
         <p className="text-lg text-gray-200">
-          Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod.
+          Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+          nonummy nibh euismod.
         </p>
       </div>
       <div className="w-full md:w-1/2 lg:w-2/5 mt-8 md:mt-0">
