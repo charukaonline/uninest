@@ -1,33 +1,39 @@
-import React, { useState } from 'react';
-import { Form, Input } from 'antd';
-import 'antd/dist/reset.css';
+// eslint-disable-next-line no-unused-vars
+import React, { useState } from "react";
+import { Form, Input } from "antd";
+import "antd/dist/reset.css";
 import Btn from "./custombutton.jsx";
-import PhoneInput from 'react-phone-input-2';
-import 'react-phone-input-2/lib/style.css';
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 const SignupForm = () => {
   const [form] = Form.useForm();
   // const [hovered, setHovered] = useState(false);
 
   const onFinish = (values) => {
-    console.log('Success:', values);
+    console.log("Success:", values);
   };
 
   const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
+    console.log("Failed:", errorInfo);
   };
 
-  const lightGreenThemeColor = '#c0e0b2';
-  const greenThemeColor = '#006845';
+  const lightGreenThemeColor = "#c0e0b2";
+  const greenThemeColor = "#006845";
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-md">
         <div className="mt-4 text-right text-xs">
-          Already have an account? <a href="#" className="underline">Login Now</a>
+          Already have an account?{" "}
+          <a href="#" className="underline">
+            Login Now
+          </a>
         </div>
         <br />
-        <h2 className="text-2xl font-semibold mb-6 text-left">Create an Account</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-left">
+          Create an Account
+        </h2>
         <Form
           form={form}
           name="signup"
@@ -38,15 +44,15 @@ const SignupForm = () => {
           <Form.Item
             label="Email Address"
             name="email"
-            rules={[{ required: true, message: 'Please input your email!' }]}
+            rules={[{ required: true, message: "Please input your email!" }]}
             className="font-medium"
           >
-            <Input 
+            <Input
               style={{
-                borderColor: greenThemeColor, 
-                borderWidth: "1px", 
-                outline: "none", 
-              }}  
+                borderColor: greenThemeColor,
+                borderWidth: "1px",
+                outline: "none",
+              }}
               placeholder="Email Address"
             />
           </Form.Item>
@@ -54,15 +60,15 @@ const SignupForm = () => {
           <Form.Item
             label="User name"
             name="username"
-            rules={[{ required: true, message: 'Please input your username!' }]}
+            rules={[{ required: true, message: "Please input your username!" }]}
             className="font-medium"
           >
-            <Input 
+            <Input
               style={{
-                borderColor: greenThemeColor, 
-                borderWidth: "1px", 
-                outline: "none", 
-              }}  
+                borderColor: greenThemeColor,
+                borderWidth: "1px",
+                outline: "none",
+              }}
               placeholder="User name"
             />
           </Form.Item>
@@ -70,20 +76,24 @@ const SignupForm = () => {
           <Form.Item
             label="Phone Number"
             name="phone"
-            rules={[{ required: true, message: 'Please enter your phone number' }]}
+            rules={[
+              { required: true, message: "Please enter your phone number" },
+            ]}
             className="font-medium"
           >
             <PhoneInput
-              country={'lk'}
+              country={"lk"}
               inputStyle={{
-                width: '100%',
-                padding: '0.5rem',
-                borderRadius: '0.375rem',
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "0.375rem",
                 borderColor: lightGreenThemeColor,
-                outline: 'none',
+                outline: "none",
               }}
               onFocus={(e) => (e.target.style.borderColor = greenThemeColor)}
-              onBlur={(e) => (e.target.style.borderColor = lightGreenThemeColor)}
+              onBlur={(e) =>
+                (e.target.style.borderColor = lightGreenThemeColor)
+              }
             />
           </Form.Item>
 
@@ -91,18 +101,21 @@ const SignupForm = () => {
             label="Password"
             name="password"
             rules={[
-              { required: true, message: 'Please input your password!' },
-              { min: 8, message: 'Password must be at least 8 characters long!' },
+              { required: true, message: "Please input your password!" },
+              {
+                min: 8,
+                message: "Password must be at least 8 characters long!",
+              },
             ]}
             hasFeedback
             className="font-medium"
           >
-            <Input.Password 
+            <Input.Password
               style={{
-                borderColor: greenThemeColor, 
-                borderWidth: "1px", 
-                outline: "none", 
-              }}  
+                borderColor: greenThemeColor,
+                borderWidth: "1px",
+                outline: "none",
+              }}
               placeholder="Password"
             />
           </Form.Item>
@@ -110,28 +123,28 @@ const SignupForm = () => {
           <Form.Item
             label="Confirm Password"
             name="confirm"
-            dependencies={['password']}
+            dependencies={["password"]}
             rules={[
-              { required: true, message: 'Please confirm your password!' },
+              { required: true, message: "Please confirm your password!" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
+                  if (!value || getFieldValue("password") === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Passwords do not match!'));
+                  return Promise.reject(new Error("Passwords do not match!"));
                 },
               }),
             ]}
             hasFeedback
             className="font-medium"
           >
-            <Input.Password 
+            <Input.Password
               style={{
-                borderColor: greenThemeColor, 
-                borderWidth: "1px", 
-                outline: "none", 
-              }}  
-              placeholder="Confirm Password" 
+                borderColor: greenThemeColor,
+                borderWidth: "1px",
+                outline: "none",
+              }}
+              placeholder="Confirm Password"
             />
           </Form.Item>
 
