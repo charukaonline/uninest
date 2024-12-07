@@ -30,7 +30,7 @@ const Listing = require('./models/Listing');
 app.get('/test-add-listing', async (req, res) => {
   try {
     const sampleListing = new Listing({
-      title: 'Sample boarding house 456',
+      title: 'Sample boarding house 654',
       location: 'Near University',
       price: 12000,
       amenities: ['Electricity', 'Water'],
