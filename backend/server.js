@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const cors = require("cors");
 
 dotenv.config();
 
@@ -9,6 +10,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware to parse JSON
 app.use(express.json());
+app.use(cors());
 
 // MongoDB Connection
 mongoose
@@ -25,23 +27,5 @@ app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// test route for listings
-// const Listing = require('./models/Listing');
-
-// app.get('/test-add-listing', async (req, res) => {
-//   try {
-//     const sampleListing = new Listing({
-//       title: 'Sample boarding house 654',
-//       location: 'Near University',
-//       price: 12000,
-//       amenities: ['Electricity', 'Water'],
-//       distance: 1.2,
-//       rating: 4
-//     });
-
-//     const savedListing = await sampleListing.save();
-//     res.json(savedListing);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Failed to save listing' });
-//   }
-// });
+// Routes
+app.use("/api/auth", require("./routes/auth"));
