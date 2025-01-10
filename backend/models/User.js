@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    required: true,
+    required: false, // Changed to false since it's not in the initial signup
   },
   role: {
     type: String,
