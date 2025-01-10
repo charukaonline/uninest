@@ -1,14 +1,12 @@
-const jwt = require('jsonwebtoken');
-const { validationResult } = require('express-validator');
-const User = require('../models/User');
-const StudentProfile = require('../models/StudentProfile');
+const jwt = require("jsonwebtoken");
+const { validationResult } = require("express-validator");
+const User = require("../models/User");
+const StudentProfile = require("../models/StudentProfile");
 
 const createToken = (userId) => {
-  return jwt.sign(
-    { userId },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN }
-  );
+  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
 };
 
 exports.registerUser = async (req, res) => {
@@ -23,7 +21,7 @@ exports.registerUser = async (req, res) => {
     // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     // Create new user
@@ -31,7 +29,7 @@ exports.registerUser = async (req, res) => {
       email,
       password,
       fullName: username,
-      role: 'student',
+      role: "student",
     });
 
     await user.save();
@@ -39,13 +37,12 @@ exports.registerUser = async (req, res) => {
     const token = createToken(user._id);
 
     res.status(201).json({
-      message: 'User registration successful',
+      message: "User registration successful",
       userId: user._id,
-      token
+      token,
     });
-
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -58,7 +55,7 @@ exports.completeStudentProfile = async (req, res) => {
     const studentProfile = new StudentProfile({
       userId,
       university,
-      studentId: `ST${Date.now()}` // Generate a temporary student ID
+      studentId: `ST${Date.now()}`, // Generate a temporary student ID
     });
 
     await studentProfile.save();
@@ -67,11 +64,10 @@ exports.completeStudentProfile = async (req, res) => {
     await User.findByIdAndUpdate(userId, { isVerified: true });
 
     res.status(200).json({
-      message: 'Student profile completed',
-      profile: studentProfile
+      message: "Student profile completed",
+      profile: studentProfile,
     });
-
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

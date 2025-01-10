@@ -5,7 +5,7 @@ import { Form, Input, Divider, notification } from "antd";
 import PropTypes from "prop-types";
 import { FcGoogle } from "react-icons/fc";
 import { Button } from "../ui/button";
-import axios from 'axios';
+import axios from "axios";
 
 const UserSignupStep01 = ({ onFinish }) => {
   const [form] = Form.useForm();
@@ -20,13 +20,20 @@ const UserSignupStep01 = ({ onFinish }) => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/signup/step1', values);
-      onFinish({ ...values, userId: response.data.userId, token: response.data.token });
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/signup/step1",
+        values
+      );
+      onFinish({
+        ...values,
+        userId: response.data.userId,
+        token: response.data.token,
+      });
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       notification.error({
-        message: 'Registration Failed',
-        description: error.response?.data?.message || 'Something went wrong'
+        message: "Registration Failed",
+        description: error.response?.data?.message || "Something went wrong",
       });
     } finally {
       setLoading(false);

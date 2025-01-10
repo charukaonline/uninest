@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { Form, Input, notification } from "antd";
 import CustomButton from "../CustomBtn";
 import "react-phone-input-2/lib/style.css";
-import axios from 'axios';
+import axios from "axios";
 
 const UserSignupStep02 = ({ onFinish }) => {
   const [form] = Form.useForm();
@@ -24,30 +24,30 @@ const UserSignupStep02 = ({ onFinish }) => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      const userId = localStorage.getItem('userId');
-      const token = localStorage.getItem('token');
-      
+      const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("token");
+
       await axios.post(
         `http://localhost:5000/api/auth/signup/step2/${userId}`,
         values,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
+
       openNotification(
-        'success',
-        'Registration Successful',
-        'Your account has been created successfully!'
+        "success",
+        "Registration Successful",
+        "Your account has been created successfully!"
       );
-      
+
       onFinish(values);
     } catch (error) {
-      console.error('Profile completion error:', error);
+      console.error("Profile completion error:", error);
       openNotification(
-        'error',
-        'Registration Failed',
-        error.response?.data?.message || 'Something went wrong'
+        "error",
+        "Registration Failed",
+        error.response?.data?.message || "Something went wrong"
       );
     } finally {
       setLoading(false);
