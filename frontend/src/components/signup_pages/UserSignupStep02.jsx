@@ -1,12 +1,14 @@
 // eslint-disable-next-line no-unused-vars
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Form, Input, notification } from "antd";
 import CustomButton from "../CustomBtn";
 import "react-phone-input-2/lib/style.css";
+import axios from 'axios';
 
 const UserSignupStep02 = ({ onFinish }) => {
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
   const onFinishFailed = (errorInfo) => {
     console.log("Form submission failed:", errorInfo);
@@ -19,6 +21,39 @@ const UserSignupStep02 = ({ onFinish }) => {
     });
   };
 
+  const handleSubmit = async (values) => {
+    setLoading(true);
+    try {
+      const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');
+      
+      await axios.post(
+        `http://localhost:5000/api/auth/signup/step2/${userId}`,
+        values,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      
+      openNotification(
+        'success',
+        'Registration Successful',
+        'Your account has been created successfully!'
+      );
+      
+      onFinish(values);
+    } catch (error) {
+      console.error('Profile completion error:', error);
+      openNotification(
+        'error',
+        'Registration Failed',
+        error.response?.data?.message || 'Something went wrong'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-md">
@@ -28,7 +63,7 @@ const UserSignupStep02 = ({ onFinish }) => {
         <Form
           form={form}
           name="universityForm"
-          onFinish={onFinish}
+          onFinish={handleSubmit}
           onFinishFailed={onFinishFailed}
           layout="vertical"
         >
@@ -59,13 +94,7 @@ const UserSignupStep02 = ({ onFinish }) => {
               textColor={"white"}
               hoverTextColor={"white"}
               hoverColor="#15803d"
-              onClick={() =>
-                openNotification(
-                  "success",
-                  "Registration Successful",
-                  "Your account has been created successfully!"
-                )
-              }
+              loading={loading}
             />
           </Form.Item>
         </Form>

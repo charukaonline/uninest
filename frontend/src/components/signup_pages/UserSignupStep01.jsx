@@ -1,18 +1,36 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
-import { Form, Input, Divider } from "antd";
+import { Form, Input, Divider, notification } from "antd";
 import PropTypes from "prop-types";
 import { FcGoogle } from "react-icons/fc";
 import { Button } from "../ui/button";
+import axios from 'axios';
 
 const UserSignupStep01 = ({ onFinish }) => {
   const [form] = Form.useForm();
   const [isGoogleHovered, setIsGoogleHovered] = useState(false);
   const navigate = useNavigate(); // Initialize useNavigate
+  const [loading, setLoading] = useState(false);
 
   const onFinishFailed = (errorInfo) => {
     console.log("Form submission failed:", errorInfo);
+  };
+
+  const handleSubmit = async (values) => {
+    setLoading(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/signup/step1', values);
+      onFinish({ ...values, userId: response.data.userId, token: response.data.token });
+    } catch (error) {
+      console.error('Registration error:', error);
+      notification.error({
+        message: 'Registration Failed',
+        description: error.response?.data?.message || 'Something went wrong'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -64,7 +82,7 @@ const UserSignupStep01 = ({ onFinish }) => {
           form={form}
           name="register"
           initialValues={{ remember: true }}
-          onFinish={onFinish}
+          onFinish={handleSubmit}
           onFinishFailed={onFinishFailed}
           layout="vertical"
         >
@@ -158,7 +176,8 @@ const UserSignupStep01 = ({ onFinish }) => {
             <Button
               type="submit"
               block
-              className="bg-green-700 rounded-full w-full "
+              className="bg-green-700 rounded-full w-full"
+              loading={loading}
             >
               Sign Up
             </Button>
