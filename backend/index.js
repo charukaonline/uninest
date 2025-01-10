@@ -25,22 +25,22 @@ app.listen(PORT, () => {
 });
 
 // test route for listings
-const Listing = require('./models/Listing');
+// const Listing = require('./models/Listing');
 
-app.get('/test-add-listing', async (req, res) => {
-  try {
-    const sampleListing = new Listing({
-      title: 'Sample boarding house 654',
-      location: 'Near University',
-      price: 12000,
-      amenities: ['Electricity', 'Water'],
-      distance: 1.2,
-      rating: 4
-    });
+// app.get('/test-add-listing', async (req, res) => {
+//   try {
+//     const sampleListing = new Listing({
+//       title: 'Sample boarding house 654',
+//       location: 'Near University',
+//       price: 12000,
+//       amenities: ['Electricity', 'Water'],
+//       distance: 1.2,
+//       rating: 4
+//     });
 
-    const savedListing = await sampleListing.save();
-    res.json(savedListing);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to save listing' });
-  }
-});
+//     const savedListing = await sampleListing.save();
+//     res.json(savedListing);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Failed to save listing' });
+//   }
+// });
