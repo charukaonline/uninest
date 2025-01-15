@@ -11,3 +11,8 @@ exports.validateSignup = [
     return true;
   }),
 ];
+
+exports.validateSignin = [
+  body("email").isEmail().normalizeEmail(),
+  body("password").notEmpty().withMessage("Password is required"),
+];

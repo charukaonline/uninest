@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { BiShow, BiHide } from "react-icons/bi";
+import axios from "axios";
+import { notification } from "antd";
 
 function UserSigninPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,10 +30,35 @@ function UserSigninPage() {
     console.log("Google Sign-In triggered");
   };
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     if (validateLogin()) {
-      console.log("Login successful:", loginData);
+      try {
+        const response = await axios.post(
+          "http://localhost:5000/api/auth/signin",
+          {
+            email: loginData.email,
+            password: loginData.password,
+          }
+        );
+
+        // Store token and user data in localStorage
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        notification.success({
+          message: "Login Successful",
+          description: "Welcome back to UniNest!",
+        });
+
+        // Redirect to home page
+        navigate("/");
+      } catch (error) {
+        notification.error({
+          message: "Login Failed",
+          description: error.response?.data?.message || "Invalid credentials",
+        });
+      }
     }
   };
 
