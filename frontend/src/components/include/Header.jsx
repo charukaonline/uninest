@@ -1,271 +1,140 @@
-// eslint-disable-next-line no-unused-vars
-import React, { useState } from "react";
-import Logo from "/uninestLogo.png";
-import { Button } from "../ui/button";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+
+import Logo from '/uninestLogo.png';
+import { ChevronDown, List } from 'lucide-react';
+import { Button } from '../ui/button';
 
 const Header = () => {
+
+  const [aboutDropdown, setAboutDropdown] = useState(false);
+  const [userDropdown, setUserDropdown] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [aboutMenuOpen, setAboutMenuOpen] = useState(false);
-  const [current, setCurrent] = useState("listings");
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+  useEffect(() => {
+    const handleClickOutside = (e) => {
 
-  const toggleAboutMenu = () => {
-    setAboutMenuOpen(!aboutMenuOpen);
-  };
+      if (!e.target.closest('.dropdown') && !e.target.closest('.menu-toggle')) {
+        setAboutDropdown(false);
+      }
+    };
 
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  const toggleAboutDropdown = () => setAboutDropdown(!aboutDropdown);
+  const toggleUserDropdown = () => setUserDropdown(!userDropdown);
   const closeMenus = () => {
-    setMenuOpen(false);
-    setAboutMenuOpen(false);
-  };
+    setAboutDropdown(false);
+    setUserDropdown(false);
+  }
 
   return (
-    <header className="bg-white shadow-md py-2 px-4">
-      <div className="container mx-auto flex justify-between items-center">
-        {/* Left Side - Logo and Mobile Menu */}
-        <div className="flex items-center">
-          {/* Mobile Menu Button */}
-          <button className="block md:hidden" onClick={toggleMenu}>
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16m-7 6h7"
-              />
-            </svg>
-          </button>
+    <header className=' bg-white shadow-md py-1 px-5 flex justify-between z-10'>
+      <div className=' flex justify-between items-center'>
 
-          {/* Logo */}
+        <div>
           <Link to={"/"}>
-            <img
-              src={Logo}
-              alt="UniNest Logo"
-              className="h-20 w-auto ml-2 mr-10"
-            />
+            <img src={Logo} alt='uninest logo' className=' h-20 w-auto ml-2 mr-10' />
           </Link>
+          <button className=' block md:hidden'>
+            <List />
+          </button>
         </div>
-
-        {/* Desktop Navigation with right margin */}
-        <nav className="hidden md:flex space-x-6 ml-6">
-          <button
-            className={"text-black font-bold"}
-            onClick={() => setCurrent("listings")}
-          >
-            View Listings
-          </button>
-          <button
-            className={"text-black font-bold"}
-            onClick={() => setCurrent("contact")}
-          >
-            Contact Us
-          </button>
-
-          <div className="relative w-40">
+        <div>
+          <nav className=' md:flex space-x-6'>
             <button
-              className={"text-black font-bold items-center flex"}
-              onClick={() => {
-                setCurrent("about");
-                toggleAboutMenu();
-              }}
+              className=' text-black hover:text-[#006845] font-semibold items-center'
+              onClick={() => navigate('/all listings')}
             >
-              About
-              <svg
-                className="w-4 h-4 ml-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
+              View Listing
             </button>
+            <button to={"/"} className=' text-black hover:text-[#006845] font-semibold items-center'>
+              Contact Us
+            </button>
+            <div className=' relative'>
+              <button
+                className='menu-toggle text-black hover:text-[#006845] font-semibold items-center'
+                onClick={toggleAboutDropdown}
+              >
+                <div className='flex items-center'>
+                  About
+                  <ChevronDown
+                    className={`ml-1 transition-transform ${aboutDropdown ? 'rotate-180' : 'rotate-0'
+                      }`}
+                  />
+                </div>
+              </button>
 
-            {aboutMenuOpen && (
-              <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-md py-2">
-                <a
-                  href="#about-us"
-                  className={`block px-4 py-2 ${
-                    current === "about-us" ? "font-bold" : ""
-                  }`}
-                  onClick={() => {
-                    setCurrent("about-us");
-                    closeMenus();
-                  }}
-                  style={{
-                    color: current === "about-us" ? "#006845" : "black",
-                    hover: { color: "#006845" },
-                  }}
-                >
-                  About Us
-                </a>
-                <a
-                  href="#how-it-works"
-                  className={`block px-4 py-2 ${
-                    current === "how-it-works" ? "font-bold" : ""
-                  }`}
-                  onClick={() => {
-                    setCurrent("how-it-works");
-                    closeMenus();
-                  }}
-                  style={{
-                    color: current === "how-it-works" ? "#006845" : "black",
-                    hover: { color: "#006845" },
-                  }}
-                >
-                  How it Works
-                </a>
-              </div>
-            )}
-          </div>
-        </nav>
-
-        {/* Action Buttons (both Desktop and Mobile) */}
-        <div className="flex items-center space-x-4 ml-auto">
-          <Button
-            className="bg-transparent hover:bg-transparent text-black border border-gray-600 hover:border-black font-semibold "
-            onClick={(e) => {
-              e.preventDefault(); // Prevent default anchor behavior
-              navigate("/auth/user-signin"); // Redirect to the login route
-            }}
-          >
-            Login
-          </Button>
-
-          <Button
-            className="bg-[#006845] hover:bg-[#006845] font-semibold"
-            onClick={(e) => {
-              e.preventDefault(); // Prevent default anchor behavior
-              navigate("/auth/user-signup"); // Redirect to the login route
-            }}
-          >
-            SignUp
-          </Button>
+              {aboutDropdown && (
+                <div className='dropdown absolute top-full left-0 mt-0 bg-[#eee] shadow-lg rounded-md py-2 w-40 z-10'>
+                  <Link
+                    className="block px-4 py-2 text-black hover:text-white hover:bg-[#006845] rounded-md w-5/6 mx-auto"
+                    to={"/"}
+                    onClick={closeMenus}
+                  >
+                    About Us
+                  </Link>
+                  <Link
+                    className="block px-4 py-2 text-black hover:text-white hover:bg-[#006845] rounded-md w-5/6 mx-auto"
+                    to={"/"}
+                    onClick={closeMenus}
+                  >
+                    How It Works
+                  </Link>
+                </div>
+              )}
+            </div>
+          </nav>
         </div>
+
       </div>
+      <div className=' flex items-center space-x-2'>
 
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-[#eee] shadow-lg rounded-md mt-2">
-          <a
-            href="#listings"
-            className={`block px-4 py-2 ${
-              current === "listings" ? "font-bold" : ""
-            }`}
-            onClick={() => {
-              setCurrent("listings");
-              closeMenus();
-            }}
-            style={{
-              color: current === "listings" ? "#006845" : "black",
-              hover: { color: "#006845" },
-            }}
-          >
-            View Listings
-          </a>
-          <a
-            href="#contact"
-            className={`block px-4 py-2 ${
-              current === "contact" ? "font-bold" : ""
-            }`}
-            onClick={() => {
-              setCurrent("contact");
-              closeMenus();
-            }}
-            style={{
-              color: current === "contact" ? "#006845" : "black",
-              hover: { color: "#006845" },
-            }}
-          >
-            Contact Us
-          </a>
-          <div className="relative">
+        {isAuthenticated ? (
+          <div>
             <button
-              className={`block w-full text-left px-4 py-2 ${
-                current === "about" ? "font-bold" : ""
-              }`}
-              onClick={() => {
-                setCurrent("about");
-                toggleAboutMenu();
-              }}
-              style={{
-                color: current === "about" ? "#006845" : "black",
-                hover: { color: "#006845" },
+              className=' flex space-x-1 items-center justify-center'
+              onClick={toggleUserDropdown}
+            >
+              <div className=' w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 items-center justify-center'>
+                <img src='/' alt='' />
+              </div>
+              <ChevronDown
+                className=' hover:text-[#006845]'
+              />
+            </button>
+          </div>
+        ) : (
+          <>
+            <Button
+              className="bg-transparent hover:bg-[#006845] hover:text-white text-black border border-gray-600 hover:border-transparent font-semibold"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/auth/user-signin");
               }}
             >
-              About
-              <svg
-                className="w-4 h-4 ml-1 inline"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-            {aboutMenuOpen && (
-              <div className="pl-4">
-                <a
-                  href="#about-us"
-                  className={`block px-4 py-2 ${
-                    current === "about-us" ? "font-bold" : ""
-                  }`}
-                  onClick={() => {
-                    setCurrent("about-us");
-                    closeMenus();
-                  }}
-                  style={{
-                    color: current === "about-us" ? "#006845" : "black",
-                    hover: { color: "#006845" },
-                  }}
-                >
-                  About Us
-                </a>
-                <a
-                  href="#how-it-works"
-                  className={`block px-4 py-2 ${
-                    current === "how-it-works" ? "font-bold" : ""
-                  }`}
-                  onClick={() => {
-                    setCurrent("how-it-works");
-                    closeMenus();
-                  }}
-                  style={{
-                    color: current === "how-it-works" ? "#006845" : "black",
-                    hover: { color: "#006845" },
-                  }}
-                >
-                  How it Works
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+              Login
+            </Button>
+            <Button
+              className="bg-[#006845] text-white hover:bg-green-800 border hover:border-gray-600 font-semibold"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/auth/user-signup");
+              }}
+            >
+              Sign Up
+            </Button>
+          </>
+        )}
+      </div>
     </header>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

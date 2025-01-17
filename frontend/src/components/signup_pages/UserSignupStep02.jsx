@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { Form, Input, notification } from "antd";
 import CustomButton from "../CustomBtn";
 import "react-phone-input-2/lib/style.css";
-import axios from 'axios';
+import axios from "axios";
 
 const UserSignupStep02 = ({ onFinish }) => {
   const [form] = Form.useForm();
@@ -24,30 +24,30 @@ const UserSignupStep02 = ({ onFinish }) => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      const userId = localStorage.getItem('userId');
-      const token = localStorage.getItem('token');
-      
+      const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("token");
+
       await axios.post(
         `http://localhost:5000/api/auth/signup/step2/${userId}`,
         values,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
+
       openNotification(
-        'success',
-        'Registration Successful',
-        'Your account has been created successfully!'
+        "success",
+        "Registration Successful",
+        "Your account has been created successfully!"
       );
-      
+
       onFinish(values);
     } catch (error) {
-      console.error('Profile completion error:', error);
+      console.error("Profile completion error:", error);
       openNotification(
-        'error',
-        'Registration Failed',
-        error.response?.data?.message || 'Something went wrong'
+        "error",
+        "Registration Failed",
+        error.response?.data?.message || "Something went wrong"
       );
     } finally {
       setLoading(false);
@@ -56,7 +56,7 @@ const UserSignupStep02 = ({ onFinish }) => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-md">
+      <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-2xl">
         <h2 className="text-2xl font-semibold mb-6 text-left">
           By the way, which Uni?
         </h2>
@@ -86,16 +86,13 @@ const UserSignupStep02 = ({ onFinish }) => {
           </Form.Item>
 
           <Form.Item>
-            <CustomButton
-              btnName="Continue"
-              btnType="primary"
-              htmlType="submit"
-              color="#006845"
-              textColor={"white"}
-              hoverTextColor={"white"}
-              hoverColor="#15803d"
+            <button
+              type="submit"
+              className="bg-primaryBgColor text-white px-6 py-2 rounded-lg focus:outline-none w-full hover:bg-green-700 font-semibold"
               loading={loading}
-            />
+            >
+              Continue
+            </button>
           </Form.Item>
         </Form>
       </div>

@@ -1,32 +1,29 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
-import { Form, Input } from "antd";
-import "antd/dist/reset.css";
-import Btn from "./custombutton.jsx";
-import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css";
+import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
+import { Form, Input, Divider } from "antd";
 
-const SignupForm = () => {
+const HouseownerSignup1 = ({ onFinish }) => {
+
   const [form] = Form.useForm();
-  // const [hovered, setHovered] = useState(false);
-
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
+  const navigate = useNavigate();
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
 
-  const lightGreenThemeColor = "#c0e0b2";
-  const greenThemeColor = "#006845";
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-md">
+      <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-2xl">
         <div className="mt-4 text-right text-xs">
           Already have an account?{" "}
-          <a href="#" className="underline">
+          <a
+            className="underline text-primaryBgColor hover:text-green-700 font-semibold text-[13px]"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/auth/houseowner-signin")
+            }}
+          >
             Login Now
           </a>
         </div>
@@ -44,15 +41,10 @@ const SignupForm = () => {
           <Form.Item
             label="Email Address"
             name="email"
-            rules={[{ required: true, message: "Please input your email!" }]}
-            className="font-medium"
+            rules={[{ required: true, message: "Please enter your email!" }]}
           >
             <Input
-              style={{
-                borderColor: greenThemeColor,
-                borderWidth: "1px",
-                outline: "none",
-              }}
+              className=" focus:border-primaryBgColor hover:border-primaryBgColor"
               placeholder="Email Address"
             />
           </Form.Item>
@@ -60,15 +52,10 @@ const SignupForm = () => {
           <Form.Item
             label="User name"
             name="username"
-            rules={[{ required: true, message: "Please input your username!" }]}
-            className="font-medium"
+            rules={[{ required: true, message: "Please enter your username!" }]}
           >
             <Input
-              style={{
-                borderColor: greenThemeColor,
-                borderWidth: "1px",
-                outline: "none",
-              }}
+              className=" focus:border-primaryBgColor hover:border-primaryBgColor"
               placeholder="User name"
             />
           </Form.Item>
@@ -79,21 +66,10 @@ const SignupForm = () => {
             rules={[
               { required: true, message: "Please enter your phone number" },
             ]}
-            className="font-medium"
           >
-            <PhoneInput
-              country={"lk"}
-              inputStyle={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "0.375rem",
-                borderColor: lightGreenThemeColor,
-                outline: "none",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = greenThemeColor)}
-              onBlur={(e) =>
-                (e.target.style.borderColor = lightGreenThemeColor)
-              }
+            <Input
+              className=" focus:border-primaryBgColor hover:border-primaryBgColor"
+              placeholder="Ex: +94 77 123 4567"
             />
           </Form.Item>
 
@@ -101,21 +77,16 @@ const SignupForm = () => {
             label="Password"
             name="password"
             rules={[
-              { required: true, message: "Please input your password!" },
+              { required: true, message: "Please enter your password!" },
               {
                 min: 8,
                 message: "Password must be at least 8 characters long!",
               },
             ]}
             hasFeedback
-            className="font-medium"
           >
             <Input.Password
-              style={{
-                borderColor: greenThemeColor,
-                borderWidth: "1px",
-                outline: "none",
-              }}
+              className=" focus:border-primaryBgColor hover:border-primaryBgColor"
               placeholder="Password"
             />
           </Form.Item>
@@ -136,33 +107,29 @@ const SignupForm = () => {
               }),
             ]}
             hasFeedback
-            className="font-medium"
           >
             <Input.Password
-              style={{
-                borderColor: greenThemeColor,
-                borderWidth: "1px",
-                outline: "none",
-              }}
+              className=" focus:border-primaryBgColor hover:border-primaryBgColor"
               placeholder="Confirm Password"
             />
           </Form.Item>
 
           <Form.Item>
-            <Btn
-              btnName="Continue"
-              btnType="submit"
-              color={greenThemeColor}
-              hoverColor="white"
-              hoverTextColor="white"
-              className="w-full"
-              textColor="white"
-            />
+            <button
+              type="submit"
+              className="bg-primaryBgColor text-white px-6 py-2 rounded-lg focus:outline-none w-full hover:bg-green-700 font-semibold"
+            >
+              Sign Up
+            </button>
           </Form.Item>
         </Form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SignupForm;
+HouseownerSignup1.propTypes = {
+  onFinish: PropTypes.func.isRequired
+}
+
+export default HouseownerSignup1
