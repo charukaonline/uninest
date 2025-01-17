@@ -56,7 +56,7 @@ const UserSignupStep02 = ({ onFinish }) => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-md">
+      <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-2xl">
         <h2 className="text-2xl font-semibold mb-6 text-left">
           By the way, which Uni?
         </h2>
@@ -86,16 +86,13 @@ const UserSignupStep02 = ({ onFinish }) => {
           </Form.Item>
 
           <Form.Item>
-            <CustomButton
-              btnName="Continue"
-              btnType="primary"
-              htmlType="submit"
-              color="#006845"
-              textColor={"white"}
-              hoverTextColor={"white"}
-              hoverColor="#15803d"
+            <button
+              type="submit"
+              className="bg-primaryBgColor text-white px-6 py-2 rounded-lg focus:outline-none w-full hover:bg-green-700 font-semibold"
               loading={loading}
-            />
+            >
+              Continue
+            </button>
           </Form.Item>
         </Form>
       </div>

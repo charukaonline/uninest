@@ -10,7 +10,7 @@ import axios from "axios";
 const UserSignupStep01 = ({ onFinish }) => {
   const [form] = Form.useForm();
   const [isGoogleHovered, setIsGoogleHovered] = useState(false);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const onFinishFailed = (errorInfo) => {
@@ -42,15 +42,15 @@ const UserSignupStep01 = ({ onFinish }) => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-md">
-        <div className="text-right text-xs">
+      <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-2xl">
+        <div className="text-right text-sm">
           Already have an account?{" "}
           <a
             href="#"
-            className="underline"
+            className="underline text-primaryBgColor hover:text-green-700 font-semibold text-[13px]"
             onClick={(e) => {
-              e.preventDefault(); // Prevent default anchor behavior
-              navigate("/auth/user-signin"); // Redirect to the login route
+              e.preventDefault();
+              navigate("/auth/user-signin");
             }}
           >
             Login Now
@@ -59,22 +59,12 @@ const UserSignupStep01 = ({ onFinish }) => {
         <br />
 
         <button
-          style={{
-            backgroundColor: isGoogleHovered ? "#15803d" : "#006845",
-            color: "white",
-            borderRadius: "999px",
-            border: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "8px",
-            width: "100%",
-            cursor: "pointer",
-          }}
+          className={`flex items-center justify-center w-full px-3 py-2 rounded-full cursor-pointer border-none ${isGoogleHovered ? "bg-green-700" : "bg-primaryBgColor"
+            } text-white`}
           onMouseEnter={() => setIsGoogleHovered(true)}
           onMouseLeave={() => setIsGoogleHovered(false)}
         >
-          <FcGoogle className="mr-2" />
+          <FcGoogle className="mr-2 size-6" />
           <div className="font-bold text-base">Continue with Google</div>
         </button>
 
@@ -93,7 +83,7 @@ const UserSignupStep01 = ({ onFinish }) => {
           onFinishFailed={onFinishFailed}
           layout="vertical"
         >
-          <h2 className="text-xl font-semibold mb-4 text-center">
+          <h2 className="text-2xl font-bold mb-4 text-center">
             Create an Account
           </h2>
 
@@ -101,8 +91,9 @@ const UserSignupStep01 = ({ onFinish }) => {
             label="Email Address"
             name="email"
             rules={[{ required: true, message: "Please input your email!" }]}
+            className=" text-3xl"
           >
-            <Input placeholder="Email Address" />
+            <Input placeholder="Email Address" className=" focus:border-primaryBgColor hover:border-primaryBgColor" />
           </Form.Item>
 
           <Form.Item
@@ -110,7 +101,7 @@ const UserSignupStep01 = ({ onFinish }) => {
             name="username"
             rules={[{ required: true, message: "Please input your username!" }]}
           >
-            <Input placeholder="Username" />
+            <Input placeholder="Username" className=" focus:border-primaryBgColor hover:border-primaryBgColor" />
           </Form.Item>
 
           <Form.Item
@@ -124,7 +115,7 @@ const UserSignupStep01 = ({ onFinish }) => {
               },
             ]}
           >
-            <Input.Password placeholder="Password" />
+            <Input.Password placeholder="Password" className=" focus:border-primaryBgColor hover:border-primaryBgColor" />
           </Form.Item>
 
           <Form.Item
@@ -143,7 +134,7 @@ const UserSignupStep01 = ({ onFinish }) => {
               }),
             ]}
           >
-            <Input.Password placeholder="Re-enter Password" />
+            <Input.Password placeholder="Re-enter Password" className=" focus:border-primaryBgColor hover:border-primaryBgColor" />
           </Form.Item>
 
           <Form.Item
@@ -155,8 +146,8 @@ const UserSignupStep01 = ({ onFinish }) => {
                   value
                     ? Promise.resolve()
                     : Promise.reject(
-                        new Error("You must accept the terms and conditions!")
-                      ),
+                      new Error("You must accept the terms and conditions!")
+                    ),
               },
             ]}
           >
@@ -166,13 +157,13 @@ const UserSignupStep01 = ({ onFinish }) => {
                 id="checkbox"
                 className="accent-green-700 mr-2"
               />
-              <label htmlFor="checkbox">
+              <label htmlFor="checkbox" className=" font-semibold text-sm">
                 By creating an account, I agree to our{" "}
-                <a href="#" className="underline">
+                <a href="/privacy-policy" className="underline text-primaryBgColor hover:text-green-700">
                   Terms of use
                 </a>{" "}
                 and{" "}
-                <a href="#" className="underline">
+                <a href="/privacy-policy" className="underline text-primaryBgColor hover:text-green-700">
                   Privacy Policy
                 </a>
               </label>
@@ -183,7 +174,7 @@ const UserSignupStep01 = ({ onFinish }) => {
             <Button
               type="submit"
               block
-              className="bg-green-700 rounded-full w-full"
+              className="bg-primaryBgColor text-white px-6 py-2 rounded-lg focus:outline-none w-full hover:bg-green-700 font-semibold"
               loading={loading}
             >
               Sign Up

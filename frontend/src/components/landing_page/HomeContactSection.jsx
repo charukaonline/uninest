@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { notification } from "antd";
+import "antd/dist/reset.css";
 
 export default function HomeContactSection() {
   const [formData, setFormData] = useState({
@@ -9,35 +11,41 @@ export default function HomeContactSection() {
     message: "",
   });
 
-  const [errors, setErrors] = useState({});
-
   const validate = () => {
-    const newErrors = {};
+    // Check for empty fields
+    const isEmpty = !formData.inquiryType ||
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.message.trim();
 
-    if (!formData.inquiryType) {
-      newErrors.inquiryType = "Please select an inquiry type.";
+    if (isEmpty) {
+      notification.error({
+        message: "Validation Error",
+        description: "Please fill in all required fields.",
+        duration: 3,
+      });
+      return false;
     }
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required.";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      notification.error({
+        message: "Validation Error",
+        description: "Please enter a valid email address.",
+        duration: 3,
+      });
+      return false;
     }
 
     if (formData.phone && !/^\+?\d{1,4}?[-.\s]?\(?(?:\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9})$/.test(formData.phone)) {
-      newErrors.phone = "Please enter a valid phone number.";
+      notification.error({
+        message: "Validation Error",
+        description: "Please enter a valid phone number.",
+        duration: 3,
+      });
+      return false;
     }
 
-    if (!formData.message.trim()) {
-      newErrors.message = "Message is required.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return true;
   };
 
   const handleChange = (e) => {
@@ -46,17 +54,18 @@ export default function HomeContactSection() {
       ...prevData,
       [name]: value,
     }));
-
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: "",
-    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (validate()) {
-      console.log("Form submitted:", formData);
+      notification.success({
+        message: "Form Submitted",
+        description: "Your form has been submitted successfully.",
+        duration: 3,
+      });
+
       // Reset form after submission
       setFormData({
         inquiryType: "",
@@ -65,8 +74,9 @@ export default function HomeContactSection() {
         phone: "",
         message: "",
       });
-      setErrors({});
     }
+
+    console.log("Form Submitted: ", formData);
   };
 
   return (
@@ -101,7 +111,6 @@ export default function HomeContactSection() {
                 name="inquiryType"
                 value={formData.inquiryType}
                 onChange={handleChange}
-                required
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none"
                 style={{ borderColor: "#006845" }}
               >
@@ -109,12 +118,8 @@ export default function HomeContactSection() {
                   Select Inquiry Type
                 </option>
                 <option value="renting">Renting Property</option>
-                <option value="buying">Buying Property</option>
-                <option value="selling">Selling Property</option>
+                <option value="listing">Listing Property</option>
               </select>
-              {errors.inquiryType && (
-                <p className="text-red-500 text-sm mt-1">{errors.inquiryType}</p>
-              )}
             </div>
 
             <div>
@@ -126,14 +131,10 @@ export default function HomeContactSection() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                required
                 placeholder="John Doe"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none"
                 style={{ borderColor: "#006845" }}
               />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-              )}
             </div>
 
             <div>
@@ -145,14 +146,10 @@ export default function HomeContactSection() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                required
                 placeholder="example@domain.com"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none"
                 style={{ borderColor: "#006845" }}
               />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-              )}
             </div>
 
             <div>
@@ -168,9 +165,6 @@ export default function HomeContactSection() {
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none"
                 style={{ borderColor: "#006845" }}
               />
-              {errors.phone && (
-                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-              )}
             </div>
 
             <div>
@@ -181,15 +175,11 @@ export default function HomeContactSection() {
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                required
                 placeholder="Please Enter Your Message"
                 rows={4}
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none"
                 style={{ borderColor: "#006845" }}
               ></textarea>
-              {errors.message && (
-                <p className="text-red-500 text-sm mt-1">{errors.message}</p>
-              )}
             </div>
 
             <div className="text-center">
