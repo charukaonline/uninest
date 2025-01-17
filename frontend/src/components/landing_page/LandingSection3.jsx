@@ -1,8 +1,9 @@
+import { Link } from "react-router-dom";
 import BordingImage from "/bording.jpg";
 
 const LandingSection3 = () => {
   return (
-    <div className="flex flex-col md:flex-row items-center bg-white p-8 rounded-lg shadow-lg space-y-6 md:space-y-0">
+    <div className="flex flex-col md:flex-row items-center bg-white p-16 rounded-lg shadow-lg space-y-6 md:space-y-0">
       {/* Text Section */}
       <div className="flex-1 space-y-4 md:pr-6 text-center md:text-left">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -16,12 +17,12 @@ const LandingSection3 = () => {
           right people. Your next boarding house is just a click away!{" "}
         </p>
         <div className="flex items-center justify-center md:justify-start space-x-4">
-          <button className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+          <button className="bg-[#006845] text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
             Get Started
           </button>
-          <a href="#" className="text-gray-800 underline hover:text-gray-900">
+          <Link to={"/"} className="text-gray-800 underline hover:text-[#006845]">
             Have a question? Click here...
-          </a>
+          </Link>
         </div>
       </div>
 

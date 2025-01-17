@@ -1,13 +1,13 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Add this import
+import { useNavigate } from "react-router-dom";
 import UserSignupStep01 from "../components/signup_pages/UserSignupStep01";
 import UserSignupStep02 from "../components/signup_pages/UserSignupStep02";
 
 const UserSignupPage = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({});
-  const navigate = useNavigate(); // Add this line
+  const navigate = useNavigate();
 
   const handleFirstStepSubmit = (values) => {
     setFormData((prevData) => ({ ...prevData, ...values }));
@@ -25,7 +25,7 @@ const UserSignupPage = () => {
     localStorage.removeItem("userId");
     localStorage.removeItem("token");
     // Redirect to login or dashboard
-    navigate("/auth/user-signin"); // Now this will work
+    navigate("/auth/user-signin");
   };
 
   useEffect(() => {

@@ -1,63 +1,66 @@
-import React from "react";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function HeroSection() {
+const HeroSection = () => {
+
+  const navigate = useNavigate();
+
   return (
-    <section className="flex flex-col items-center justify-center bg-[url('/heroBackground.jpg')] bg-cover bg-center bg-no-repeat py-16 px-8 lg:px-20 font-sans">
-      {/* Centered Content */}
-      <div className="max-w-xl space-y-9 lg:space-y-8 text-center">
-        {/* Title and Subtitle */}
-        <div className="space-y-5 px-4">
-          <h1
-            className="text-5xl lg:text-6xl font-extrabold text-gray-900 leading-0 tracking-tight"
-            style={{ textShadow: "2px 2px 8px rgba(0, 0, 0, 0.1)" }}
-          >
-            Find Your Favorite{" "}
-            <span className="text-green-700">Boarding House</span>
+    <section className="flex items-center justify-center bg-[url('/heroBackground.jpg')] bg-cover bg-center bg-no-repeat py-16 px-8 lg:px-20">
+      {/* Container for left and right sections */}
+      <div className="flex flex-col lg:flex-row w-full max-w-7xl mx-auto">
+        {/* Left Content */}
+        <div className="lg:w-1/2 text-center lg:text-left px-6 lg:px-12">
+          <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 leading-tight">
+            Find Your Favorite <span className='text-primaryBgColor'>Boarding House</span>
           </h1>
-          <p className="text-gray-700 text-lg leading-relaxed">
-            Discover great options to buy or rent boarding houses tailored for
-            university students across Sri Lanka.
+          <p className="mt-4 text-lg text-gray-600">
+            A great platform to buy or rent boarding houses for University Students in Sri Lanka...
           </p>
-        </div>
 
-        {/* Input and Button in a Stacked Layout on Mobile without padding on Mobile */}
-        <div className="w-full mx-auto lg:max-w-lg lg:bg-white rounded-lg lg:p-4 p-0">
-          <div className="flex flex-col lg:flex-row items-center lg:space-x-4">
-            {/* Input Container with Border on Mobile */}
-            <div className="flex-grow w-full bg-gray-200 rounded-md overflow-hidden mb-4 lg:mb-0 border border-gray-300 lg:border-0">
-              <input
-                type="text"
-                placeholder="What University are you belongs to?"
-                className="w-full px-4 py-3 text-gray-700 bg-gray-200 placeholder-gray-500 focus:outline-none focus:bg-gray-100"
-              />
-            </div>
-            {/* Divider (|) */}
-            <div className="lg:h-6 w-px bg-gray-300 mx-4"></div>{" "}
-            {/* Divider with spacing */}
-            {/* Button Container, Stacked on Mobile */}
-            <button className=" lg:w-auto bg-green-700 text-white px-5 py-2 lg:px-6 lg:py-3 font-semibold hover:bg-green-600 transition duration-300 rounded-lg">
+          {/* Search Bar */}
+          <div className="mt-6 flex items-center space-x-3 bg-white shadow-md rounded-md p-2">
+            <input
+              type="text"
+              placeholder="What University are you belongs to?"
+              className="flex-1 px-4 py-2 border-none focus:outline-none text-black bg-[#D9D9D9] rounded-md"
+            />
+            <div className="lg:h-6 w-px bg-gray-500 mx-4"></div>
+            <button className="px-6 py-2 bg-primaryBgColor text-white rounded-md hover:bg-green-700">
               Proceed
             </button>
           </div>
-        </div>
 
-        {/* Button for Landlord */}
-        <div className="space-y-5 text-center">
-          <p className="text-gray-800 font-semibold text-lg">
+          <p className="mt-8 text-gray-800 font-semibold">
             Are you a boarding house owner looking to list your housing options?
           </p>
-          <button className="px-8 py-3 bg-green-700 text-white rounded-full font-semibold hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+          <button
+            className="mt-2 px-6 py-2 bg-primaryBgColor text-white rounded-md hover:bg-green-700"
+            onClick={() => navigate("/auth/houseowner-signin")}
+          >
             Get Started as a Landlord
           </button>
         </div>
-      </div>
 
-      {/* Optional Right Image Section 
-      <div className="hidden lg:block p-0">
-        <img src="/src/assets/Image.png" alt="House Owner" className="w-60 h-auto "/>
-      </div>*/}
+        {/* Right Image */}
+        <div
+          className="lg:w-1/2 flex items-center justify-center mt-8 lg:mt-0 relative"
+          style={{
+            maskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%), linear-gradient(to right, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%)',
+            maskComposite: 'intersect',
+            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%), linear-gradient(to right, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0) 100%)',
+            WebkitMaskComposite: 'destination-in',
+          }}
+        >
+          <img
+            src="/landingPageImage.png"
+            className="h-full w-full object-cover"
+            alt="Boarding House"
+          />
+        </div>
+      </div>
     </section>
   );
-}
+};
 
 export default HeroSection;
