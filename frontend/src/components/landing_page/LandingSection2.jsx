@@ -1,23 +1,29 @@
 // eslint-disable-next-line no-unused-vars
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 function LandingSection2() {
+
+  const navigate = useNavigate();
+
   return (
     <div className="max-w-screen-xl mx-auto bg-white p-16 flex flex-col lg:flex-row gap-40">
       {/* Left Section */}
-      {/* <div className="bg-teal-200 p-8 rounded-lg flex flex-col justify-between shadow-md"> */}
       <div
         className="bg-gradient-to-b from-green-200 to-green-300 rounded-lg p-8 max-w-72 text-center lg:text-left bg-cover bg-center"
         style={{ backgroundImage: "url('/landingImg2.jpg')" }}
       >
-        <h1 className="text-3xl font-bold text-green-800 mb-4">
+        <h1 className="text-3xl font-bold text-primaryBgColor mb-4">
           The new way to find your new boarding place
         </h1>
         <p className="text-gray-700 mb-6">
           Find your dream place to live in with more than 10k+ properties
           listed.
         </p>
-        <button className="bg-green-600 text-white px-5 py-3 rounded-lg hover:bg-green-700">
+        <button
+          className="bg-primaryBgColor text-white px-5 py-3 rounded-lg hover:bg-green-700"
+          onClick={() => navigate('/all listings')}
+        >
           Browse Boarding Options
         </button>
       </div>
