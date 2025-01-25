@@ -1,5 +1,6 @@
 import React from "react";
 import PropertyCard from "./card";
+import FilterBar from "./FilterBar.jsx";
 
 const ScrollingSection = () => {
   // Card data managed within ScrollingSection
@@ -61,33 +62,30 @@ const ScrollingSection = () => {
   ];
 
   return (
-    <section className="p-6 bg-gray-100 min-h-screen">
-      {/* Header Section */}
-      <header className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Results</h1>
-        <div className="flex items-center gap-4">
-          <button className="py-2 px-4 bg-green-600 text-white rounded-lg">
-            Map View
-          </button>
-        </div>
-      </header>
+      <section className="p-6 bg-gray-100 min-h-screen">
+        {/* Header Section */}
+        <FilterBar/>
 
-      {/* Scrolling Section */}
-      <main className="h-[calc(100vh-150px)] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {/* Render Cards */}
-          {cardData.map((card, index) => (
-            <PropertyCard
-              key={index}
-              image={card.image}
-              title={card.title}
-              price={card.price}
-              location={card.location}
-            />
-          ))}
-        </div>
-      </main>
-    </section>
+        <header className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold">Results</h1>
+        </header>
+
+        {/* Scrolling Section */}
+        <main className="h-[calc(100vh-150px)] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {/* Render Cards */}
+            {cardData.map((card, index) => (
+                <PropertyCard
+                    key={index}
+                    image={card.image}
+                    title={card.title}
+                    price={card.price}
+                    location={card.location}
+                />
+            ))}
+          </div>
+        </main>
+      </section>
   );
 };
 
