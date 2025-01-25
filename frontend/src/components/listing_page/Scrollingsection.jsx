@@ -6,7 +6,7 @@ const ScrollingSection = () => {
   // Card data managed within ScrollingSection
   const cardData = [
     {
-      image: "/homepic.jpg",
+      image: "/homepic.jpg", //image path
       title: "The Stables",
       price: "$ 9540.99",
       location: "📍 Terry Lane, Golden CO 80403",
