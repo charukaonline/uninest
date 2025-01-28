@@ -40,6 +40,10 @@ const UserSignupStep01 = ({ onFinish }) => {
     }
   };
 
+  const handleGoogleSignIn = () => {
+    window.location.href = "http://localhost:5000/api/auth/google";
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <div className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-2xl">
@@ -59,8 +63,10 @@ const UserSignupStep01 = ({ onFinish }) => {
         <br />
 
         <button
-          className={`flex items-center justify-center w-full px-3 py-2 rounded-full cursor-pointer border-none ${isGoogleHovered ? "bg-green-700" : "bg-primaryBgColor"
-            } text-white`}
+          onClick={handleGoogleSignIn}
+          className={`flex items-center justify-center w-full px-3 py-2 rounded-full cursor-pointer border-none ${
+            isGoogleHovered ? "bg-green-700" : "bg-primaryBgColor"
+          } text-white`}
           onMouseEnter={() => setIsGoogleHovered(true)}
           onMouseLeave={() => setIsGoogleHovered(false)}
         >
@@ -93,7 +99,10 @@ const UserSignupStep01 = ({ onFinish }) => {
             rules={[{ required: true, message: "Please input your email!" }]}
             className=" text-3xl"
           >
-            <Input placeholder="Email Address" className=" focus:border-primaryBgColor hover:border-primaryBgColor" />
+            <Input
+              placeholder="Email Address"
+              className=" focus:border-primaryBgColor hover:border-primaryBgColor"
+            />
           </Form.Item>
 
           <Form.Item
@@ -101,7 +110,10 @@ const UserSignupStep01 = ({ onFinish }) => {
             name="username"
             rules={[{ required: true, message: "Please input your username!" }]}
           >
-            <Input placeholder="Username" className=" focus:border-primaryBgColor hover:border-primaryBgColor" />
+            <Input
+              placeholder="Username"
+              className=" focus:border-primaryBgColor hover:border-primaryBgColor"
+            />
           </Form.Item>
 
           <Form.Item
@@ -115,7 +127,10 @@ const UserSignupStep01 = ({ onFinish }) => {
               },
             ]}
           >
-            <Input.Password placeholder="Password" className=" focus:border-primaryBgColor hover:border-primaryBgColor" />
+            <Input.Password
+              placeholder="Password"
+              className=" focus:border-primaryBgColor hover:border-primaryBgColor"
+            />
           </Form.Item>
 
           <Form.Item
@@ -134,7 +149,10 @@ const UserSignupStep01 = ({ onFinish }) => {
               }),
             ]}
           >
-            <Input.Password placeholder="Re-enter Password" className=" focus:border-primaryBgColor hover:border-primaryBgColor" />
+            <Input.Password
+              placeholder="Re-enter Password"
+              className=" focus:border-primaryBgColor hover:border-primaryBgColor"
+            />
           </Form.Item>
 
           <Form.Item
@@ -146,8 +164,8 @@ const UserSignupStep01 = ({ onFinish }) => {
                   value
                     ? Promise.resolve()
                     : Promise.reject(
-                      new Error("You must accept the terms and conditions!")
-                    ),
+                        new Error("You must accept the terms and conditions!")
+                      ),
               },
             ]}
           >
@@ -159,11 +177,17 @@ const UserSignupStep01 = ({ onFinish }) => {
               />
               <label htmlFor="checkbox" className=" font-semibold text-sm">
                 By creating an account, I agree to our{" "}
-                <a href="/privacy-policy" className="underline text-primaryBgColor hover:text-green-700">
+                <a
+                  href="/privacy-policy"
+                  className="underline text-primaryBgColor hover:text-green-700"
+                >
                   Terms of use
                 </a>{" "}
                 and{" "}
-                <a href="/privacy-policy" className="underline text-primaryBgColor hover:text-green-700">
+                <a
+                  href="/privacy-policy"
+                  className="underline text-primaryBgColor hover:text-green-700"
+                >
                   Privacy Policy
                 </a>
               </label>

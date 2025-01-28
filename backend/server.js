@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const passport = require("./config/passport");
 
 dotenv.config();
 
@@ -11,6 +12,9 @@ const PORT = process.env.PORT || 5000;
 // Middleware to parse JSON
 app.use(express.json());
 app.use(cors());
+
+// Initialize passport
+app.use(passport.initialize());
 
 // MongoDB Connection
 mongoose
