@@ -9,6 +9,7 @@ import HouseownerSignupPage from "./pages/HouseownerSignupPage";
 import AllListings from "./pages/AllListings";
 import PropertyInfo from "./pages/PropertyInfo";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import DashboardLayout from "./pages/StdDashboard";
 
 function App() {
   return (
@@ -40,6 +41,9 @@ function App() {
 
         {/* Privacy Policy */}
         <Route path='/privacy-policy' element={<Layout><PrivacyPolicy /></Layout>} />
+        
+        {/* Student Dashboard */}
+        <Route path='/std-dashboard' element={<DashboardLayout />} />
       </Routes>
     </>
   );
