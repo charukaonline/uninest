@@ -153,3 +153,24 @@ exports.googleCallback = async (req, res) => {
     res.redirect(`${process.env.FRONTEND_URL}/auth/google/error`);
   }
 };
+
+exports.completePreference = async (req, res) => {
+  try {
+    const { userId, university } = req.body;
+
+    const studentProfile = new StudentProfile({
+      userId,
+      university,
+    });
+
+    await studentProfile.save();
+    res.status(201).json({ message: "Student profile created successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Error creating student profile",
+        error: error.message,
+      });
+  }
+}

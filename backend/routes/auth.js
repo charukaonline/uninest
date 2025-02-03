@@ -7,6 +7,7 @@ const {
   completeStudentProfile,
   signin,
   googleCallback,
+  completePreference,
 } = require("../controllers/authController");
 const StudentProfile = require("../models/StudentProfile");
 
@@ -29,28 +30,6 @@ router.get(
   googleCallback
 );
 
-router.post("/student-profile", async (req, res) => {
-  try {
-    const { userId, university, studentId, course, yearOfStudy } = req.body;
-
-    const studentProfile = new StudentProfile({
-      userId,
-      university,
-      studentId,
-      course,
-      yearOfStudy,
-    });
-
-    await studentProfile.save();
-    res.status(201).json({ message: "Student profile created successfully" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error creating student profile",
-        error: error.message,
-      });
-  }
-});
+router.post("/student-profile", completePreference);
 
 module.exports = router;

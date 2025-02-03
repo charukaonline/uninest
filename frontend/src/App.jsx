@@ -11,24 +11,21 @@ import PropertyInfo from "./pages/PropertyInfo";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import StudentDashboard from "./pages/StdDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import NotFound from "./pages/404Page";
+import UserPreference from "./components/signup_pages/UserPreference";
 
 function App() {
   return (
     <>
       <Routes>
         {/* Main pages */}
-        <Route
-          path="/"
-          element={
-            <Layout>
-              <Home />
-            </Layout>
-          }
-        />
+        <Route path="/" element={<Layout><Home /></Layout>} />
+        <Route path="*" element={<NotFound />} />
 
         {/* Student signup and signin */}
         <Route path="/auth/user-signup" element={<Layout><UserSignupPage /></Layout>} />
         <Route path="/auth/user-signin" element={<Layout><UserSigninPage /></Layout>} />
+        <Route path="/auth/google/success" element={<Layout><UserPreference /></Layout>} />
 
         {/* House owners signup and signin */}
         <Route path='/auth/houseowner-signup' element={<Layout><HouseownerSignupPage /></Layout>} />
@@ -42,7 +39,7 @@ function App() {
 
         {/* Privacy Policy */}
         <Route path='/privacy-policy' element={<Layout><PrivacyPolicy /></Layout>} />
-        
+
         {/* Student Dashboard */}
         <Route path='/std-dashboard' element={<StudentDashboard />} />
 
