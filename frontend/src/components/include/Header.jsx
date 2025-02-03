@@ -50,7 +50,7 @@ const Header = () => {
           <nav className=' md:flex space-x-6'>
             <button
               className=' text-black hover:text-[#006845] font-semibold items-center'
-              onClick={() => navigate('/all listings')}
+              onClick={() => navigate('/all-listings')}
             >
               View Listing
             </button>

@@ -123,3 +123,54 @@ exports.signin = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+exports.googleCallback = async (req, res) => {
+  try {
+    const { id, emails, displayName } = req.user;
+
+    // Check if user exists
+    let user = await User.findOne({ email: emails[0].value });
+
+    if (!user) {
+      // Create new user if doesn't exist
+      user = new User({
+        email: emails[0].value,
+        fullName: displayName,
+        password: id + process.env.JWT_SECRET, // Create a unique password
+        role: "student",
+        isVerified: true, // Google users are considered verified
+      });
+      await user.save();
+    }
+
+    const token = createToken(user._id);
+
+    // Redirect to frontend with token and userId
+    res.redirect(
+      `${process.env.FRONTEND_URL}/auth/google/success?token=${token}&userId=${user._id}`
+    );
+  } catch (error) {
+    res.redirect(`${process.env.FRONTEND_URL}/auth/google/error`);
+  }
+};
+
+exports.completePreference = async (req, res) => {
+  try {
+    const { userId, university } = req.body;
+
+    const studentProfile = new StudentProfile({
+      userId,
+      university,
+    });
+
+    await studentProfile.save();
+    res.status(201).json({ message: "Student profile created successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Error creating student profile",
+        error: error.message,
+      });
+  }
+}
