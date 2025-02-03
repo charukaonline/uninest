@@ -1,9 +1,12 @@
-import React from 'react'
+import React from "react";
+import ScrollingSection from "@/components/listing_page/Scrollingsection";
 
 const AllListings = () => {
-    return (
-        <div>AllListings</div>
-    )
-}
+  return (
+    <div>
+      <ScrollingSection />
+    </div>
+  );
+};
 
-export default AllListings
+export default AllListings;

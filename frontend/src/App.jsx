@@ -33,7 +33,7 @@ function App() {
         <Route path='/auth/houseowner-signin' element={<Layout><HouseownerSigninPage /></Layout>} />
 
         {/* All Listings */}
-        <Route path='/all listings' element={<Layout><AllListings /></Layout>} />
+        <Route path='/all-listings' element={<Layout><AllListings /></Layout>} />
 
         {/* One Property Details */}
         <Route path='/property/:propertyId' element={<Layout><PropertyInfo /></Layout>} />
