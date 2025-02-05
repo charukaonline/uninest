@@ -15,6 +15,7 @@ import NotFound from "./pages/404Page";
 import UserPreference from "./components/signup_pages/UserPreference";
 import ProtectedRoute from "./components/ProtectedRoute";
 import useAuthInitializer from "./store/authStore";
+import AdminSigninPage from "./pages/AdminSigninPage";
 function App() {
 
   useAuthInitializer();
@@ -48,6 +49,9 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/sd/:userId/:email" element={<StudentDashboard />} />
         </Route>
+
+        {/* Admin Login */}
+        <Route path="/auth/uninest-admin" element={<AdminSigninPage />} />
 
         {/* Admin Dashboard */}
         <Route path='/admin-dashboard' element={<AdminDashboard />} />

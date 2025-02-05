@@ -13,7 +13,25 @@ export default function StudentDashboard() {
   }, []);
 
   if (!user || user.id !== userId) {
-    return <h1>Unauthorized Access</h1>;
+    return (
+      <div
+        style={{
+          backgroundImage: 'url(/heroBackground.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          height: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          textAlign: 'center'
+        }}
+        className=" flex flex-col"
+      >
+        <h1 className=" text-2xl text-black">Unauthorized</h1>
+        <p className=" text-base text-black">You are not authorized to view this page.</p>
+      </div>
+    );
   }
 
   return (
