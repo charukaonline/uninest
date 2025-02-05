@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { Form, Input, Divider } from "antd";
 
-const HouseownerSignup1 = ({ onFinish }) => {
+const HouseownerSignup1 = ({ onFinish, loading }) => {
 
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -117,9 +117,10 @@ const HouseownerSignup1 = ({ onFinish }) => {
           <Form.Item>
             <button
               type="submit"
-              className="bg-primaryBgColor text-white px-6 py-2 rounded-lg focus:outline-none w-full hover:bg-green-700 font-semibold"
+              className="bg-primaryBgColor text-white px-6 py-2 rounded-lg focus:outline-none w-full hover:bg-green-700 font-semibold disabled:opacity-50"
+              disabled={loading}
             >
-              Sign Up
+              {loading ? 'Signing up...' : 'Sign Up'}
             </button>
           </Form.Item>
         </Form>
@@ -129,7 +130,8 @@ const HouseownerSignup1 = ({ onFinish }) => {
 }
 
 HouseownerSignup1.propTypes = {
-  onFinish: PropTypes.func.isRequired
+  onFinish: PropTypes.func.isRequired,
+  loading: PropTypes.bool
 }
 
 export default HouseownerSignup1
