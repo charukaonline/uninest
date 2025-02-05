@@ -12,7 +12,10 @@ const {
 } = require("../controllers/authController");
 const StudentProfile = require("../models/StudentProfile");
 
-const {registerAdmin, loginAdmin} = require("../controllers/adminAuthController")
+const {
+  registerAdmin,
+  loginAdmin,
+} = require("../controllers/adminAuthController");
 
 router.post("/signup/step1", validateSignup, registerUser);
 router.post("/signup/step2/:userId", completeStudentProfile);
