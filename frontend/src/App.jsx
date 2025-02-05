@@ -9,12 +9,16 @@ import HouseownerSignupPage from "./pages/HouseownerSignupPage";
 import AllListings from "./pages/AllListings";
 import PropertyInfo from "./pages/PropertyInfo";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import StudentDashboard from "./pages/StdDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
+import StudentDashboard from "./pages/StdDashboard/StdDashboard";
+import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import NotFound from "./pages/404Page";
 import UserPreference from "./components/signup_pages/UserPreference";
-
+import ProtectedRoute from "./components/ProtectedRoute";
+import useAuthInitializer from "./store/authStore";
 function App() {
+
+  useAuthInitializer();
+
   return (
     <>
       <Routes>
@@ -41,7 +45,9 @@ function App() {
         <Route path='/privacy-policy' element={<Layout><PrivacyPolicy /></Layout>} />
 
         {/* Student Dashboard */}
-        <Route path='/std-dashboard' element={<StudentDashboard />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/:userId/:email" element={<StudentDashboard />} />
+        </Route>
 
         {/* Admin Dashboard */}
         <Route path='/admin-dashboard' element={<AdminDashboard />} />

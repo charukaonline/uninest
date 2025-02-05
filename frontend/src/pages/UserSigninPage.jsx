@@ -6,6 +6,8 @@ import { BiShow, BiHide } from "react-icons/bi";
 import axios from "axios";
 import { notification } from "antd";
 
+import useAuthStore from "@/store/authStore";
+
 function UserSigninPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({
@@ -14,6 +16,7 @@ function UserSigninPage() {
   });
   const [loginErrors, setLoginErrors] = useState({});
   const navigate = useNavigate();
+  const { login } = useAuthStore();
 
   useEffect(() => {
     document.title = "UniNest | User Login";
@@ -46,9 +49,8 @@ function UserSigninPage() {
           }
         );
 
-        // Store token and user data in localStorage
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        const { user, token } = response.data;
+        useAuthStore.getState().login(user, token);
 
         notification.success({
           message: "Login Successful",
@@ -56,7 +58,8 @@ function UserSigninPage() {
         });
 
         // Redirect to home page
-        navigate("/");
+        navigate(`/${user.id}/${user.email}`);
+
       } catch (error) {
         notification.error({
           message: "Login Failed",
