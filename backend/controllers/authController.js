@@ -166,11 +166,9 @@ exports.completePreference = async (req, res) => {
     await studentProfile.save();
     res.status(201).json({ message: "Student profile created successfully" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error creating student profile",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error creating student profile",
+      error: error.message,
+    });
   }
-}
+};
