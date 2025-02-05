@@ -58,7 +58,7 @@ function UserSigninPage() {
         });
 
         // Redirect to home page
-        navigate(`/${user.id}/${user.email}`);
+        navigate(`/sd/${user.id}/${user.email}`);
 
       } catch (error) {
         notification.error({

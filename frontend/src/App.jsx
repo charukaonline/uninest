@@ -46,7 +46,7 @@ function App() {
 
         {/* Student Dashboard */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/:userId/:email" element={<StudentDashboard />} />
+          <Route path="/sd/:userId/:email" element={<StudentDashboard />} />
         </Route>
 
         {/* Admin Dashboard */}

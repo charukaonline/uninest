@@ -52,7 +52,7 @@ const navigationConfig = {
         className: "text-red-400",
       },
     ],
-    userRole: "Real Estate Builders",
+    userRole: "User Account",
   },
   houseowner: {
     mainNav: [
@@ -178,7 +178,7 @@ const DashboardLayout = ({
                 className="w-full h-full object-cover"
               />
             </div>
-            <div>
+            <div className=" flex flex-col -space-y-2">
               <h3 className="font-medium text-lg">{userName}</h3>
               <p className="text-sm text-gray-400">{config.userRole}</p>
             </div>
@@ -259,7 +259,7 @@ const NavItem = ({
       {icon}
       <span>{label}</span>
       {notification && notification > 0 && (
-        <span className="absolute right-3 bg-green-500 text-xs rounded-full h-5 w-5 flex items-center justify-center">
+        <span className="absolute right-3 bg-primaryBgColor text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
           {notification}
         </span>
       )}
