@@ -11,10 +11,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware to parse JSON
 app.use(express.json());
-app.use(cors({
-  origin: 'http://localhost:5173', // Replace with your frontend URL
-  credentials: true
-}));
+app.use(cors());
 
 // Initialize passport
 app.use(passport.initialize());

@@ -29,7 +29,7 @@ export const useAuthInitializer = () => {
     if (savedUser && savedToken) {
       setUser(savedUser, savedToken);
     }
-  }, []);
+  }, [setUser]);
 };
 
 export default useAuthStore;
