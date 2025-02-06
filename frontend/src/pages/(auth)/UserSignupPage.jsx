@@ -1,8 +1,8 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import UserSignupStep01 from "../components/signup_pages/UserSignupStep01";
-import UserSignupStep02 from "../components/signup_pages/UserSignupStep02";
+import UserSignupStep01 from "../../components/signup_pages/UserSignupStep01";
+import UserSignupStep02 from "../../components/signup_pages/UserSignupStep02";
 
 const UserSignupPage = () => {
   const [step, setStep] = useState(1);

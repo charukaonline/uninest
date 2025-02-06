@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import PropTypes from "prop-types";
 import { Form, Input, notification } from "antd";
 
-const HouseownerSignup2 = ({ onFinish }) => {
+const HouseownerSignup2 = ({ onFinish, loading }) => {
 
     const [form] = Form.useForm();
 
@@ -72,9 +72,10 @@ const HouseownerSignup2 = ({ onFinish }) => {
                     <Form.Item>
                         <button
                             type="submit"
-                            className="w-full bg-primaryBgColor hover:bg-green-700 text-white font-semibold p-3 rounded-lg"
+                            className="w-full bg-primaryBgColor hover:bg-green-700 text-white font-semibold p-3 rounded-lg disabled:opacity-50"
+                            disabled={loading}
                         >
-                            Continue
+                            {loading ? 'Processing...' : 'Continue'}
                         </button>
                     </Form.Item>
                 </Form>
@@ -85,6 +86,7 @@ const HouseownerSignup2 = ({ onFinish }) => {
 
 HouseownerSignup2.propTypes = {
     onFinish: PropTypes.func.isRequired,
+    loading: PropTypes.bool
 };
 
 export default HouseownerSignup2;

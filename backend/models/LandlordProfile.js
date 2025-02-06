@@ -6,6 +6,14 @@ const landlordProfileSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  residentialAddress: {
+    type: String,
+    required: true,
+  },
+  nationalIdCardNumber: {
+    type: String,
+    required: true,
+  },
   verificationDocuments: [
     {
       type: String, // URLs to uploaded documents
