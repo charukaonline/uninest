@@ -56,26 +56,19 @@ exports.completeLandlordProfile = async (req, res) => {
     // Create landlord profile
     const landlordProfile = new LandlordProfile({
       userId,
-      verificationStatus: "pending", // Default verification status
+      residentialAddress,          // Add this field
+      nationalIdCardNumber,        // Add this field
+      verificationStatus: "pending",
       subscription: {
         plan: "free",
         status: "active",
         startDate: new Date(),
-        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
+        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
-      // Store verification-related information
-      verificationDocuments: [], // Can be updated later when document upload is implemented
+      verificationDocuments: [],
     });
 
     await landlordProfile.save();
-
-    // Update user with additional information
-    await User.findByIdAndUpdate(userId, {
-      $set: {
-        'additionalInfo.residentialAddress': residentialAddress,
-        'additionalInfo.nationalIdCardNumber': nationalIdCardNumber
-      }
-    });
 
     res.status(200).json({
       message: "Landlord profile completed, waiting for verification",
