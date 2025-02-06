@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { Form, Input, Divider } from "antd";
+import { Form, Input } from "antd";
 
 const HouseownerSignup1 = ({ onFinish, loading }) => {
 
