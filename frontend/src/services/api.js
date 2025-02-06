@@ -12,3 +12,11 @@ export const landlordSignup = {
     return response.data;
   }
 };
+
+export const landlordAuth = {
+  signup: landlordSignup,
+  signin: async (credentials) => {
+    const response = await axios.post(`${API_URL}/auth/landlord/signin`, credentials);
+    return response.data;
+  }
+};

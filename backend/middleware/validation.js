@@ -34,3 +34,8 @@ exports.validateLandlordSignup2 = [
   body("residentialAddress").notEmpty().withMessage("Residential address is required"),
   body("nationalIdCardNumber").notEmpty().withMessage("NIC number is required"),
 ];
+
+exports.validateLandlordSignin = [
+  body("email").isEmail().normalizeEmail(),
+  body("password").notEmpty().withMessage("Password is required"),
+];
