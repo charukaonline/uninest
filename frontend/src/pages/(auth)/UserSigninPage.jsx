@@ -50,7 +50,10 @@ function UserSigninPage() {
         );
 
         const { user, token } = response.data;
-        useAuthStore.getState().login(user, token);
+
+        // Store user data in localStorage
+        localStorage.setItem("adminData", JSON.stringify(user));
+        localStorage.setItem("authToken", token);
 
         notification.success({
           message: "Login Successful",

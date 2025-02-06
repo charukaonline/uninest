@@ -49,8 +49,11 @@ const AdminLogin = () => {
       localStorage.setItem("adminToken", data.token);
       localStorage.setItem("adminData", JSON.stringify(data.admin));
 
+      const adminId = data.admin.id;
+      const email = data.admin.email;
+
       // Redirect to admin dashboard
-      window.location.href = "/admin-dashboard";
+      window.location.href = `/ad/${adminId}/${email}`;
     } catch (err) {
       setError(err.message || "Invalid credentials. Please try again.");
     } finally {

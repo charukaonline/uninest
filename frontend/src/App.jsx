@@ -122,7 +122,9 @@ function App() {
         <Route path="/auth/uninest-admin" element={<AdminLogin />} />
 
         {/* Admin Dashboard */}
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/ad/:adminId/:email" element={<AdminDashboard />} />
+        </Route>
       </Routes>
     </>
   );
