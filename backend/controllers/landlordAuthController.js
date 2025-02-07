@@ -31,7 +31,7 @@ exports.registerLandlord = async (req, res) => {
     const user = new User({
       email,
       password,
-      fullName: username,
+      username,
       phoneNumber: phone,
       role: "landlord",
       isVerified: false, // Landlords need verification
