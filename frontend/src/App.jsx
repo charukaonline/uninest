@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
 
 import UserSignupPage from "./pages/(auth)/UserSignupPage";
 import Home from "./pages/Home";
@@ -14,12 +15,11 @@ import StudentDashboard from "./pages/(StdDashboard)/StdDashboard";
 import AdminDashboard from "./pages/(AdminDashboard)/AdminDashboard";
 import NotFound from "./pages/404Page";
 import UserPreference from "./components/signup_pages/UserPreference";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { ProtectedRoute, AdminProtectedRoute } from "./components/ProtectedRoute";
 import { useAuthStore } from "./store/authStore";
 import AdminLogin from "./pages/(auth)/AdminLogin";
 import LoadingSpinner from "./components/include/LoadingSpinner";
-import AuthenticatedUser from "./components/AuthenticatedUser";
-import { useEffect } from "react";
+import { AuthenticatedUser, AuthenticatedAdmin } from "./components/AuthenticatedUser";
 import EmailVerificationPage from "./pages/(auth)/EmailVerificationPage";
 
 function App() {
@@ -141,12 +141,10 @@ function App() {
         <Route path="/sd/:userId/:email" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
 
         {/* Admin Login */}
-        <Route path="/auth/uninest-admin" element={<AdminLogin />} />
+        <Route path="/auth/uninest-admin" element={<AuthenticatedAdmin><AdminLogin /></AuthenticatedAdmin>} />
 
         {/* Admin Dashboard */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/ad/:adminId/:email" element={<AdminDashboard />} />
-        </Route>
+        <Route path="/ad/:adminId/:email" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
       </Routes>
     </>
   );

@@ -18,7 +18,7 @@ exports.signup = async (req, res) => {
   try {
 
     if (!email || !password || !username) {
-      throw new Error('All fields (email, fullName, password, role) are required');
+      throw new Error('All fields (email, username, password) are required');
     }
 
     const userAlreadyExists = await User.findOne({ email });

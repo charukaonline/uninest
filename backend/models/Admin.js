@@ -12,7 +12,7 @@ const adminSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    fullName: {
+    username: {
         type: String,
         required: true,
     },
@@ -33,19 +33,10 @@ const adminSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    lastLogin: Date,
-});
-
-// Add password hashing middleware
-adminSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next();
-    this.password = await bcrypt.hash(this.password, 10);
-    next();
-});
-
-// Add method to check password
-adminSchema.methods.comparePassword = async function (candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
-};
+    lastLogin: {
+        type: Date,
+        default: Date.now,
+    },
+}, { timestamps: true });
 
 module.exports = mongoose.model("Admin", adminSchema);

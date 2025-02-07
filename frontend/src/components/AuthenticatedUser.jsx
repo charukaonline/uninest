@@ -1,8 +1,9 @@
+import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { useAuthStore } from '@/store/authStore';
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-const AuthenticatedUser = ({ children }) => {
+export function AuthenticatedUser({ children }) {
     const { isAuthenticated, user } = useAuthStore();
 
     if (isAuthenticated && user?.isVerified) {
@@ -13,4 +14,13 @@ const AuthenticatedUser = ({ children }) => {
     return children;
 };
 
-export default AuthenticatedUser;
+export function AuthenticatedAdmin({ children }) {
+    const { isAdminAuthenticated, admin } = useAdminAuthStore();
+
+    if (isAdminAuthenticated && admin?.isVerified) {
+        const redirectPath = `/ad/${admin._id}/${admin.email}`;
+        return <Navigate to={redirectPath} replace />;
+    }
+
+    return children;
+}

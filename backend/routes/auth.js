@@ -12,14 +12,20 @@ const {
   checkAuth,
   googleCallback,
 } = require("../controllers/authController");
-const { verifyToken } = require('../middleware/verifyToken');
+
+const {
+  registerLandlord,
+  completeLandlordProfile,
+  landlordSignin } = require("../controllers/landlordAuthController");
 
 const {
   registerAdmin,
   loginAdmin,
+  logoutAdmin,
+  checkAdminAuth,
 } = require("../controllers/adminAuthController");
 
-const { registerLandlord, completeLandlordProfile, landlordSignin } = require("../controllers/landlordAuthController");
+const { verifyToken } = require('../middleware/verifyToken');
 
 // Student auth routes
 router.get("/check-auth", verifyToken, checkAuth);
@@ -45,10 +51,6 @@ router.get(
   googleCallback
 );
 
-// Admin auth routes
-router.post("/admin/register", registerAdmin);
-router.post("/admin/login", loginAdmin);
-
 // Landlord signup routes
 router.post("/landlord/signup/step1", validateLandlordSignup1, registerLandlord);
 router.post(
@@ -60,5 +62,12 @@ router.post(
 
 // Landlord auth routes
 router.post("/landlord/signin", validateLandlordSignin, landlordSignin);
+
+// Admin auth routes
+router.get("/admin/checkAdminAuth", checkAdminAuth);
+
+router.post("/admin/register", registerAdmin);
+router.post("/admin/login", loginAdmin);
+router.post("/admin/logout", logoutAdmin);
 
 module.exports = router;
