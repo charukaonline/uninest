@@ -15,11 +15,22 @@ import AdminDashboard from "./pages/(AdminDashboard)/AdminDashboard";
 import NotFound from "./pages/404Page";
 import UserPreference from "./components/signup_pages/UserPreference";
 import ProtectedRoute from "./components/ProtectedRoute";
-import useAuthInitializer from "./store/authStore";
+import { useAuthStore } from "./store/authStore";
 import AdminLogin from "./pages/(auth)/AdminLogin";
+import LoadingSpinner from "./components/include/LoadingSpinner";
+import AuthenticatedUser from "./components/AuthenticatedUser";
+import { useEffect } from "react";
+import EmailVerificationPage from "./pages/(auth)/EmailVerificationPage";
 
 function App() {
-  useAuthInitializer();
+
+  const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth]);
+
+  if (isCheckingAuth) return <LoadingSpinner />;
 
   return (
     <>
@@ -39,17 +50,21 @@ function App() {
         <Route
           path="/auth/user-signup"
           element={
-            <Layout>
-              <UserSignupPage />
-            </Layout>
+            <AuthenticatedUser>
+              <Layout>
+                <UserSignupPage />
+              </Layout>
+            </AuthenticatedUser>
           }
         />
         <Route
           path="/auth/user-signin"
           element={
-            <Layout>
-              <UserSigninPage />
-            </Layout>
+            <AuthenticatedUser>
+              <Layout>
+                <UserSigninPage />
+              </Layout>
+            </AuthenticatedUser>
           }
         />
         <Route
@@ -58,6 +73,11 @@ function App() {
             <Layout>
               <UserPreference />
             </Layout>
+          }
+        />
+        <Route
+          path="/auth/email-verify"
+          element={<EmailVerificationPage />
           }
         />
 
@@ -118,9 +138,7 @@ function App() {
         />
 
         {/* Student Dashboard */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/sd/:userId/:email" element={<StudentDashboard />} />
-        </Route>
+        <Route path="/sd/:userId/:email" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
 
         {/* Admin Login */}
         <Route path="/auth/uninest-admin" element={<AdminLogin />} />

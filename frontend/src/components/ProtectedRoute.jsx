@@ -1,27 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = () => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+const ProtectedRoute = ({ children }) => {
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem("adminData");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser)); // Restore user from localStorage
-        }
-        setLoading(false);
-    }, []);
+    const { isAuthenticated, user } = useAuthStore();
 
-    if (loading) {
-        return <div>Loading...</div>; // Show loading while checking auth state
+    if (!isAuthenticated || !user.isVerified) {
+        return <Navigate to={"/"} replace />
     }
 
-    if (!user) {
-        return <Navigate to="/" replace />;
-    }
-
-    return <Outlet />;
+    return children;
 };
 
 export default ProtectedRoute;

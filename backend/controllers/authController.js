@@ -1,126 +1,148 @@
-const jwt = require("jsonwebtoken");
+const bcryptjs = require("bcryptjs");
+const crypto = require("crypto");
+
 const { validationResult } = require("express-validator");
 const User = require("../models/User");
-const StudentProfile = require("../models/StudentProfile");
+const {
+  sendPasswordResetEmail,
+  sendResetSuccessEmail,
+  sendVerificationEmail,
+  sendWelcomeEmail
+} = require("../config/mailtrap/emails");
 
-const createToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
-};
+const { generateTokenAndSetCookie } = require("../utils/generateTokenAndSetCookie");
 
-exports.registerUser = async (req, res) => {
+exports.signup = async (req, res) => {
+  const { email, username, password } = req.body;
+
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+
+    if (!email || !password || !username) {
+      throw new Error('All fields (email, fullName, password, role) are required');
     }
 
-    const { email, username, password } = req.body;
-
-    // Check if user exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+    const userAlreadyExists = await User.findOne({ email });
+    if (userAlreadyExists) {
+      return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
-    // Create new user
+    const hashedPassword = await bcryptjs.hash(password, 10);
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+
     const user = new User({
       email,
-      password,
-      fullName: username,
-      role: "student",
+      password: hashedPassword,
+      username,
+      verificationToken,
+      verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000
     });
-
     await user.save();
 
-    const token = createToken(user._id);
+    generateTokenAndSetCookie(res, user._id);
+
+    await sendVerificationEmail(user.email, verificationToken);
 
     res.status(201).json({
-      message: "User registration successful",
-      userId: user._id,
-      token,
+      success: true,
+      message: 'User created successfully',
+      user: {
+        ...user._doc,
+        password: undefined
+      }
     });
+
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-exports.completeStudentProfile = async (req, res) => {
+exports.verifyEmail = async (req, res) => {
+
+  const { code } = req.body;
   try {
-    const { userId } = req.params;
-    const { university } = req.body;
+    const user = await User.findOne({
+      verificationToken: code,
+      verificationTokenExpiresAt: { $gt: Date.now() }
+    })
 
-    // Create student profile
-    const studentProfile = new StudentProfile({
-      userId,
-      university,
-      studentId: `ST${Date.now()}`, // Generate a temporary student ID
-    });
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or expired verification code" })
+    }
 
-    await studentProfile.save();
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpiresAt = undefined;
+    await user.save();
 
-    // Update user verification status
-    await User.findByIdAndUpdate(userId, { isVerified: true });
+    await sendWelcomeEmail(user.email, user.name);
 
     res.status(200).json({
-      message: "Student profile completed",
-      profile: studentProfile,
-    });
+      success: true,
+      message: "Email sent successfully",
+      user: {
+        ...user._doc,
+        password: undefined,
+      }
+    })
+
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.log("Error in verify email", error);
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-exports.signin = async (req, res) => {
+exports.login = async (req, res) => {
+
+  const { email, password } = req.body;
+
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { email, password } = req.body;
-
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(400).json({ success: false, message: "Invalid credentials" });
     }
 
-    // Verify password
-    const isPasswordValid = await user.comparePassword(password);
+    const isPasswordValid = await bcryptjs.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(400).json({ success: false, message: "Invalid credentials" });
     }
 
-    // Check if user is a student
-    if (user.role !== "student") {
-      return res.status(403).json({ message: "Access denied. Students only." });
-    }
+    generateTokenAndSetCookie(res, user._id);
 
-    // Update last login
     user.lastLogin = new Date();
     await user.save();
 
-    // Get student profile
-    const studentProfile = await StudentProfile.findOne({ userId: user._id });
-
-    const token = createToken(user._id);
-
     res.status(200).json({
-      message: "Login successful",
-      token,
+      success: true,
+      message: "Logged in successfully",
       user: {
-        id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-        isVerified: user.isVerified,
-        university: studentProfile?.university,
-      },
-    });
+        ...user._doc,
+        password: undefined,
+      }
+    })
+
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.log("Error in login", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+exports.logout = async (req, res) => {
+  res.clearCookie("token");
+  res.status(200).json({ success: true, message: "Logged out successfully" });
+};
+
+exports.checkAuth = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+    if (!user) {
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user });
+
+  } catch (error) {
+    console.log("Error in check auth", error);
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
@@ -151,24 +173,5 @@ exports.googleCallback = async (req, res) => {
     );
   } catch (error) {
     res.redirect(`${process.env.FRONTEND_URL}/auth/google/error`);
-  }
-};
-
-exports.completePreference = async (req, res) => {
-  try {
-    const { userId, university } = req.body;
-
-    const studentProfile = new StudentProfile({
-      userId,
-      university,
-    });
-
-    await studentProfile.save();
-    res.status(201).json({ message: "Student profile created successfully" });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error creating student profile",
-      error: error.message,
-    });
   }
 };
