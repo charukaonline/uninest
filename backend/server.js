@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const passport = require("./config/passport");
+const { ensureUploadsDirectory } = require('./config/init');
+const punycode = require('punycode');
 
 dotenv.config();
 
@@ -19,6 +21,9 @@ app.use(passport.initialize());
 // MongoDB Connection
 const startServer = async () => {
   try {
+    // Ensure uploads directory exists
+    ensureUploadsDirectory();
+    
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB");
 

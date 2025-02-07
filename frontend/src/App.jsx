@@ -72,7 +72,11 @@ function App() {
         />
         <Route
           path="/auth/verification-pending"
-          element={<PendingHouseowner />}
+          element={
+            <Layout>
+              <PendingHouseowner />
+            </Layout>
+          }
         />
         <Route
           path="/auth/houseowner-signin"

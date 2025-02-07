@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const { validateSignup, validateSignin, validateLandlordSignup1, validateLandlordSignup2, validateLandlordSignin } = require("../middleware/validation");
+const upload = require('../middleware/upload');
 
 const {
   registerUser,
@@ -45,7 +46,12 @@ router.post("/admin/login", loginAdmin);
 
 // Landlord signup routes
 router.post("/landlord/signup/step1", validateLandlordSignup1, registerLandlord);
-router.post("/landlord/signup/step2/:userId", validateLandlordSignup2, completeLandlordProfile);
+router.post(
+  "/landlord/signup/step2/:userId",
+  upload.single('nicDocument'),
+  validateLandlordSignup2,
+  completeLandlordProfile
+);
 
 // Landlord auth routes
 router.post("/landlord/signin", validateLandlordSignin, landlordSignin);
