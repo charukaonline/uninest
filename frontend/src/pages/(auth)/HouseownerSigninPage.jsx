@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BiShow, BiHide } from "react-icons/bi";
-import { Form, Input } from "antd";
+import { Form, Input, notification } from "antd";
+import { landlordAuth } from "@/services/api";
 
 const HouseownerSigninPage = () => {
 
@@ -16,8 +17,27 @@ const HouseownerSigninPage = () => {
         navigate("/auth/houseowner-signup");
     };
 
-    const handleLoginSubmit = (values) => {
-        console.log("Login successful:", values);
+    const handleLoginSubmit = async (values) => {
+        try {
+            const response = await landlordAuth.signin(values);
+            
+            if (response.user.verificationStatus === "pending") {
+                navigate("/auth/verification-pending");
+                return;
+            }
+
+            // Store token and user data in your auth context/local storage
+            localStorage.setItem("token", response.token);
+            localStorage.setItem("user", JSON.stringify(response.user));
+
+            // Redirect to landlord dashboard
+            navigate("/dashboard/landlord");
+        } catch (error) {
+            notification.error({
+                message: "Login Failed",
+                description: error.response?.data?.message || "Something went wrong"
+            });
+        }
     };
 
     useEffect(() => {

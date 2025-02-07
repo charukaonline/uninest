@@ -6,11 +6,30 @@ const landlordProfileSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  residentialAddress: {
+    type: String,
+    required: true,
+  },
+  nationalIdCardNumber: {
+    type: String,
+    required: true,
+  },
   verificationDocuments: [
     {
-      type: String, // URLs to uploaded documents
-      required: true,
-    },
+      documentType: {
+        type: String,
+        required: true,
+        enum: ['NIC', 'other']
+      },
+      driveFileId: {
+        type: String,
+        required: true
+      },
+      uploadDate: {
+        type: Date,
+        default: Date.now
+      }
+    }
   ],
   verificationStatus: {
     type: String,

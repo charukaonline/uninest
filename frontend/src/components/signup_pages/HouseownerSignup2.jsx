@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from "prop-types";
-import { Form, Input, notification } from "antd";
+import { Form, Input, Upload, notification } from "antd";
+import { InboxOutlined } from "@ant-design/icons";
 
-const HouseownerSignup2 = ({ onFinish }) => {
+const HouseownerSignup2 = ({ onFinish, loading }) => {
 
     const [form] = Form.useForm();
+    const [fileList, setFileList] = useState([]);
 
     const onFinishFailed = (errorInfo) => {
         console.log("Form submission failed: ", errorInfo);
@@ -15,6 +17,16 @@ const HouseownerSignup2 = ({ onFinish }) => {
             message: message,
             description: description,
         });
+    };
+
+    const handleFinish = async (values) => {
+        const formData = new FormData();
+        formData.append('residentialAddress', values.residentialAddress);
+        formData.append('nationalIdCardNumber', values.nationalIdCardNumber);
+        if (fileList[0]) {
+            formData.append('nicDocument', fileList[0].originFileObj);
+        }
+        onFinish(formData);
     };
 
     useEffect(() => {
@@ -31,7 +43,7 @@ const HouseownerSignup2 = ({ onFinish }) => {
                 <Form
                     form={form}
                     name="houseowner-verification"
-                    onFinish={onFinish}
+                    onFinish={handleFinish}
                     onFinishFailed={onFinishFailed}
                     layout="vertical"
                 >
@@ -69,12 +81,32 @@ const HouseownerSignup2 = ({ onFinish }) => {
                         />
                     </Form.Item>
 
+                    <Form.Item
+                        label="NIC Document (PDF)"
+                        name="nicDocument"
+                        rules={[{ required: true, message: 'Please upload your NIC document!' }]}
+                    >
+                        <Upload.Dragger
+                            accept=".pdf"
+                            beforeUpload={() => false}
+                            onChange={({ fileList }) => setFileList(fileList)}
+                            maxCount={1}
+                        >
+                            <p className="ant-upload-drag-icon">
+                                <InboxOutlined />
+                            </p>
+                            <p className="ant-upload-text">Click or drag NIC document to upload</p>
+                            <p className="ant-upload-hint">Support for PDF files only</p>
+                        </Upload.Dragger>
+                    </Form.Item>
+
                     <Form.Item>
                         <button
                             type="submit"
-                            className="w-full bg-primaryBgColor hover:bg-green-700 text-white font-semibold p-3 rounded-lg"
+                            className="w-full bg-primaryBgColor hover:bg-green-700 text-white font-semibold p-3 rounded-lg disabled:opacity-50"
+                            disabled={loading}
                         >
-                            Continue
+                            {loading ? 'Processing...' : 'Continue'}
                         </button>
                     </Form.Item>
                 </Form>
@@ -85,6 +117,7 @@ const HouseownerSignup2 = ({ onFinish }) => {
 
 HouseownerSignup2.propTypes = {
     onFinish: PropTypes.func.isRequired,
+    loading: PropTypes.bool
 };
 
 export default HouseownerSignup2;

@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const passport = require("./config/passport");
+const { ensureUploadsDirectory } = require('./config/init');
+const punycode = require('punycode');
 
 dotenv.config();
 
@@ -17,18 +19,37 @@ app.use(cors());
 app.use(passport.initialize());
 
 // MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((error) => console.error("Error connecting to MongoDB:", error));
+const startServer = async () => {
+  try {
+    // Ensure uploads directory exists
+    ensureUploadsDirectory();
+    
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("Connected to MongoDB");
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    }).on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.log(`Port ${PORT} is busy. Trying port ${PORT + 1}`);
+        app.listen(PORT + 1, () => {
+          console.log(`Server is running on http://localhost:${PORT + 1}`);
+        });
+      } else {
+        console.error('Server error:', err);
+      }
+    });
+  } catch (error) {
+    console.error("Error starting server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 // Test route
 app.get("/", (req, res) => {
   res.send("Welcome to UniNest Backend!");
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
 // Routes

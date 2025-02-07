@@ -1,16 +1,21 @@
-import useAuthStore from '@/store/authStore';
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedRoute = () => {
-    const { user } = useAuthStore();
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user !== null) {
-            setLoading(false);
+        const storedUser = localStorage.getItem("adminData");
+        if (storedUser) {
+            setUser(JSON.parse(storedUser)); // Restore user from localStorage
         }
-    }, [user]);
+        setLoading(false);
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>; // Show loading while checking auth state
+    }
 
     if (!user) {
         return <Navigate to="/" replace />;
