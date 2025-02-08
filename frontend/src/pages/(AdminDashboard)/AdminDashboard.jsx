@@ -19,7 +19,7 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1>Welcome Back, {admin.fullName}</h1>
+      <h1>Welcome Back, {admin.username}</h1>
       {/* Dashboard content */}
     </div>
   );

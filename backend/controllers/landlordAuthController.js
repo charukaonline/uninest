@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const bcryptjs = require("bcryptjs");
+
 const { validationResult } = require("express-validator");
 const User = require("../models/User");
 const LandlordProfile = require("../models/LandlordProfile");
@@ -6,11 +8,7 @@ const drive = require('../config/googleDrive');
 const fs = require('fs').promises;
 const fsSync = require('fs'); // Add this line for synchronous fs operations
 
-const createToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.jwt_expires_in,
-  });
-};
+const { generateTokenAndSetCookie } = require("../utils/generateTokenAndSetCookie");
 
 exports.registerLandlord = async (req, res) => {
   try {
@@ -27,10 +25,12 @@ exports.registerLandlord = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    const hashedPassword = await bcryptjs.hash(password, 10);
+
     // Create new user
     const user = new User({
       email,
-      password,
+      password: hashedPassword,
       username,
       phoneNumber: phone,
       role: "landlord",
@@ -39,12 +39,15 @@ exports.registerLandlord = async (req, res) => {
 
     await user.save();
 
-    const token = createToken(user._id);
+    generateTokenAndSetCookie(res, user._id);
 
     res.status(201).json({
       message: "Landlord registration initiated",
       userId: user._id,
-      token,
+      user: {
+        ...user._doc,
+        password: undefined
+      }
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -143,7 +146,7 @@ exports.completeLandlordProfile = async (req, res) => {
 
   } catch (error) {
     console.error('Complete error:', error);
-    
+
     // Clean up file if it exists
     if (uploadedFile) {
       try {
@@ -154,8 +157,8 @@ exports.completeLandlordProfile = async (req, res) => {
       }
     }
 
-    res.status(500).json({ 
-      message: "Server error", 
+    res.status(500).json({
+      message: "Server error",
       error: error.message,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
@@ -178,7 +181,7 @@ exports.landlordSignin = async (req, res) => {
     }
 
     // Verify password
-    const isPasswordValid = await user.comparePassword(password);
+    const isPasswordValid = await bcryptjs.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -198,11 +201,10 @@ exports.landlordSignin = async (req, res) => {
     user.lastLogin = new Date();
     await user.save();
 
-    const token = createToken(user._id);
+    generateTokenAndSetCookie(res, user._id);
 
     res.status(200).json({
       message: "Login successful",
-      token,
       user: {
         id: user._id,
         email: user.email,

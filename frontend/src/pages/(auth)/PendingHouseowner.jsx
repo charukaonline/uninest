@@ -1,7 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import { useEffect } from "react";
 
 const PendingHouseowner = () => {
+
+    useEffect(() => {
+        document.title = "Pending Verification";
+    })
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
             <Card className="w-full max-w-md">

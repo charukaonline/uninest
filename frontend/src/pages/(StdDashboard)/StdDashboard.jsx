@@ -28,6 +28,8 @@ export default function StudentDashboard() {
       {/* </DashboardLayout> */}
 
       <StudentSidebar></StudentSidebar>
+
+      <h1>Hello {user?.username}</h1>
     </>
   );
 }
