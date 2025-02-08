@@ -1,5 +1,6 @@
 const bcryptjs = require("bcryptjs");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 
 const Admin = require("../models/Admin");
 const { generateTokenAndSetCookie } = require("../utils/generateTokenAndSetCookie");
@@ -97,16 +98,44 @@ exports.logoutAdmin = async (req, res) => {
 };
 
 exports.checkAdminAuth = async (req, res) => {
-  try {
-    const admin = await Admin.findById(req.adminId).select("-password");
-    if (!admin) {
-      return res.status(400).json({ success: false, message: "User not found" });
+    try {
+        // Get token from cookies
+        const token = req.cookies.token;
+        if (!token) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "No authentication token" 
+            });
+        }
+
+        // Verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Invalid token" 
+            });
+        }
+
+        // Find admin
+        const admin = await Admin.findById(decoded.userId).select("-password");
+        if (!admin) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Admin not found" 
+            });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            admin 
+        });
+
+    } catch (error) {
+        console.error("Auth check error:", error);
+        res.status(401).json({ 
+            success: false, 
+            message: "Authentication failed" 
+        });
     }
-
-    res.status(200).json({ success: true, admin });
-
-  } catch (error) {
-    console.log("Error in check auth", error);
-    res.status(400).json({ success: false, message: error.message });
-  }
-}
+};

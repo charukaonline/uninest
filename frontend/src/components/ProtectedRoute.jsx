@@ -1,7 +1,8 @@
 import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { useAuthStore } from '@/store/authStore';
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import LoadingSpinner from './include/LoadingSpinner';
 
 export function ProtectedRoute({ children }) {
 
@@ -14,12 +15,28 @@ export function ProtectedRoute({ children }) {
     return children;
 };
 
-export function AdminProtectedRoute({ children }) {
-    const { isAdminAuthenticated, admin } = useAdminAuthStore();
+export const AdminProtectedRoute = ({ children }) => {
+    const { isCheckingAdminAuth, isAdminAuthenticated, checkAdminAuth } = useAdminAuthStore();
+    const navigate = useNavigate();
 
-    if (!isAdminAuthenticated || !admin) {
+    useEffect(() => {
+        const verifyAuth = async () => {
+            const isAuthenticated = await checkAdminAuth();
+            if (!isAuthenticated) {
+                navigate('/auth/uninest-admin');
+            }
+        };
+        
+        verifyAuth();
+    }, [checkAdminAuth, navigate]);
+
+    if (isCheckingAdminAuth) {
+        return <LoadingSpinner />;
+    }
+
+    if (!isAdminAuthenticated) {
         return <Navigate to="/auth/uninest-admin" replace />;
     }
 
     return children;
-}
+};

@@ -1,7 +1,8 @@
 import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { useAuthStore } from '@/store/authStore';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
+import LoadingSpinner from './include/LoadingSpinner';
 
 export function AuthenticatedUser({ children }) {
     const { isAuthenticated, user } = useAuthStore();
@@ -15,9 +16,25 @@ export function AuthenticatedUser({ children }) {
 };
 
 export function AuthenticatedAdmin({ children }) {
-    const { isAdminAuthenticated, admin } = useAdminAuthStore();
+    const { isAdminAuthenticated, admin, isCheckingAdminAuth, checkAdminAuth } = useAdminAuthStore();
+    const [authCheckComplete, setAuthCheckComplete] = React.useState(false);
 
-    if (isAdminAuthenticated && admin?.isVerified) {
+    useEffect(() => {
+        const verifyAuth = async () => {
+            await checkAdminAuth();
+            setAuthCheckComplete(true);
+        };
+
+        if (!authCheckComplete) {
+            verifyAuth();
+        }
+    }, [checkAdminAuth, authCheckComplete]);
+
+    if (isCheckingAdminAuth || !authCheckComplete) {
+        return <LoadingSpinner />;
+    }
+
+    if (isAdminAuthenticated && admin?._id) {
         const redirectPath = `/ad/${admin._id}/${admin.email}`;
         return <Navigate to={redirectPath} replace />;
     }
