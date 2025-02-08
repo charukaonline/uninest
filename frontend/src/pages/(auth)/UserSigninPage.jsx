@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { BiShow, BiHide } from "react-icons/bi";
-import axios from "axios";
 import { notification } from "antd";
 
-import useAuthStore from "@/store/authStore";
+import { Loader } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
 
 function UserSigninPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +16,8 @@ function UserSigninPage() {
   });
   const [loginErrors, setLoginErrors] = useState({});
   const navigate = useNavigate();
-  const { login } = useAuthStore();
+
+  const { login, isLoading, error } = useAuthStore();
 
   useEffect(() => {
     document.title = "UniNest | User Login";
@@ -32,44 +33,44 @@ function UserSigninPage() {
     return Object.keys(errors).length === 0;
   };
 
-  // Handle Google Sign-In (Placeholder function)
+  // Handle Google Sign - In(Placeholder function)
   const handleGoogleSignIn = () => {
     console.log("Google Sign-In triggered");
   };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    if (validateLogin()) {
-      try {
-        const response = await axios.post(
-          "http://localhost:5000/api/auth/signin",
-          {
-            email: loginData.email,
-            password: loginData.password,
-          }
-        );
 
-        const { user, token } = response.data;
+    const { email, password } = loginData;
 
-        // Store user data in localStorage
-        localStorage.setItem("adminData", JSON.stringify(user));
-        localStorage.setItem("authToken", token);
+    if (!validateLogin()) return;
 
-        notification.success({
-          message: "Login Successful",
-          description: "Welcome back to UniNest!",
-        });
+    const userResponse = await login(email, password);
 
-        // Redirect to home page
-        navigate(`/sd/${user.id}/${user.email}`);
+    console.log("Full Response:", userResponse);
+    console.log("Extracted User ID:", userResponse?.user?._id);
 
-      } catch (error) {
-        notification.error({
-          message: "Login Failed",
-          description: error.response?.data?.message || "Invalid credentials",
-        });
-      }
+    if (userResponse?.success === false) {
+      notification.error({
+        message: "Login Failed",
+        description: userResponse.message || "Invalid credentials",
+        duration: 3,
+      });
+      return;
     }
+
+    const userId = userResponse?.user?._id;
+
+    if (!userId) {
+      notification.error({
+        message: "Login Error",
+        description: "User ID not found",
+        duration: 3,
+      });
+      return;
+    }
+
+    navigate(`/sd/${userId}/${email}`);
   };
 
   const handleSignupRedirect = () => {
@@ -158,8 +159,9 @@ function UserSigninPage() {
             <button
               type="submit"
               className="w-full bg-white text-[#006845] font-semibold p-3 rounded-xl mb-6 hover:bg-gray-200 text-sm"
+              disabled={isLoading}
             >
-              Login Now
+              {isLoading ? <Loader className=' w-6 h-6 animate-spin mx-auto' /> : "Login Now"}
             </button>
           </form>
 

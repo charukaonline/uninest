@@ -1,27 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { useAdminAuthStore } from '@/store/adminAuthStore';
+import { useAuthStore } from '@/store/authStore';
+import React, { useEffect } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import LoadingSpinner from './include/LoadingSpinner';
 
-const ProtectedRoute = () => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+export function ProtectedRoute({ children }) {
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem("adminData");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser)); // Restore user from localStorage
-        }
-        setLoading(false);
-    }, []);
+    const { isAuthenticated, user } = useAuthStore();
 
-    if (loading) {
-        return <div>Loading...</div>; // Show loading while checking auth state
+    if (!isAuthenticated || !user.isVerified) {
+        return <Navigate to={"/"} replace />
     }
 
-    if (!user) {
-        return <Navigate to="/" replace />;
-    }
-
-    return <Outlet />;
+    return children;
 };
 
-export default ProtectedRoute;
+export const AdminProtectedRoute = ({ children }) => {
+    const { isCheckingAdminAuth, isAdminAuthenticated, checkAdminAuth } = useAdminAuthStore();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const verifyAuth = async () => {
+            const isAuthenticated = await checkAdminAuth();
+            if (!isAuthenticated) {
+                navigate('/auth/uninest-admin');
+            }
+        };
+        
+        verifyAuth();
+    }, [checkAdminAuth, navigate]);
+
+    if (isCheckingAdminAuth) {
+        return <LoadingSpinner />;
+    }
+
+    if (!isAdminAuthenticated) {
+        return <Navigate to="/auth/uninest-admin" replace />;
+    }
+
+    return children;
+};

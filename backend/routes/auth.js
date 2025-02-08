@@ -5,24 +5,36 @@ const { validateSignup, validateSignin, validateLandlordSignup1, validateLandlor
 const upload = require('../middleware/upload');
 
 const {
-  registerUser,
-  completeStudentProfile,
-  signin,
+  login,
+  logout,
+  signup,
+  verifyEmail,
+  checkAuth,
   googleCallback,
-  completePreference,
 } = require("../controllers/authController");
-const StudentProfile = require("../models/StudentProfile");
+
+const {
+  registerLandlord,
+  completeLandlordProfile,
+  landlordSignin } = require("../controllers/landlordAuthController");
 
 const {
   registerAdmin,
   loginAdmin,
+  logoutAdmin,
+  checkAdminAuth,
 } = require("../controllers/adminAuthController");
 
-const { registerLandlord, completeLandlordProfile, landlordSignin } = require("../controllers/landlordAuthController");
+const { verifyToken } = require('../middleware/verifyToken');
 
-router.post("/signup/step1", validateSignup, registerUser);
-router.post("/signup/step2/:userId", completeStudentProfile);
-router.post("/signin", validateSignin, signin);
+// Student auth routes
+router.get("/check-auth", verifyToken, checkAuth);
+
+router.post("/signup", validateSignup, signup);
+router.post("/login", validateSignin, login);
+router.post("/logout", logout);
+
+router.post("/verify-email", verifyEmail);
 
 // Google OAuth routes
 router.get(
@@ -39,11 +51,6 @@ router.get(
   googleCallback
 );
 
-router.post("/student-profile", completePreference);
-
-router.post("/admin/register", registerAdmin);
-router.post("/admin/login", loginAdmin);
-
 // Landlord signup routes
 router.post("/landlord/signup/step1", validateLandlordSignup1, registerLandlord);
 router.post(
@@ -55,5 +62,12 @@ router.post(
 
 // Landlord auth routes
 router.post("/landlord/signin", validateLandlordSignin, landlordSignin);
+
+// Admin auth routes
+router.get("/admin/checkAdminAuth", checkAdminAuth);
+
+router.post("/admin/register", registerAdmin);
+router.post("/admin/login", loginAdmin);
+router.post("/admin/logout", logoutAdmin);
 
 module.exports = router;

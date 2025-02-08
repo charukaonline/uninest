@@ -1,52 +1,48 @@
-import DashboardLayout from "@/components/include/DashboardLayout";
-import { useEffect, useState } from "react";
+import { useAdminAuthStore } from "@/store/adminAuthStore";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import LoadingSpinner from "@/components/include/LoadingSpinner";
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
-  const { adminId } = useParams();
-  const [admin, setAdmin] = useState(null);
+    const navigate = useNavigate();
+    const { adminId, email } = useParams();
+    const { admin, isAdminAuthenticated, adminLogout, isCheckingAdminAuth } = useAdminAuthStore();
 
-  useEffect(() => {
-    // Retrieve admin data from localStorage
-    const storedAdmin = localStorage.getItem("adminData");
-    if (storedAdmin) {
-      setAdmin(JSON.parse(storedAdmin));
+    const handleLogout = async () => {
+        try {
+            await adminLogout();
+            navigate('/auth/uninest-admin');
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (!isAdminAuthenticated && !isCheckingAdminAuth) {
+            checkAdminAuth();
+        }
+    }, [isAdminAuthenticated, isCheckingAdminAuth, isCheckingAdminAuth]);
+
+    useEffect(() => {
+        if (admin?.username) {
+            document.title = `${admin.username}'s Dashboard`;
+        }
+    }, [admin?.username]);
+
+    if (isCheckingAdminAuth) {
+        return <LoadingSpinner />;
     }
-  }, []);
 
-  useEffect(() => {
-    if (admin) {
-      document.title = `${admin.fullName}`;
+    if (!isAdminAuthenticated || !admin) {
+        navigate('/auth/uninest-admin');
+        return null;
     }
-  }, [admin]);
 
-  // **Show loading or unauthorized message while admin data is not yet available**
-  if (!admin) {
     return (
-      <div className="flex justify-center items-center h-screen text-gray-600">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  return (
-    <DashboardLayout
-      userType="admin"
-      userName={admin?.fullName}
-      currentPath={`/admin/${admin?.adminId}`}
-      onNavigate={(path) => navigate(path)}
-    >
-      <div className="space-y-6">
-        <h1 className="text-2xl font-semibold">Welcome Back, {admin?.fullName}</h1>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Add your stat cards here */}
+        <div>
+            <h1>Welcome Back, {admin.username}</h1>
+            <button onClick={handleLogout}>Logout</button>
+            {/* Dashboard content */}
         </div>
-
-        {/* Other dashboard content */}
-      </div>
-    </DashboardLayout>
-  );
+    );
 }

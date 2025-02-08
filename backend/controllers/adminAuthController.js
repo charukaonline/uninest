@@ -1,26 +1,48 @@
-const Admin = require("../models/Admin");
+const bcryptjs = require("bcryptjs");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 
+const Admin = require("../models/Admin");
+const { generateTokenAndSetCookie } = require("../utils/generateTokenAndSetCookie");
+
 exports.registerAdmin = async (req, res) => {
+
+  const { email, password, username, phoneNumber, role } = req.body;
+
   try {
-    const { email, password, fullName, phoneNumber, role } = req.body;
+
+    if (!email || !password || !username) {
+      throw new Error('All fields (email, username, password) are required');
+    }
 
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
       return res.status(400).json({ message: "Admin already exists" });
     }
 
-    const newAdmin = new Admin({
+    const hashedPassword = await bcryptjs.hash(password, 10);
+
+    const admin = new Admin({
       email,
-      password,
-      fullName,
+      password: hashedPassword,
+      username,
       phoneNumber,
       role,
+      isVerified: true,
+    });
+    await admin.save();
+
+    generateTokenAndSetCookie(res, admin._id);
+
+    res.status(201).json({
+      success: true,
+      message: 'Admin created successfully',
+      admin: {
+        ...admin._doc,
+        password: undefined
+      }
     });
 
-    await newAdmin.save();
-
-    res.status(201).json({ message: "Admin created successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -41,41 +63,26 @@ exports.loginAdmin = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isMatch = await admin.comparePassword(password);
-    if (!isMatch) {
+    const isValidPassword = await bcryptjs.compare(password, admin.password);
+    if (!isValidPassword) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
+
+    generateTokenAndSetCookie(res, admin._id);
 
     // Update last login
     admin.lastLogin = new Date();
     await admin.save();
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        id: admin._id,
-        role: admin.role,
-        email: admin.email,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
-
-    // Remove sensitive information from admin object
-    const adminData = {
-      id: admin._id,
-      email: admin.email,
-      fullName: admin.fullName,
-      role: admin.role,
-      isVerified: admin.isVerified,
-    };
-
     res.status(200).json({
       success: true,
-      message: "Login successful",
-      token,
-      admin: adminData,
-    });
+      message: "Logged in successfully",
+      admin: {
+        ...admin._doc,
+        password: undefined,
+      }
+    })
+
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({
@@ -83,4 +90,52 @@ exports.loginAdmin = async (req, res) => {
       message: "An error occurred during login",
     });
   }
+};
+
+exports.logoutAdmin = async (req, res) => {
+  res.clearCookie("token");
+  res.status(200).json({ success: true, message: "Logged out successfully" });
+};
+
+exports.checkAdminAuth = async (req, res) => {
+    try {
+        // Get token from cookies
+        const token = req.cookies.token;
+        if (!token) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "No authentication token" 
+            });
+        }
+
+        // Verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Invalid token" 
+            });
+        }
+
+        // Find admin
+        const admin = await Admin.findById(decoded.userId).select("-password");
+        if (!admin) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Admin not found" 
+            });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            admin 
+        });
+
+    } catch (error) {
+        console.error("Auth check error:", error);
+        res.status(401).json({ 
+            success: false, 
+            message: "Authentication failed" 
+        });
+    }
 };

@@ -12,17 +12,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  fullName: {
+  username: {
     type: String,
     required: true,
   },
   phoneNumber: {
     type: String,
-    required: false, // Changed to false since it's not in the initial signup
+    required: false,
   },
   role: {
     type: String,
-    enum: ["student", "landlord", "admin"],
+    enum: ["user", "landlord", "admin"],
+    default: "user",
     required: true,
   },
   profileImage: String,
@@ -34,19 +35,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  lastLogin: Date,
-});
+  lastLogin: {
+    type: Date,
+    default: Date.now,
+  },
+  resetPasswordToken: String,
+  resetPasswordExpiresAt: Date,
+  verificationToken: String,
+  verificationTokenExpiresAt: Date,
+}, { timestamps: true });
 
-// Add password hashing middleware
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
-
-// Add method to check password
-userSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
-
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model('User', userSchema);
