@@ -15,8 +15,20 @@ export default function ManageUsers() {
 
   useEffect(() => {
     const controller = new AbortController();
+    
+    // Initial fetch
     fetchUnverifiedLandlords(controller.signal);
-    return () => controller.abort();
+    
+    // Set up auto-refresh every 10 seconds
+    const refreshInterval = setInterval(() => {
+      fetchUnverifiedLandlords(controller.signal);
+    }, 10000);
+
+    // Cleanup function
+    return () => {
+      controller.abort();
+      clearInterval(refreshInterval);
+    };
   }, []);
 
   // Updated useEffect for dynamic title
@@ -104,8 +116,18 @@ export default function ManageUsers() {
 
         <Tabs defaultValue="pending-landlords" onValueChange={setCurrentTab}>
           <TabsList>
-            <TabsTrigger value="pending-landlords">Pending Landlords</TabsTrigger>
-            <TabsTrigger value="all-users">All Users</TabsTrigger>
+            <TabsTrigger 
+              value="pending-landlords"
+              className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
+            >
+              Pending Landlords
+            </TabsTrigger>
+            <TabsTrigger 
+              value="all-users"
+              className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
+            >
+              All Users
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending-landlords">
