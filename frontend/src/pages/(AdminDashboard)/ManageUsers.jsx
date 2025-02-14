@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { notification } from "antd";
 import LoadingSpinner from "@/components/include/LoadingSpinner";
 import { useAdminStore } from "@/store/adminStore";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function ManageUsers() {
   const [currentTab, setCurrentTab] = useState("pending-landlords");
@@ -15,10 +16,10 @@ export default function ManageUsers() {
 
   useEffect(() => {
     const controller = new AbortController();
-    
+
     // Initial fetch
     fetchUnverifiedLandlords(controller.signal);
-    
+
     // Set up auto-refresh every 10 seconds
     const refreshInterval = setInterval(() => {
       fetchUnverifiedLandlords(controller.signal);
@@ -111,18 +112,18 @@ export default function ManageUsers() {
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 overflow-hidden flex flex-col">
         <h1 className="text-2xl font-bold mb-6">Manage Users</h1>
 
         <Tabs defaultValue="pending-landlords" onValueChange={setCurrentTab}>
           <TabsList>
-            <TabsTrigger 
+            <TabsTrigger
               value="pending-landlords"
               className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
             >
               Pending Landlords
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="all-users"
               className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
             >
@@ -130,8 +131,8 @@ export default function ManageUsers() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pending-landlords">
-            <div className="grid gap-4">
+          <TabsContent value="pending-landlords" className="flex-1">
+            <div className="grid gap-4 h-full">
               {error && (
                 <Card>
                   <CardContent className="p-6">
@@ -140,66 +141,72 @@ export default function ManageUsers() {
                 </Card>
               )}
 
-              {!error && unverifiedLandlords.length === 0 ? (
-                <Card>
-                  <CardContent className="p-6">
-                    <p className="text-center text-gray-500">
-                      No pending landlord registrations
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                unverifiedLandlords.map((landlord) => (
-                  <Card key={landlord._id}>
-                    <CardHeader>
-                      <div className=" flex space-x-2">
-                        <CardTitle>
-                          {landlord?.username || "Unknown"}
-                        </CardTitle>
-                        <p className=" font-semibold">({landlord?.email})</p>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-2">
-                        <div className=" flex space-x-4">
-                          <p className=" flex space-x-2"><p className=" text-gray-500">NIC:</p> <p className=" font-semibold">{landlord?.nationalIdCardNumber}</p></p>
-                          <p className=" flex space-x-2"><p className=" text-gray-500">Phone:</p> <p className=" font-semibold">{landlord?.phoneNumber || "Not provided"}</p></p>
-                          <p className=" flex space-x-2"><p className=" text-gray-500">Address:</p> <p className=" font-semibold">{landlord?.residentialAddress}</p></p>
-                        </div>
-                        <div className="flex gap-2 mt-4 justify-between">
-                          <div>
-                            {landlord?.verificationDocuments?.length > 0 && (
-                              <Button
-                                onClick={() =>
-                                  viewDocument(
-                                    landlord.verificationDocuments[0]?.driveFileId
-                                  )
-                                }
-                              >
-                                View NIC Document
-                              </Button>
-                            )}
+              <ScrollArea className="h-[calc(100vh-150px)]">
+                <div className="space-y-4 p-1">
+                  {!error && unverifiedLandlords.length === 0 ? (
+                    <Card>
+                      <CardContent className="p-6">
+                        <p className="text-center text-gray-500">
+                          No pending landlord registrations
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    unverifiedLandlords.map((landlord) => (
+                      <Card key={landlord._id}>
+                        <CardHeader>
+                          <div className=" flex space-x-2">
+                            <CardTitle>
+                              {landlord?.username || "Unknown"}
+                            </CardTitle>
+                            <p className=" font-semibold">({landlord?.email})</p>
                           </div>
-                          <div className=" space-x-2">
-                            <Button
-                              onClick={() => handleApprove(landlord.userId)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              onClick={() => handleReject(landlord.userId)}
-                              variant="destructive"
-                            >
-                              Reject
-                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid gap-2">
+                            <div className=" flex space-x-4">
+                              <p className=" flex space-x-2"><p className=" text-gray-500">NIC:</p> <p className=" font-semibold">{landlord?.nationalIdCardNumber}</p></p>
+                              <p className=" flex space-x-2"><p className=" text-gray-500">Phone:</p> <p className=" font-semibold">{landlord?.phoneNumber || "Not provided"}</p></p>
+                              <p className=" flex space-x-2"><p className=" text-gray-500">Address:</p> <p className=" font-semibold">{landlord?.residentialAddress}</p></p>
+                            </div>
+                            <div className="flex gap-2 mt-4 justify-between">
+                              <div>
+                                {landlord?.verificationDocuments?.length > 0 && (
+                                  <Button
+                                    onClick={() =>
+                                      viewDocument(
+                                        landlord.verificationDocuments[0]?.driveFileId
+                                      )
+                                    }
+                                  >
+                                    View NIC Document
+                                  </Button>
+                                )}
+                              </div>
+                              <div className=" space-x-2">
+                                <Button
+                                  onClick={() => handleApprove(landlord.userId)}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  Approve
+                                </Button>
+                                <Button
+                                  onClick={() => handleReject(landlord.userId)}
+                                  variant="destructive"
+                                >
+                                  Reject
+                                </Button>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+
+                </div>
+              </ScrollArea>
+
             </div>
           </TabsContent>
 
