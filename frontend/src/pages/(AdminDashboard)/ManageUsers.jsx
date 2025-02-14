@@ -17,13 +17,11 @@ export default function ManageUsers() {
   useEffect(() => {
     const controller = new AbortController();
 
-    // Initial fetch
     fetchUnverifiedLandlords(controller.signal);
 
-    // Set up auto-refresh every 10 seconds
     const refreshInterval = setInterval(() => {
       fetchUnverifiedLandlords(controller.signal);
-    }, 10000);
+    }, 3000);
 
     // Cleanup function
     return () => {
@@ -44,7 +42,7 @@ export default function ManageUsers() {
   const handleApprove = async (userId) => {
     try {
       await axios.post(
-        `/api/admin/approve-landlord/${userId}`,
+        `http://localhost:5000/api/admin/approve-landlord/${userId}`,
         {},
         { withCredentials: true }
       );
@@ -64,7 +62,7 @@ export default function ManageUsers() {
   const handleReject = async (userId) => {
     try {
       await axios.post(
-        `/api/admin/reject-landlord/${userId}`,
+        `http://localhost:5000/api/admin/reject-landlord/${userId}`,
         {},
         {
           withCredentials: true,
@@ -103,7 +101,7 @@ export default function ManageUsers() {
       <div className="flex h-screen">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center">
-          <LoadingSpinner />
+          {/* <LoadingSpinner /> */}
         </div>
       </div>
     );
@@ -165,9 +163,15 @@ export default function ManageUsers() {
                         <CardContent>
                           <div className="grid gap-2">
                             <div className=" flex space-x-4">
-                              <p className=" flex space-x-2"><p className=" text-gray-500">NIC:</p> <p className=" font-semibold">{landlord?.nationalIdCardNumber}</p></p>
-                              <p className=" flex space-x-2"><p className=" text-gray-500">Phone:</p> <p className=" font-semibold">{landlord?.phoneNumber || "Not provided"}</p></p>
-                              <p className=" flex space-x-2"><p className=" text-gray-500">Address:</p> <p className=" font-semibold">{landlord?.residentialAddress}</p></p>
+                              <div className=" flex space-x-2">
+                                <h2 className=" text-gray-500">NIC:</h2> <h2 className=" font-semibold">{landlord?.nationalIdCardNumber}</h2>
+                              </div>
+                              <div className=" flex space-x-2">
+                                <h2 className=" text-gray-500">Phone:</h2> <h2 className=" font-semibold">{landlord?.phoneNumber || "Not provided"}</h2>
+                              </div>
+                              <div className=" flex space-x-2">
+                                <h2 className=" text-gray-500">Address:</h2> <h2 className=" font-semibold">{landlord?.residentialAddress}</h2>
+                              </div>
                             </div>
                             <div className="flex gap-2 mt-4 justify-between">
                               <div>
