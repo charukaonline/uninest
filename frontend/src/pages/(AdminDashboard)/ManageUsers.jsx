@@ -8,29 +8,21 @@ import { notification } from "antd";
 import LoadingSpinner from "@/components/include/LoadingSpinner";
 import { useAdminStore } from "@/store/adminStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import axios from "axios";  // Add this import at the top
 
 export default function ManageUsers() {
   const [currentTab, setCurrentTab] = useState("pending-landlords");
   const { adminId, email } = useParams();
-  const { unverifiedLandlords, fetchUnverifiedLandlords, isLoading, error } = useAdminStore();
+  const { 
+    unverifiedLandlords, 
+    fetchUnverifiedLandlords, 
+    shouldRefresh,
+    setShouldRefresh,
+    isLoading, 
+    error 
+  } = useAdminStore();
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    fetchUnverifiedLandlords(controller.signal);
-
-    const refreshInterval = setInterval(() => {
-      fetchUnverifiedLandlords(controller.signal);
-    }, 3000);
-
-    // Cleanup function
-    return () => {
-      controller.abort();
-      clearInterval(refreshInterval);
-    };
-  }, []);
-
-  // Updated useEffect for dynamic title
+  // Effect for title update
   useEffect(() => {
     if (currentTab === "pending-landlords") {
       document.title = `We have (${unverifiedLandlords.length}) pending accounts`;
@@ -39,18 +31,55 @@ export default function ManageUsers() {
     }
   }, [currentTab, unverifiedLandlords.length]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    
+    // Initial fetch
+    fetchUnverifiedLandlords(controller.signal);
+
+    let refreshInterval;
+    if (shouldRefresh) {
+      refreshInterval = setInterval(() => {
+        fetchUnverifiedLandlords(controller.signal);
+      }, 3000);
+    }
+
+    return () => {
+      controller.abort();
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    };
+  }, [shouldRefresh]);
+
+  useEffect(() => {
+    if (currentTab === "pending-landlords") {
+      setShouldRefresh(true);
+    } else {
+      setShouldRefresh(false);
+    }
+  }, [currentTab]);
+
   const handleApprove = async (userId) => {
     try {
-      await axios.post(
+      const response = await axios.post(
         `http://localhost:5000/api/admin/approve-landlord/${userId}`,
         {},
-        { withCredentials: true }
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        }
       );
-      notification.success({
-        message: "Success",
-        description: "Landlord approved successfully",
-      });
-      fetchUnverifiedLandlords();
+      
+      if (response.status === 200) {
+        notification.success({
+          message: "Success",
+          description: "Landlord approved successfully",
+        });
+        // Refresh the landlords list
+        fetchUnverifiedLandlords();
+      }
     } catch (error) {
       notification.error({
         message: "Error",
@@ -61,23 +90,27 @@ export default function ManageUsers() {
 
   const handleReject = async (userId) => {
     try {
-      await axios.post(
+      const response = await axios.delete(
         `http://localhost:5000/api/admin/reject-landlord/${userId}`,
-        {},
         {
-          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
         }
       );
-      notification.success({
-        message: "Success",
-        description: "Landlord rejected successfully",
-      });
-      fetchUnverifiedLandlords();
+      
+      if (response.status === 200) {
+        notification.success({
+          message: "Success",
+          description: "Landlord rejected successfully",
+        });
+        // Refresh the landlords list
+        fetchUnverifiedLandlords();
+      }
     } catch (error) {
       notification.error({
         message: "Error",
-        description:
-          error.response?.data?.message || "Error rejecting landlord",
+        description: error.response?.data?.message || "Error rejecting landlord",
       });
     }
   };
@@ -100,7 +133,7 @@ export default function ManageUsers() {
     return (
       <div className="flex h-screen">
         <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center ">
           {/* <LoadingSpinner /> */}
         </div>
       </div>

@@ -7,6 +7,7 @@ export const useAdminStore = create((set, get) => ({
     unverifiedLandlords: [],
     isLoading: false,
     error: null,
+    shouldRefresh: true, // New state to control refresh
 
     fetchUnverifiedLandlords: async (signal) => {
         const isInitialLoad = get().unverifiedLandlords.length === 0;
@@ -22,23 +23,25 @@ export const useAdminStore = create((set, get) => ({
                 signal,
             });
 
-            const currentData = JSON.stringify(get().unverifiedLandlords);
-            const newData = JSON.stringify(response.data.landlords);
+            set({ 
+                unverifiedLandlords: response.data.landlords,
+                shouldRefresh: response.data.landlords.length > 0, // Update refresh state
+                isLoading: false,
+                error: null
+            });
 
-            if (currentData !== newData) {
-                set({ unverifiedLandlords: response.data.landlords });
-            }
-
-            if (isInitialLoad) {
-                set({ isLoading: false });
-            }
         } catch (error) {
             if (error.name === 'CanceledError') return;
-
+            
             set({
                 error: error.response?.data?.message || "Failed to fetch landlords",
                 isLoading: false,
+                unverifiedLandlords: [],
+                shouldRefresh: false
             });
         }
     },
+
+    // Add method to manually control refresh
+    setShouldRefresh: (value) => set({ shouldRefresh: value }),
 }));

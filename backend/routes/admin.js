@@ -10,6 +10,6 @@ const {
 // Protected admin routes
 router.get("/unverified-landlords", verifyToken, getPendingLandlords);
 router.post("/approve-landlord/:userId", verifyToken, approveLandlord);
-router.post("/reject-landlord/:userId", verifyToken, rejectLandlord);
+router.delete("/reject-landlord/:userId", verifyToken, rejectLandlord); // Changed to DELETE method
 
 module.exports = router;

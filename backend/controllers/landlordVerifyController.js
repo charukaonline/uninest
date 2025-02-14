@@ -56,6 +56,18 @@ exports.approveLandlord = async (req, res) => {
   try {
     const { userId } = req.params;
 
+    // Update User document
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isVerified: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update LandlordProfile document
     const landlordProfile = await LandlordProfile.findOneAndUpdate(
       { userId: userId },
       { verificationStatus: "verified" },
@@ -66,13 +78,17 @@ exports.approveLandlord = async (req, res) => {
       return res.status(404).json({ message: "Landlord profile not found" });
     }
 
-    await User.findByIdAndUpdate(userId, { isVerified: true });
-
-    res.status(200).json({ message: "Landlord approved successfully" });
+    res.status(200).json({ 
+      message: "Landlord approved successfully",
+      user,
+      landlordProfile
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error approving landlord", error: error.message });
+    console.error("Error approving landlord:", error);
+    res.status(500).json({ 
+      message: "Error approving landlord", 
+      error: error.message 
+    });
   }
 };
 
@@ -80,20 +96,20 @@ exports.rejectLandlord = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const landlordProfile = await LandlordProfile.findOneAndUpdate(
-      { userId: userId },
-      { verificationStatus: "rejected" },
-      { new: true }
-    );
+    // Delete both the user and landlord profile
+    await Promise.all([
+      User.findByIdAndDelete(userId),
+      LandlordProfile.findOneAndDelete({ userId: userId })
+    ]);
 
-    if (!landlordProfile) {
-      return res.status(404).json({ message: "Landlord profile not found" });
-    }
-
-    res.status(200).json({ message: "Landlord rejected successfully" });
+    res.status(200).json({ 
+      message: "Landlord rejected and removed successfully" 
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error rejecting landlord", error: error.message });
+    console.error("Error rejecting landlord:", error);
+    res.status(500).json({ 
+      message: "Error rejecting landlord", 
+      error: error.message 
+    });
   }
 };

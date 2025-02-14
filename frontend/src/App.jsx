@@ -28,6 +28,7 @@ import {
 } from "./components/AuthenticatedUser";
 import EmailVerificationPage from "./pages/(auth)/EmailVerificationPage";
 import ManageUsers from "./pages/(AdminDashboard)/ManageUsers";
+import LandlordDashboard from "./pages/(LandlordDashboard)/LandlordDashboard";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -149,6 +150,16 @@ function App() {
           }
         />
 
+        {/* Landlord Dashboard */}
+        <Route
+          path="/landlord/:userId/:email"
+          element={
+            <ProtectedRoute>
+              <LandlordDashboard />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Admin Login */}
         <Route
           path="/auth/uninest-admin"
@@ -168,7 +179,7 @@ function App() {
             </AdminProtectedRoute>
           }
         />
-        
+
         <Route
           path="/admin/:adminId/:email/users"
           element={

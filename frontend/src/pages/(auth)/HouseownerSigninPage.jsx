@@ -31,7 +31,7 @@ const HouseownerSigninPage = () => {
             localStorage.setItem("user", JSON.stringify(response.user));
 
             // Redirect to landlord dashboard
-            navigate("/dashboard/landlord");
+            // navigate(`/landlord/${userId}/${email}`);
         } catch (error) {
             notification.error({
                 message: "Login Failed",
