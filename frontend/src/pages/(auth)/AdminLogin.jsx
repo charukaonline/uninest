@@ -35,30 +35,40 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { email, password } = formData;
-    const adminResponse = await adminLogin(email, password);
+    try {
+      const { email, password } = formData;
+      const adminResponse = await adminLogin(email, password);
 
-    if (adminResponse?.success === false) {
-      notification.error({
-        message: "Login Failed",
-        description: adminResponse.message || "Invalid credentials",
-        duration: 3,
-      });
-      return;
-    }
+      if (adminResponse?.success === false) {
+        notification.error({
+          message: "Login Failed",
+          description: adminResponse.message || "Invalid credentials",
+          duration: 3,
+        });
+        return;
+      }
 
-    const adminId = adminResponse?.admin?._id;
+      const adminId = adminResponse?.admin?._id;
 
-    if (!adminId) {
+      if (!adminId) {
+        notification.error({
+          message: "Login Error",
+          description: "User ID not found",
+          duration: 3,
+        });
+        return;
+      }
+
+      navigate(`/admin/${adminId}/${email}`);
+    } catch (error) {
       notification.error({
         message: "Login Error",
-        description: "User ID not found",
+        description: error.message || "Something went wrong",
         duration: 3,
       });
-      return;
+    } finally {
+      setLoading(false); // Always reset loading state
     }
-
-    navigate(`/ad/${adminId}/${email}`);
   };
 
   if (isCheckingAdminAuth) {
@@ -100,7 +110,11 @@ const AdminLogin = () => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading || isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isCheckingAdminAuth}  // Only disable during initial auth check
+            >
               {loading || isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>

@@ -3,18 +3,25 @@ const LandlordProfile = require("../models/LandlordProfile");
 
 exports.getPendingLandlords = async (req, res) => {
   try {
-    const pendingLandlords = await LandlordProfile.find({
-      verificationStatus: "pending",
-    }).populate("userId", "fullName email");
+    
+    const unverifiedLandlords = await User.find({
+      role: "landlord",
+      $or: [
+        { isVerified: { $exists: false } },
+        { isVerified: false }
+      ]
+    }).select('username email phoneNumber');
 
-    res.status(200).json(pendingLandlords);
+    res.status(200).json({
+      success: true,
+      landlords: unverifiedLandlords
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error fetching pending landlords",
-        error: error.message,
-      });
+    console.error("Error fetching unverified landlords:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch unverified landlords"
+    });
   }
 };
 

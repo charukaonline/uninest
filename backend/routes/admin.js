@@ -5,10 +5,10 @@ const {
   getPendingLandlords,
   approveLandlord,
   rejectLandlord,
-} = require("../controllers/adminController");
+} = require("../controllers/landlordVerifyController");
 
 // Protected admin routes
-router.get("/pending-landlords", verifyToken, getPendingLandlords);
+router.get("/unverified-landlords", verifyToken, getPendingLandlords);
 router.post("/approve-landlord/:userId", verifyToken, approveLandlord);
 router.post("/reject-landlord/:userId", verifyToken, rejectLandlord);
 

@@ -18,48 +18,48 @@ export default function Sidebar() {
     {
       icon: LayoutDashboard,
       label: "Dashboard",
-      path: `/ad/${adminId}/${email}`,
+      path: `/admin/${adminId}/${email}`,
     },
     {
       icon: Users,
       label: "Manage Users",
-      path: `/admin/users/${adminId}/${email}`,
+      path: `/admin/${adminId}/${email}/users`,
     },
     {
       icon: Building2,
       label: "Manage Listings",
-      path: `/admin/listings/${adminId}/${email}`,
+      path: `/admin/${adminId}/${email}/listings`,
     },
     {
       icon: BarChart3,
       label: "Analytics",
-      path: `/admin/analytics/${adminId}/${email}`,
+      path: `/admin/${adminId}/${email}/analytics`,
     },
     {
       icon: FileText,
       label: "Reports",
-      path: `/admin/reports/${adminId}/${email}`,
+      path: `/admin/${adminId}/${email}/reports`,
     },
     {
       icon: MessageSquare,
       label: "Feedbacks",
-      path: `/admin/feedbacks/${adminId}/${email}`,
+      path: `/admin/${adminId}/${email}/feedbacks`,
     },
   ];
 
   return (
-    <div className="h-screen w-64 bg-white border-r shadow-sm">
+    <div className="h-screen w-64 bg-[#181818] border-r shadow-sm">
       <div className="p-4">
-        <h2 className="text-2xl font-bold text-gray-800">UniNest Admin</h2>
+        <h2 className="text-2xl font-bold text-white">UniNest Admin</h2>
       </div>
       <nav className="mt-6">
         {menuItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 ${
+            className={`flex items-center px-6 py-3 text-[#eee] ${
               location.pathname === item.path
-                ? "bg-gray-100 border-l-4 border-blue-500"
+                ? "bg-[#030303] border-r-4 border-green-500"
                 : ""
             }`}
           >

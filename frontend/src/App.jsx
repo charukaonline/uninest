@@ -161,16 +161,16 @@ function App() {
 
         {/* Admin Dashboard */}
         <Route
-          path="/ad/:adminId/:email"
+          path="/admin/:adminId/:email"
           element={
             <AdminProtectedRoute>
               <AdminDashboard />
             </AdminProtectedRoute>
           }
         />
-        {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
+        
         <Route
-          path="/admin/users/:adminId/:email"
+          path="/admin/:adminId/:email/users"
           element={
             <AdminProtectedRoute>
               <ManageUsers />

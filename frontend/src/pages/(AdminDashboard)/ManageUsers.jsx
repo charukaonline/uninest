@@ -108,7 +108,7 @@ export default function ManageUsers() {
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
-      <div className="flex-1 p-8">
+      {/* <div className="flex-1 p-8">
         <h1 className="text-2xl font-bold mb-6">Manage Users</h1>
 
         <Tabs defaultValue="pending-landlords">
@@ -134,7 +134,7 @@ export default function ManageUsers() {
                   <Card key={landlord._id}>
                     <CardHeader>
                       <CardTitle>
-                        {landlord.user?.fullName || "Unknown"}
+                        {landlord.user?.fullu|| "Unknown"}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -173,7 +173,7 @@ export default function ManageUsers() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </div> */}
     </div>
   );
 }

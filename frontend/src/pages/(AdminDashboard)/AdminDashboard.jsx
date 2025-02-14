@@ -79,7 +79,11 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-bold">
               Welcome Back, {admin.username}
             </h1>
-            <Button onClick={handleLogout} variant="outline">
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className=" bg-primaryBgColor text-white hover:bg-red-500 hover:text-white font-semibold"
+            >
               Logout
             </Button>
           </div>
