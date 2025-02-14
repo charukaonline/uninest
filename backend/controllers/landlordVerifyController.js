@@ -3,14 +3,41 @@ const LandlordProfile = require("../models/LandlordProfile");
 
 exports.getPendingLandlords = async (req, res) => {
   try {
-    
-    const unverifiedLandlords = await User.find({
-      role: "landlord",
-      $or: [
-        { isVerified: { $exists: false } },
-        { isVerified: false }
-      ]
-    }).select('username email phoneNumber');
+    const unverifiedLandlords = await User.aggregate([
+      {
+        $match: {
+          role: "landlord",
+          $or: [
+            { isVerified: { $exists: false } },
+            { isVerified: false }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: "landlordprofiles", // The name of your LandlordProfile collection
+          localField: "_id",
+          foreignField: "userId",
+          as: "landlordProfile"
+        }
+      },
+      {
+        $unwind: "$landlordProfile"
+      },
+      {
+        $project: {
+          _id: 1,
+          username: 1,
+          email: 1,
+          phoneNumber: 1,
+          userId: "$_id",
+          residentialAddress: "$landlordProfile.residentialAddress",
+          nationalIdCardNumber: "$landlordProfile.nationalIdCardNumber",
+          verificationDocuments: "$landlordProfile.verificationDocuments",
+          verificationStatus: "$landlordProfile.verificationStatus"
+        }
+      }
+    ]);
 
     res.status(200).json({
       success: true,
