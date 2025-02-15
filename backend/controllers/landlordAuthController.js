@@ -175,46 +175,91 @@ exports.landlordSignin = async (req, res) => {
     const { email, password } = req.body;
 
     // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
+    const landlord = await User.findOne({ email });
+    if (!landlord) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // Verify password
-    const isPasswordValid = await bcryptjs.compare(password, user.password);
+    const isPasswordValid = await bcryptjs.compare(password, landlord.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // Check if user is a landlord
-    if (user.role !== "landlord") {
+    if (landlord.role !== "landlord") {
       return res.status(403).json({ message: "Access denied. Landlords only." });
     }
 
     // Get landlord profile and verification status
-    const landlordProfile = await LandlordProfile.findOne({ userId: user._id });
+    const landlordProfile = await LandlordProfile.findOne({ landlordId: landlord._id });
     if (!landlordProfile) {
       return res.status(404).json({ message: "Landlord profile not found" });
     }
 
     // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    landlord.lastLogin = new Date();
+    await landlord.save();
 
-    generateTokenAndSetCookie(res, user._id);
+    generateTokenAndSetCookie(res, landlord._id);
 
     res.status(200).json({
       message: "Login successful",
-      user: {
-        id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-        isVerified: user.isVerified,
+      landlord: {
+        id: landlord._id,
+        email: landlord.email,
+        fullName: landlord.fullName,
+        role: landlord.role,
+        isVerified: landlord.isVerified,
         verificationStatus: landlordProfile.verificationStatus
       }
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
+};
+
+exports.checkLandlordAuth = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "No authentication token"
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token"
+      });
+    }
+
+    const landlord = await User.findById(decoded.landlordId).select("-password");
+    if (!landlord) {
+      return res.status(401).json({
+        success: false,
+        message: "Landlord not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      landlord
+    });
+
+  } catch (error) {
+    console.error("Auth check error:", error);
+    res.status(401).json({
+      success: false,
+      message: "Authentication failed"
+    })
+  }
+};
+
+exports.logoutLandlord = async (req, res) => {
+  res.clearCookie("token");
+  res.status(200).json({ success: true, message: "Logged out successfully" });
 };
