@@ -70,7 +70,7 @@ function UserSigninPage() {
       return;
     }
 
-    navigate(`/sd/${userId}/${email}`);
+    navigate(`/student/${userId}/${email}`);
   };
 
   const handleSignupRedirect = () => {
@@ -104,7 +104,8 @@ function UserSigninPage() {
           <form onSubmit={handleLoginSubmit}>
             <div className="py-2">
               <label className="text-sm text-white">
-                <strong className=" text-red-500 text-lg">*</strong> Email Address
+                <strong className=" text-red-500 text-lg">*</strong> Email
+                Address
               </label>
               <input
                 type="email"
@@ -123,7 +124,10 @@ function UserSigninPage() {
             </div>
 
             <div className="py-2">
-              <label className="text-sm text-white"><strong className=" text-red-500 text-lg">*</strong> Your password</label>
+              <label className="text-sm text-white">
+                <strong className=" text-red-500 text-lg">*</strong> Your
+                password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -161,7 +165,11 @@ function UserSigninPage() {
               className="w-full bg-white text-[#006845] font-semibold p-3 rounded-xl mb-6 hover:bg-gray-200 text-sm"
               disabled={isLoading}
             >
-              {isLoading ? <Loader className=' w-6 h-6 animate-spin mx-auto' /> : "Login Now"}
+              {isLoading ? (
+                <Loader className=" w-6 h-6 animate-spin mx-auto" />
+              ) : (
+                "Login Now"
+              )}
             </button>
           </form>
 

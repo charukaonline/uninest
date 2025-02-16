@@ -16,7 +16,9 @@ const {
 const {
   registerLandlord,
   completeLandlordProfile,
-  landlordSignin } = require("../controllers/landlordAuthController");
+  landlordSignin,
+  checkLandlordAuth,
+  logoutLandlord } = require("../controllers/landlordAuthController");
 
 const {
   registerAdmin,
@@ -51,7 +53,7 @@ router.get(
   googleCallback
 );
 
-// Landlord signup routes
+// Landlord auth routes
 router.post("/landlord/signup/step1", validateLandlordSignup1, registerLandlord);
 router.post(
   "/landlord/signup/step2/:userId",
@@ -60,11 +62,12 @@ router.post(
   completeLandlordProfile
 );
 
-// Landlord auth routes
 router.post("/landlord/signin", validateLandlordSignin, landlordSignin);
+router.get('/landlord/checkLandlordAuth', verifyToken, checkLandlordAuth);
+router.post("/landlord/logout", logoutLandlord);
 
 // Admin auth routes
-router.get("/admin/checkAdminAuth", checkAdminAuth);
+router.get("/admin/checkAdminAuth", verifyToken, checkAdminAuth);
 
 router.post("/admin/register", registerAdmin);
 router.post("/admin/login", loginAdmin);
