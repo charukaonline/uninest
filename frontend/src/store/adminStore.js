@@ -23,7 +23,7 @@ export const useAdminStore = create((set, get) => ({
                 signal,
             });
 
-            set({ 
+            set({
                 unverifiedLandlords: response.data.landlords,
                 shouldRefresh: response.data.landlords.length > 0, // Update refresh state
                 isLoading: false,
@@ -32,12 +32,45 @@ export const useAdminStore = create((set, get) => ({
 
         } catch (error) {
             if (error.name === 'CanceledError') return;
-            
+
             set({
                 error: error.response?.data?.message || "Failed to fetch landlords",
                 isLoading: false,
                 unverifiedLandlords: [],
                 shouldRefresh: false
+            });
+        }
+    },
+
+    allUsers: [],
+
+    fetchAllUsers: async (signal) => {
+        const isInitialLoad = get().allUsers.length === 0;
+        if (isInitialLoad) {
+            set({ isLoading: true, error: null });
+        }
+
+        try {
+            const response = await axios.get(`${API_URL}/all-users`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+                },
+                signal,
+            });
+
+            set({
+                allUsers: response.data.users,
+                isLoading: false,
+                error: null
+            });
+
+        } catch (error) {
+            if (error.name === 'CanceledError') return;
+
+            set({
+                error: error.response?.data?.message || "Failed to fetch users",
+                isLoading: false,
+                allUsers: [],
             });
         }
     },

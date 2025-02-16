@@ -9,7 +9,7 @@ const Home = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "UniNest";
+    document.title = "UniNest 🏠";
   });
 
   return (
