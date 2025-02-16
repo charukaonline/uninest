@@ -17,15 +17,19 @@ export function ProtectedRoute({ children }) {
 };
 
 export const LandlordProtectedRoute = ({ children }) => {
-    const { isLandlordAuthenticated, landlord, checkLandlordAuth } = useLandlordAuthStore();
-
+    const { isLandlordAuthenticated, landlord, checkLandlordAuth, isCheckingLandlordAuth } = useLandlordAuthStore();
+    
     useEffect(() => {
         if (!isLandlordAuthenticated) {
             checkLandlordAuth();
         }
-    }, [isLandlordAuthenticated, checkLandlordAuth]);
+    }, []);
 
-    if (!isLandlordAuthenticated || !landlord?.id) {
+    if (isCheckingLandlordAuth) {
+        return <LoadingSpinner />;
+    }
+
+    if (!isLandlordAuthenticated || !landlord?._id) {
         return <Navigate to="/auth/houseowner-signin" replace />;
     }
 

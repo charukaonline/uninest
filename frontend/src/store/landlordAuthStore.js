@@ -59,16 +59,14 @@ export const useLandlordAuthStore = create((set, get) => ({
     landlordSignin: async (credentials) => {
         try {
             set({ isLoading: true, error: null });
-
             const response = await axios.post(`${API_URL}/landlord/signin`, credentials);
-            const landlordData = response.data.landlord;
-
-            if (!landlordData || !landlordData.id) {
+            
+            if (!response.data.success || !response.data.landlord) {
                 throw new Error('Invalid response from server');
             }
 
             set({
-                landlord: landlordData,
+                landlord: response.data.landlord,
                 isLandlordAuthenticated: true,
                 isCheckingLandlordAuth: false,
                 isLoading: false
@@ -76,12 +74,7 @@ export const useLandlordAuthStore = create((set, get) => ({
 
             return response.data;
         } catch (error) {
-            set({
-                landlord: null,
-                isLandlordAuthenticated: false,
-                isLoading: false,
-                error: error.message
-            });
+            set({ landlord: null, isLandlordAuthenticated: false, isLoading: false });
             throw error;
         }
     },
@@ -99,16 +92,7 @@ export const useLandlordAuthStore = create((set, get) => ({
 
     checkLandlordAuth: async () => {
         try {
-            // If no token exists in cookies, return false immediately
-            if (!document.cookie.includes('token')) {
-                set({ 
-                    landlord: null,
-                    isLandlordAuthenticated: false, 
-                    isCheckingLandlordAuth: false 
-                });
-                return false;
-            }
-
+            set({ isCheckingLandlordAuth: true });
             const response = await axios.get(`${API_URL}/landlord/checkLandlordAuth`);
             
             if (!response.data.success) {
@@ -120,10 +104,12 @@ export const useLandlordAuthStore = create((set, get) => ({
                 return false;
             }
 
-            set({ 
-                landlord: response.data.landlord,
-                isLandlordAuthenticated: true, 
-                isCheckingLandlordAuth: false 
+            const landlordData = response.data.landlord;
+            
+            set({
+                landlord: landlordData,
+                isLandlordAuthenticated: true,
+                isCheckingLandlordAuth: false
             });
             return true;
         } catch (error) {

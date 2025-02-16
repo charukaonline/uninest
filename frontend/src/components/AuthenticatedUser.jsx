@@ -26,18 +26,15 @@ export function AuthenticatedLandlord({ children }) {
     const { isLandlordAuthenticated, landlord, checkLandlordAuth } = useLandlordAuthStore();
 
     useEffect(() => {
-        // Only check auth if not already authenticated
-        if (!isLandlordAuthenticated && !landlord) {
+        if (!isLandlordAuthenticated) {
             checkLandlordAuth();
         }
-    }, [isLandlordAuthenticated, landlord]);
+    }, []);
 
-    // If already authenticated, redirect to dashboard
     if (isLandlordAuthenticated && landlord?._id) {
         return <Navigate to={`/landlord/${landlord._id}/${landlord.email}`} replace />;
     }
 
-    // Otherwise show login page
     return children;
 }
 

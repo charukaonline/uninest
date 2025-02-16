@@ -200,9 +200,9 @@ exports.landlordSignin = async (req, res) => {
     generateTokenAndSetCookie(res, landlord._id);
 
     res.status(200).json({
-      message: "Login successful",
+      success: true,
       landlord: {
-        id: landlord._id.toString(), // Ensure ID is a string
+        _id: landlord._id.toString(),  // Changed from id to _id
         email: landlord.email,
         username: landlord.username,
         isVerified: landlord.isVerified,
@@ -246,7 +246,10 @@ exports.checkLandlordAuth = async (req, res) => {
     res.status(200).json({
       success: true,
       landlord: {
-        ...landlord.toObject(),
+        _id: landlord._id.toString(),  // Changed from id to _id
+        email: landlord.email,
+        username: landlord.username,
+        isVerified: landlord.isVerified,
         profile: landlordProfile
       }
     });

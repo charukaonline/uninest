@@ -1,9 +1,15 @@
 import { useLandlordAuthStore } from '@/store/landlordAuthStore'
-import React from 'react'
+import React, { useEffect } from 'react'
 import LoadingSpinner from '@/components/include/LoadingSpinner';
 
 const LandlordDashboard = () => {
-    const { landlord, isLandlordAuthenticated, isCheckingLandlordAuth } = useLandlordAuthStore();
+    const { landlord, isLandlordAuthenticated, checkLandlordAuth, isCheckingLandlordAuth } = useLandlordAuthStore();
+
+    useEffect(() => {
+        if (!isLandlordAuthenticated) {
+            checkLandlordAuth();
+        }
+    }, []);
 
     if (isCheckingLandlordAuth) {
         return <LoadingSpinner />;

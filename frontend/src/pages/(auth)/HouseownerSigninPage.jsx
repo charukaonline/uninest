@@ -32,7 +32,7 @@ const HouseownerSigninPage = () => {
             }
 
             // Use the correct ID field from the response
-            navigate(`/landlord/${landlordData.id}/${landlordData.email}`);
+            navigate(`/landlord/${landlordData._id}/${landlordData.email}`);
 
         } catch (error) {
             notification.error({
