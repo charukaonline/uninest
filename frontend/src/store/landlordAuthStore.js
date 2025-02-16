@@ -5,7 +5,7 @@ const API_URL = import.meta.env.MODE === 'development' ? 'http://localhost:5000/
 
 axios.defaults.withCredentials = true;
 
-export const useLandlordAuthStore = create((set) => ({
+export const useLandlordAuthStore = create((set, get) => ({
     landlord: null,
     isLandlordAuthenticated: false,
     error: null,
@@ -61,28 +61,26 @@ export const useLandlordAuthStore = create((set) => ({
             set({ isLoading: true, error: null });
 
             const response = await axios.post(`${API_URL}/landlord/signin`, credentials);
-            console.log('Signin response:', response.data); // Debug log
+            const landlordData = response.data.landlord;
 
-            if (!response.data.landlord) {
+            if (!landlordData || !landlordData.id) {
                 throw new Error('Invalid response from server');
             }
 
-            const landlordData = response.data.landlord;
-
             set({
                 landlord: landlordData,
-                isLandlordAuthenticated: landlordData.isVerified,
+                isLandlordAuthenticated: true,
+                isCheckingLandlordAuth: false,
                 isLoading: false
             });
 
             return response.data;
         } catch (error) {
-            console.error('Signin error:', error); // Debug log
             set({
-                error: error.response?.data?.message || 'Authentication failed',
+                landlord: null,
                 isLandlordAuthenticated: false,
                 isLoading: false,
-                landlord: null
+                error: error.message
             });
             throw error;
         }
@@ -100,12 +98,41 @@ export const useLandlordAuthStore = create((set) => ({
     },
 
     checkLandlordAuth: async () => {
-        set({ isCheckingLandlordAuth: true, error: null });
         try {
+            // If no token exists in cookies, return false immediately
+            if (!document.cookie.includes('token')) {
+                set({ 
+                    landlord: null,
+                    isLandlordAuthenticated: false, 
+                    isCheckingLandlordAuth: false 
+                });
+                return false;
+            }
+
             const response = await axios.get(`${API_URL}/landlord/checkLandlordAuth`);
-            set({ landlord: response.data.landlord, isLandlordAuthenticated: true, isCheckingLandlordAuth: false });
+            
+            if (!response.data.success) {
+                set({ 
+                    landlord: null,
+                    isLandlordAuthenticated: false, 
+                    isCheckingLandlordAuth: false 
+                });
+                return false;
+            }
+
+            set({ 
+                landlord: response.data.landlord,
+                isLandlordAuthenticated: true, 
+                isCheckingLandlordAuth: false 
+            });
+            return true;
         } catch (error) {
-            set({ error: null, isCheckingLandlordAuth: false, isLandlordAuthenticated: false });
+            set({ 
+                landlord: null,
+                isLandlordAuthenticated: false, 
+                isCheckingLandlordAuth: false 
+            });
+            return false;
         }
     },
 }));

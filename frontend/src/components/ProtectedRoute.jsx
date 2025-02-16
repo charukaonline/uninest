@@ -17,30 +17,19 @@ export function ProtectedRoute({ children }) {
 };
 
 export const LandlordProtectedRoute = ({ children }) => {
-    const { isCheckingLandlordAuth, isLandlordAuthenticated, checkLandlordAuth } = useLandlordAuthStore();
-    const navigate = useNavigate();
+    const { isLandlordAuthenticated, landlord, checkLandlordAuth } = useLandlordAuthStore();
 
     useEffect(() => {
-        const verifyLandlord = async () => {
-            const isLandlordAuthenticated = await checkLandlordAuth();
-            if (!isLandlordAuthenticated) {
-                navigate('/auth/houseowner-signin');
-            }
-        };
+        if (!isLandlordAuthenticated) {
+            checkLandlordAuth();
+        }
+    }, [isLandlordAuthenticated, checkLandlordAuth]);
 
-        verifyLandlord();
-    }, [checkLandlordAuth, navigate]);
-
-    if (isCheckingLandlordAuth) {
-        return <LoadingSpinner />;
-    }
-
-    if (!isLandlordAuthenticated) {
-        return <Navigate to="/auth/uninest-admin" replace />;
+    if (!isLandlordAuthenticated || !landlord?.id) {
+        return <Navigate to="/auth/houseowner-signin" replace />;
     }
 
     return children;
-
 };
 
 export const AdminProtectedRoute = ({ children }) => {

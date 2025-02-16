@@ -23,23 +23,21 @@ const HouseownerSigninPage = () => {
                 email: values.email,
                 password: values.password
             });
-            
-            console.log('Login response:', response); // Debug log
 
             const landlordData = response.landlord;
-            
-            if (!landlordData.isVerified || landlordData.verificationStatus === "pending") {
+
+            if (!landlordData.isVerified) {
                 navigate("/auth/verification-pending");
                 return;
             }
 
+            // Use the correct ID field from the response
             navigate(`/landlord/${landlordData.id}/${landlordData.email}`);
 
         } catch (error) {
-            console.error('Login error:', error); // Debug log
             notification.error({
                 message: "Login Failed",
-                description: error.response?.data?.message || "Invalid email or password"
+                description: error.response?.data?.message || "Invalid credentials"
             });
         }
     };

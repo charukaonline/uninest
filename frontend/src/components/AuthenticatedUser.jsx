@@ -23,19 +23,21 @@ export function AuthenticatedUser({ children }) {
 }
 
 export function AuthenticatedLandlord({ children }) {
-    const { isAuthenticated } = useAuthStore();
-    const { isLandlordAuthenticated, landlord } = useLandlordAuthStore();
+    const { isLandlordAuthenticated, landlord, checkLandlordAuth } = useLandlordAuthStore();
 
-    // If authenticated as landlord, redirect to landlord dashboard
+    useEffect(() => {
+        // Only check auth if not already authenticated
+        if (!isLandlordAuthenticated && !landlord) {
+            checkLandlordAuth();
+        }
+    }, [isLandlordAuthenticated, landlord]);
+
+    // If already authenticated, redirect to dashboard
     if (isLandlordAuthenticated && landlord?._id) {
         return <Navigate to={`/landlord/${landlord._id}/${landlord.email}`} replace />;
     }
 
-    // If authenticated as student, show login page
-    if (isLandlordAuthenticated) {
-        return children;
-    }
-
+    // Otherwise show login page
     return children;
 }
 

@@ -202,12 +202,11 @@ exports.landlordSignin = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       landlord: {
-        id: landlord._id,
+        id: landlord._id.toString(), // Ensure ID is a string
         email: landlord.email,
-        fullName: landlord.fullName,
-        role: landlord.role,
+        username: landlord.username,
         isVerified: landlord.isVerified,
-        verificationStatus: landlordProfile.verificationStatus
+        verificationStatus: landlordProfile?.verificationStatus
       }
     });
     
@@ -231,9 +230,11 @@ exports.checkLandlordAuth = async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const landlord = await User.findById(decoded.userId).select("-password");
+    const landlord = await User.findById(decoded.userId)
+      .select("-password")
+      .where('role').equals('landlord');
     
-    if (!landlord || landlord.role !== "landlord") {
+    if (!landlord) {
       return res.status(401).json({
         success: false,
         message: "Invalid landlord account"
@@ -241,12 +242,14 @@ exports.checkLandlordAuth = async (req, res) => {
     }
 
     const landlordProfile = await LandlordProfile.findOne({ userId: landlord._id });
-    if (!landlordProfile) {
-      return res.status(401).json({
-        success: false,
-        message: "Landlord profile not found"
-      });
-    }
+    
+    res.status(200).json({
+      success: true,
+      landlord: {
+        ...landlord.toObject(),
+        profile: landlordProfile
+      }
+    });
 
   } catch (error) {
     console.error("Auth check error:", error);
