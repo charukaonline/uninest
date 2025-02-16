@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import React, { useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import LoadingSpinner from './include/LoadingSpinner';
+import { useLandlordAuthStore } from '@/store/landlordAuthStore';
 
 export function ProtectedRoute({ children }) {
 
@@ -10,6 +11,26 @@ export function ProtectedRoute({ children }) {
 
     if (!isAuthenticated || !user.isVerified) {
         return <Navigate to={"/"} replace />
+    }
+
+    return children;
+};
+
+export const LandlordProtectedRoute = ({ children }) => {
+    const { isLandlordAuthenticated, landlord, checkLandlordAuth, isCheckingLandlordAuth } = useLandlordAuthStore();
+    
+    useEffect(() => {
+        if (!isLandlordAuthenticated) {
+            checkLandlordAuth();
+        }
+    }, []);
+
+    if (isCheckingLandlordAuth) {
+        return <LoadingSpinner />;
+    }
+
+    if (!isLandlordAuthenticated || !landlord?._id) {
+        return <Navigate to="/auth/houseowner-signin" replace />;
     }
 
     return children;
@@ -26,7 +47,7 @@ export const AdminProtectedRoute = ({ children }) => {
                 navigate('/auth/uninest-admin');
             }
         };
-        
+
         verifyAuth();
     }, [checkAdminAuth, navigate]);
 

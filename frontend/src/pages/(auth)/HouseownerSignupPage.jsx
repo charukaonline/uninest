@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { notification } from 'antd';
 import HouseownerSignup1 from '@/components/signup_pages/HouseownerSignup1';
 import HouseownerSignup2 from '@/components/signup_pages/HouseownerSignup2';
-import { landlordSignup } from '@/services/api';
+import { useLandlordAuthStore } from '@/store/landlordAuthStore';
 
 const HouseownerSignupPage = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({});
-    const [loading, setLoading] = useState(false);
+    
+    const { landlordSignupStep1, landlordSignupStep2, isLoading } = useLandlordAuthStore();
 
     const handleFirstStepSubmit = async (values) => {
-        setLoading(true);
         try {
-            const response = await landlordSignup.step1(values);
+            const response = await landlordSignupStep1(values);
             setFormData((prevData) => ({
                 ...prevData,
                 ...values,
@@ -31,15 +31,28 @@ const HouseownerSignupPage = () => {
                 message: 'Registration Failed',
                 description: error.response?.data?.message || 'Something went wrong',
             });
-        } finally {
-            setLoading(false);
         }
     };
 
     const handleSecondStepSubmit = async (values) => {
-        setLoading(true);
         try {
-            await landlordSignup.step2(formData.userId, values);
+            if (!formData.userId) {
+                notification.error({
+                    message: 'Error',
+                    description: 'Missing user ID. Please complete step 1 first.',
+                });
+                return;
+            }
+
+            // Ensure values is properly formatted as FormData
+            const formDataToSubmit = values instanceof FormData ? values : new FormData();
+            if (!(values instanceof FormData)) {
+                Object.keys(values).forEach(key => {
+                    formDataToSubmit.append(key, values[key]);
+                });
+            }
+
+            await landlordSignupStep2(formData.userId, formDataToSubmit);
             notification.success({
                 message: 'Registration Successful',
                 description: 'Your account is pending verification.',
@@ -48,10 +61,8 @@ const HouseownerSignupPage = () => {
         } catch (error) {
             notification.error({
                 message: 'Profile Completion Failed',
-                description: error.response?.data?.message || 'Something went wrong',
+                description: error.message || 'Something went wrong',
             });
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -64,13 +75,13 @@ const HouseownerSignupPage = () => {
             {step === 1 && (
                 <HouseownerSignup1 
                     onFinish={handleFirstStepSubmit} 
-                    loading={loading} 
+                    loading={isLoading} 
                 />
             )}
             {step === 2 && (
                 <HouseownerSignup2 
                     onFinish={handleSecondStepSubmit} 
-                    loading={loading} 
+                    loading={isLoading} 
                 />
             )}
         </div>

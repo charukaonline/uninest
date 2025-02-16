@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BiShow, BiHide } from "react-icons/bi";
 import { Form, Input, notification } from "antd";
-import { landlordAuth } from "@/services/api";
+import { useLandlordAuthStore } from "@/store/landlordAuthStore";
 
 const HouseownerSigninPage = () => {
-
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const { landlordSignin, isLoading, landlord } = useLandlordAuthStore();
 
     const handleGoogleSignIn = () => {
         console.log("Google Sign-In triggered");
@@ -19,23 +19,25 @@ const HouseownerSigninPage = () => {
 
     const handleLoginSubmit = async (values) => {
         try {
-            const response = await landlordAuth.signin(values);
-            
-            if (response.user.verificationStatus === "pending") {
+            const response = await landlordSignin({
+                email: values.email,
+                password: values.password
+            });
+
+            const landlordData = response.landlord;
+
+            if (!landlordData.isVerified) {
                 navigate("/auth/verification-pending");
                 return;
             }
 
-            // Store token and user data in your auth context/local storage
-            localStorage.setItem("token", response.token);
-            localStorage.setItem("user", JSON.stringify(response.user));
+            // Use the correct ID field from the response
+            navigate(`/landlord/${landlordData._id}/${landlordData.email}`);
 
-            // Redirect to landlord dashboard
-            navigate("/dashboard/landlord");
         } catch (error) {
             notification.error({
                 message: "Login Failed",
-                description: error.response?.data?.message || "Something went wrong"
+                description: error.response?.data?.message || "Invalid credentials"
             });
         }
     };

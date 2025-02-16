@@ -15,19 +15,28 @@ import StudentDashboard from "./pages/(StdDashboard)/StdDashboard";
 import AdminDashboard from "./pages/(AdminDashboard)/AdminDashboard";
 import NotFound from "./pages/404Page";
 import UserPreference from "./components/signup_pages/UserPreference";
-import { ProtectedRoute, AdminProtectedRoute } from "./components/ProtectedRoute";
+import {
+  ProtectedRoute,
+  AdminProtectedRoute,
+  LandlordProtectedRoute,
+} from "./components/ProtectedRoute";
 import { useAuthStore } from "./store/authStore";
 import AdminLogin from "./pages/(auth)/AdminLogin";
 import LoadingSpinner from "./components/include/LoadingSpinner";
-import { AuthenticatedUser, AuthenticatedAdmin } from "./components/AuthenticatedUser";
+import {
+  AuthenticatedUser,
+  AuthenticatedAdmin,
+  AuthenticatedLandlord,
+} from "./components/AuthenticatedUser";
 import EmailVerificationPage from "./pages/(auth)/EmailVerificationPage";
+import ManageUsers from "./pages/(AdminDashboard)/ManageUsers";
+import LandlordDashboard from "./pages/(LandlordDashboard)/LandlordDashboard";
 
 function App() {
-
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
 
   useEffect(() => {
-    checkAuth()
+    checkAuth();
   }, [checkAuth]);
 
   if (isCheckingAuth) return <LoadingSpinner />;
@@ -75,19 +84,17 @@ function App() {
             </Layout>
           }
         />
-        <Route
-          path="/auth/email-verify"
-          element={<EmailVerificationPage />
-          }
-        />
+        <Route path="/auth/email-verify" element={<EmailVerificationPage />} />
 
         {/* House owners signup and signin */}
         <Route
           path="/auth/houseowner-signup"
           element={
-            <Layout>
-              <HouseownerSignupPage />
-            </Layout>
+            <AuthenticatedLandlord>
+              <Layout>
+                <HouseownerSignupPage />
+              </Layout>
+            </AuthenticatedLandlord>
           }
         />
         <Route
@@ -101,9 +108,11 @@ function App() {
         <Route
           path="/auth/houseowner-signin"
           element={
-            <Layout>
-              <HouseownerSigninPage />
-            </Layout>
+            <AuthenticatedLandlord>
+              <Layout>
+                <HouseownerSigninPage />
+              </Layout>
+            </AuthenticatedLandlord>
           }
         />
 
@@ -138,13 +147,57 @@ function App() {
         />
 
         {/* Student Dashboard */}
-        <Route path="/sd/:userId/:email" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
+        <Route
+          path="/student/:userId/:email"
+          element={
+            <ProtectedRoute>
+              <StudentDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Landlord Dashboard - Update this route */}
+        <Route
+          path="/landlord/:landlordId/:email"
+          element={
+            <LandlordProtectedRoute>
+              <LandlordDashboard />
+            </LandlordProtectedRoute>
+          }
+        />
 
         {/* Admin Login */}
-        <Route path="/auth/uninest-admin" element={<AuthenticatedAdmin><AdminLogin /></AuthenticatedAdmin>} />
+        <Route
+          path="/auth/uninest-admin"
+          element={
+            <AuthenticatedAdmin>
+              <AdminLogin />
+            </AuthenticatedAdmin>
+          }
+        />
 
         {/* Admin Dashboard */}
-        <Route path="/ad/:adminId/:email" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+        <Route
+          path="/admin/:adminId/:email"
+          element={
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/:adminId/:email/users"
+          element={
+            <AdminProtectedRoute>
+              <ManageUsers />
+            </AdminProtectedRoute>
+          }
+        />
+        {/* <Route path="/admin/listings" element={<ManageListings />} />
+        <Route path="/admin/analytics" element={<Analytics />} />
+        <Route path="/admin/reports" element={<Reports />} />
+        <Route path="/admin/feedbacks" element={<Feedbacks />} /> */}
       </Routes>
     </>
   );
