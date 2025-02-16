@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BiShow, BiHide } from "react-icons/bi";
 import { Form, Input, notification } from "antd";
-import { landlordAuth } from "@/services/api";
+import { useLandlordAuthStore } from "@/store/landlordAuthStore";
 
 const HouseownerSigninPage = () => {
-
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const { landlordSignin, isLoading, landlord } = useLandlordAuthStore();
 
     const handleGoogleSignIn = () => {
         console.log("Google Sign-In triggered");
@@ -19,23 +19,27 @@ const HouseownerSigninPage = () => {
 
     const handleLoginSubmit = async (values) => {
         try {
-            const response = await landlordAuth.signin(values);
+            const response = await landlordSignin({
+                email: values.email,
+                password: values.password
+            });
             
-            if (response.user.verificationStatus === "pending") {
+            console.log('Login response:', response); // Debug log
+
+            const landlordData = response.landlord;
+            
+            if (!landlordData.isVerified || landlordData.verificationStatus === "pending") {
                 navigate("/auth/verification-pending");
                 return;
             }
 
-            // Store token and user data in your auth context/local storage
-            localStorage.setItem("token", response.token);
-            localStorage.setItem("user", JSON.stringify(response.user));
+            navigate(`/landlord/${landlordData.id}/${landlordData.email}`);
 
-            // Redirect to landlord dashboard
-            // navigate(`/landlord/${userId}/${email}`);
         } catch (error) {
+            console.error('Login error:', error); // Debug log
             notification.error({
                 message: "Login Failed",
-                description: error.response?.data?.message || "Something went wrong"
+                description: error.response?.data?.message || "Invalid email or password"
             });
         }
     };

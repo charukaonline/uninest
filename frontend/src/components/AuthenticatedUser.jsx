@@ -3,16 +3,40 @@ import { useAuthStore } from "@/store/authStore";
 import React, { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import LoadingSpinner from "./include/LoadingSpinner";
+import { useLandlordAuthStore } from "@/store/landlordAuthStore";
 
 export function AuthenticatedUser({ children }) {
-  const { isAuthenticated, user } = useAuthStore();
+    const { isAuthenticated, user } = useAuthStore();
+    const { isLandlordAuthenticated } = useLandlordAuthStore();
 
-  if (isAuthenticated && user?.isVerified) {
-    const redirectPath = `/student/${user._id}/${user.email}`;
-    return <Navigate to={redirectPath} replace />;
-  }
+    // If authenticated as student, redirect to student dashboard
+    if (isAuthenticated && user?.role === 'user') {
+        return <Navigate to={`/student/${user._id}/${user.email}`} replace />;
+    }
 
-  return children;
+    // If authenticated as landlord, show login page
+    if (isLandlordAuthenticated) {
+        return children;
+    }
+
+    return children;
+}
+
+export function AuthenticatedLandlord({ children }) {
+    const { isAuthenticated } = useAuthStore();
+    const { isLandlordAuthenticated, landlord } = useLandlordAuthStore();
+
+    // If authenticated as landlord, redirect to landlord dashboard
+    if (isLandlordAuthenticated && landlord?._id) {
+        return <Navigate to={`/landlord/${landlord._id}/${landlord.email}`} replace />;
+    }
+
+    // If authenticated as student, show login page
+    if (isLandlordAuthenticated) {
+        return children;
+    }
+
+    return children;
 }
 
 export function AuthenticatedAdmin({ children }) {

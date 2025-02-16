@@ -18,6 +18,7 @@ import UserPreference from "./components/signup_pages/UserPreference";
 import {
   ProtectedRoute,
   AdminProtectedRoute,
+  LandlordProtectedRoute,
 } from "./components/ProtectedRoute";
 import { useAuthStore } from "./store/authStore";
 import AdminLogin from "./pages/(auth)/AdminLogin";
@@ -25,6 +26,7 @@ import LoadingSpinner from "./components/include/LoadingSpinner";
 import {
   AuthenticatedUser,
   AuthenticatedAdmin,
+  AuthenticatedLandlord,
 } from "./components/AuthenticatedUser";
 import EmailVerificationPage from "./pages/(auth)/EmailVerificationPage";
 import ManageUsers from "./pages/(AdminDashboard)/ManageUsers";
@@ -88,9 +90,11 @@ function App() {
         <Route
           path="/auth/houseowner-signup"
           element={
-            <Layout>
-              <HouseownerSignupPage />
-            </Layout>
+            <AuthenticatedLandlord>
+              <Layout>
+                <HouseownerSignupPage />
+              </Layout>
+            </AuthenticatedLandlord>
           }
         />
         <Route
@@ -104,9 +108,11 @@ function App() {
         <Route
           path="/auth/houseowner-signin"
           element={
-            <Layout>
-              <HouseownerSigninPage />
-            </Layout>
+            <AuthenticatedLandlord>
+              <Layout>
+                <HouseownerSigninPage />
+              </Layout>
+            </AuthenticatedLandlord>
           }
         />
 
@@ -150,13 +156,13 @@ function App() {
           }
         />
 
-        {/* Landlord Dashboard */}
+        {/* Landlord Dashboard - Update this route */}
         <Route
-          path="/landlord/:userId/:email"
+          path="/landlord/:landlordId/:email"
           element={
-            <ProtectedRoute>
+            <LandlordProtectedRoute>
               <LandlordDashboard />
-            </ProtectedRoute>
+            </LandlordProtectedRoute>
           }
         />
 

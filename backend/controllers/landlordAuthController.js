@@ -174,25 +174,20 @@ exports.landlordSignin = async (req, res) => {
 
     const { email, password } = req.body;
 
-    // Find user by email
-    const landlord = await User.findOne({ email });
-    if (!landlord) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    // Find user by email and role
+    const landlord = await User.findOne({ 
+      email, 
+      role: "landlord" 
+    });
 
     // Verify password
     const isPasswordValid = await bcryptjs.compare(password, landlord.password);
-    if (!isPasswordValid) {
+    if (!isPasswordValid || !landlord) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Check if user is a landlord
-    if (landlord.role !== "landlord") {
-      return res.status(403).json({ message: "Access denied. Landlords only." });
-    }
-
-    // Get landlord profile and verification status
-    const landlordProfile = await LandlordProfile.findOne({ landlordId: landlord._id });
+    // Get landlord profile
+    const landlordProfile = await LandlordProfile.findOne({ userId: landlord._id });
     if (!landlordProfile) {
       return res.status(404).json({ message: "Landlord profile not found" });
     }
@@ -201,6 +196,7 @@ exports.landlordSignin = async (req, res) => {
     landlord.lastLogin = new Date();
     await landlord.save();
 
+    // Generate token and set cookie
     generateTokenAndSetCookie(res, landlord._id);
 
     res.status(200).json({
@@ -214,8 +210,13 @@ exports.landlordSignin = async (req, res) => {
         verificationStatus: landlordProfile.verificationStatus
       }
     });
+    
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error('Landlord signin error:', error);
+    res.status(500).json({ 
+      message: "Server error", 
+      error: error.message 
+    });
   }
 };
 
@@ -230,32 +231,29 @@ exports.checkLandlordAuth = async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded) {
+    const landlord = await User.findById(decoded.userId).select("-password");
+    
+    if (!landlord || landlord.role !== "landlord") {
       return res.status(401).json({
         success: false,
-        message: "Invalid token"
+        message: "Invalid landlord account"
       });
     }
 
-    const landlord = await User.findById(decoded.landlordId).select("-password");
-    if (!landlord) {
+    const landlordProfile = await LandlordProfile.findOne({ userId: landlord._id });
+    if (!landlordProfile) {
       return res.status(401).json({
         success: false,
-        message: "Landlord not found"
+        message: "Landlord profile not found"
       });
     }
-
-    res.status(200).json({
-      success: true,
-      landlord
-    });
 
   } catch (error) {
     console.error("Auth check error:", error);
     res.status(401).json({
       success: false,
       message: "Authentication failed"
-    })
+    });
   }
 };
 
