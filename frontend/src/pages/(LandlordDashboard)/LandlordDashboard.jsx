@@ -1,6 +1,7 @@
 import { useLandlordAuthStore } from '@/store/landlordAuthStore'
 import React, { useEffect } from 'react'
 import LoadingSpinner from '@/components/include/LoadingSpinner';
+import Sidebar from '@/components/landlord_dashboard/Sidebar';
 
 const LandlordDashboard = () => {
     const { landlord, isLandlordAuthenticated, checkLandlordAuth, isCheckingLandlordAuth } = useLandlordAuthStore();
@@ -19,15 +20,19 @@ const LandlordDashboard = () => {
         return null;
     }
 
+    useEffect(() => {
+        document.title = `${landlord.username}'s Dashboard`;
+    })
+
     return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">
-                Welcome, {landlord?.firstName || landlord?.username || landlord?.email || 'Landlord'}
-            </h1>
-            <div className="bg-white p-4 rounded shadow">
-                <h2 className="text-xl mb-2">Your Profile</h2>
-                <p>Email: {landlord.email}</p>
-                <p>Status: {landlord.isVerified ? 'Verified' : 'Pending Verification'}</p>
+        <div className="flex h-screen bg-gray-100">
+
+            <div><Sidebar /></div>
+
+            <div style={{ marginLeft: '220px', padding: '1rem' }}>
+                <h1 className="text-2xl font-bold mb-4">
+                    Dashboard content goes here...
+                </h1>
             </div>
         </div>
     )
