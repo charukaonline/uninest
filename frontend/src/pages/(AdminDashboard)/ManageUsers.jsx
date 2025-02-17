@@ -288,43 +288,45 @@ export default function ManageUsers() {
           <TabsContent value="all-users">
             <Card>
               <CardContent className="p-4">
-                <Table>
-                  <TableCaption className=" text-center">A list of all verified users.</TableCaption>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Joined Date</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {allUsers.map((user) => (
-                      <TableRow key={user._id}>
-                        <TableCell className="font-medium">
-                          {user.username}
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <RoleBadge role={user.role} />
-                        </TableCell>
-                        <TableCell>
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className=" bg-orange-500"
-                          >
-                            Flag
-                          </Button>
-                        </TableCell>
+                <ScrollArea className="h-[calc(100vh-200px)]">
+                  <Table>
+                    <TableCaption className=" text-center">A list of all verified users.</TableCaption>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Username</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Joined Date</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {allUsers.map((user) => (
+                        <TableRow key={user._id}>
+                          <TableCell className="font-medium">
+                            {user.username}
+                          </TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            <RoleBadge role={user.role} />
+                          </TableCell>
+                          <TableCell>
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className=" bg-orange-500"
+                            >
+                              Flag
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
               </CardContent>
             </Card>
           </TabsContent>
