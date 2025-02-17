@@ -5,6 +5,10 @@ const HeroSection = () => {
 
   const navigate = useNavigate();
 
+  const searchUniversity = () => {
+    console.log('Search University');
+  }
+
   return (
     <section className="flex items-center justify-center bg-[url('/heroBackground.jpg')] bg-cover bg-center bg-no-repeat py-16 px-8 lg:px-20">
       {/* Container for left and right sections */}
@@ -26,7 +30,10 @@ const HeroSection = () => {
               className="flex-1 px-4 py-2 border-none focus:outline-none text-black bg-[#D9D9D9] rounded-md"
             />
             <div className="lg:h-6 w-px bg-gray-500 mx-4"></div>
-            <button className="px-6 py-2 bg-primaryBgColor text-white rounded-md hover:bg-green-700">
+            <button
+              onClick={searchUniversity}
+              className="px-6 py-2 bg-primaryBgColor text-white rounded-md hover:bg-green-700"
+            >
               Proceed
             </button>
           </div>

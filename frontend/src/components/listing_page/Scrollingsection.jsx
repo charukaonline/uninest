@@ -19,17 +19,12 @@ const ScrollingSection = () => {
     return (
         <section className="px-3 sm:px-4 md:px-6 py-4 bg-gray-100 min-h-screen flex flex-col items-center">
             {/* Filter Bars */}
-            <div className="hidden md:block w-full max-w-7xl">
+            <div className="hidden md:block w-full max-w-7xl mb-8">
                 <FilterBar />
             </div>
             <div className="block md:hidden mb-4 w-full max-w-7xl">
                 <MobileFilterBar />
             </div>
-
-            {/* Header Section */}
-            <header className="w-full max-w-7xl text-center mb-4">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">Results</h1>
-            </header>
 
             {/* Cards Grid */}
             <main className="h-[calc(100vh-160px)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 w-full">
