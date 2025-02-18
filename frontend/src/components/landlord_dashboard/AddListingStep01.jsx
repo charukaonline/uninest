@@ -63,7 +63,7 @@ const AddListingStep01 = ({ onFinish }) => {
 
                                 <Form.Item
                                     label={<span className='text-base font-medium'>Built Year</span>}
-                                    name="built-year"
+                                    name="builtYear"  // Changed from "built-year" to "builtYear"
                                     rules={[{ required: true, message: "Please enter built year!" }]}
                                 >
                                     <Input className="w-full h-10" placeholder='Ex: 2020' />

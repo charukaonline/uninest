@@ -1,4 +1,4 @@
-import DashboardLayout from "@/components/include/DashboardLayout";
+// import DashboardLayout from "@/components/include/DashboardLayout";
 import StudentSidebar from "@/components/student_dashboard/StudentSidebar";
 import { useAuthStore } from "@/store/authStore";
 import { useEffect, useState } from "react";
