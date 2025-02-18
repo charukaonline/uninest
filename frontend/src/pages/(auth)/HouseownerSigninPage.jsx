@@ -29,10 +29,10 @@ const HouseownerSigninPage = () => {
             if (!landlordData.isVerified) {
                 navigate("/auth/verification-pending");
                 return;
+            } else {
+                navigate(`/landlord/${landlordData._id}/${landlordData.email}`);
+                return;
             }
-
-            // Use the correct ID field from the response
-            navigate(`/landlord/${landlordData._id}/${landlordData.email}`);
 
         } catch (error) {
             notification.error({

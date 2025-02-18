@@ -34,16 +34,14 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className="bg-[#181818] h-fit fixed top-1 left-3 w-52 border-r border-gray-300 p-4 rounded-xl">
+        <div className="bg-[#181818] h-fit fixed top-1 left-2 w-52 border-r border-gray-300 p-4 rounded-xl">
 
             {/* Profile Section */}
             <div className="flex flex-col items-center space-y-2">
-                <img
-                    src="/path-to-your-image.jpg"
-                    alt="house-owner"
-                    className="w-14 h-14 rounded-full bg-primaryBgColor"
-                />
-                <h1 className="text-xl font-semibold text-white">John Watson</h1>
+                <div className=' w-14 h-14 flex items-center justify-center rounded-full bg-primaryBgColor text-white text-xl font-bold'>
+                    {landlord.email ? landlord.email.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <h1 className="text-xl font-semibold text-white">Welcome, {landlord.username}</h1>
             </div>
 
             {/* Links Section */}
