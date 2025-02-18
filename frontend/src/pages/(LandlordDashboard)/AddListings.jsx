@@ -1,15 +1,19 @@
+import AddListingStep01 from '@/components/landlord_dashboard/AddListingStep01'
 import Sidebar from '@/components/landlord_dashboard/Sidebar'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 const AddListings = () => {
+
+    useEffect(() => {
+        document.title = 'Add Listing details'
+    })
+
     return (
         <div className="flex h-screen bg-gray-100">
             <div><Sidebar /></div>
-            
-            <div style={{ marginLeft: '220px', padding: '1rem' }}>
-                <h1 className="text-2xl font-bold mb-4">
-                    Add Listings content goes here...
-                </h1>
+
+            <div style={{ marginLeft: '220px', marginTop: '-15px' }} className=' w-full'>
+                <AddListingStep01 />
             </div>
         </div>
     )

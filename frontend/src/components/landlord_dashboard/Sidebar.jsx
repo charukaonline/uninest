@@ -1,6 +1,6 @@
 import { useLandlordAuthStore } from '@/store/landlordAuthStore';
 import { LayoutDashboard, Users } from 'lucide-react';
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import { MdDashboard } from "react-icons/md";
 import { MdAddLocationAlt } from "react-icons/md";
@@ -10,12 +10,24 @@ import { IoSettings } from "react-icons/io5";
 import { MdFeedback } from "react-icons/md";
 import { IoMdHelpCircle } from "react-icons/io";
 import { RiLogoutBoxLine } from "react-icons/ri";
+import { notification } from 'antd';
 
 const Sidebar = () => {
 
+    const navigate = useNavigate();
     const location = useLocation();
     const { landlordId, email } = useParams();
-    const { landlord } = useLandlordAuthStore();
+    const { landlord, landlordLogout } = useLandlordAuthStore();
+
+    const handleLogout = async () => {
+        try {
+            await landlordLogout();
+            navigate("/auth/houseowner-signin");
+        } catch (error) {
+            console.error("Logout failed:", error);
+            notification.error({ message: 'Logout failed', description: 'An error occurred while trying to logout' });
+        }
+    }
 
     const isActive = (path) => location.pathname === path;
 
@@ -30,7 +42,7 @@ const Sidebar = () => {
     const lastLinks = [
         { name: 'Give Feedback', path: '/house-owner/feedback', icon: <MdFeedback />, txtColor: '#7F7F7F' },
         { name: 'Help & Support', path: '/house-owner/help-support', icon: <IoMdHelpCircle />, txtColor: '#7F7F7F' },
-        { name: 'Logout', path: '/house-owner/logout', icon: <RiLogoutBoxLine />, txtColor: '#F10A0A' },
+        { name: 'Logout', icon: <RiLogoutBoxLine />, txtColor: '#F10A0A', onclick: handleLogout },
     ];
 
     return (
@@ -63,14 +75,27 @@ const Sidebar = () => {
             <ul className="mt-10 space-y-3">
                 {lastLinks.map((link, index) => (
                     <li key={index}>
-                        <Link
-                            to={link.path}
-                            style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
-                            className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#212121] border-r-4 border-green-500" : "hover:text-white"}`}
-                        >
-                            <span className="text-lg">{link.icon}</span>
-                            <span className="text-base">{link.name}</span>
-                        </Link>
+                        {
+                            link.name === 'Logout' ? (
+                                <button
+                                    onClick={handleLogout}
+                                    style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
+                                    className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#212121] border-r-4 border-green-500" : "hover:text-white"}`}
+                                >
+                                    <span className="text-lg">{link.icon}</span>
+                                    <span className="text-base">{link.name}</span>
+                                </button>
+                            ) : (
+                                <Link
+                                    to={link.path}
+                                    style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
+                                    className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#212121] border-r-4 border-green-500" : "hover:text-white"}`}
+                                >
+                                    <span className="text-lg">{link.icon}</span>
+                                    <span className="text-base">{link.name}</span>
+                                </Link>
+                            )
+                        }
                     </li>
                 ))}
             </ul>
