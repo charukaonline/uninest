@@ -31,7 +31,7 @@ export function AuthenticatedLandlord({ children }) {
         }
     }, []);
 
-    if (isLandlordAuthenticated && landlord?._id) {
+    if (isLandlordAuthenticated && landlord?._id && landlord?.isVerified) {
         return <Navigate to={`/landlord/${landlord._id}/${landlord.email}`} replace />;
     }
 
