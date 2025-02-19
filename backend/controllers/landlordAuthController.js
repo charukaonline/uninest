@@ -34,7 +34,7 @@ exports.registerLandlord = async (req, res) => {
       username,
       phoneNumber: phone,
       role: "landlord",
-      isVerified: false, // Landlords need verification
+      isVerified: false,
     });
 
     await user.save();
@@ -202,7 +202,7 @@ exports.landlordSignin = async (req, res) => {
     res.status(200).json({
       success: true,
       landlord: {
-        _id: landlord._id.toString(),  // Changed from id to _id
+        _id: landlord._id.toString(),
         email: landlord.email,
         username: landlord.username,
         isVerified: landlord.isVerified,

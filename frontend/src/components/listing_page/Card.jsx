@@ -15,7 +15,7 @@ const PropertyCard = ({ image, title, price, location }) => {
       {/* Details Section */}
       <div className="p-4">
         <h3 className="text-lg font-semibold text-gray-800 mb-2">{title}</h3>
-        <p className="text-green-600 font-bold text-lg mb-2">{price}</p>
+        <p className="text-primaryBgColor font-bold text-lg mb-2">{price}</p>
         <p className="text-sm text-gray-600">{location}</p>
       </div>
     </div>

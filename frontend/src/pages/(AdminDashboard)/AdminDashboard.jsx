@@ -6,12 +6,15 @@ import Sidebar from "@/components/admin_dashboard/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Building2, MessageSquare, AlertTriangle } from "lucide-react";
+import { useAdminStore } from "@/store/adminStore";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { adminId, email } = useParams();
   const { admin, isAdminAuthenticated, adminLogout, isCheckingAdminAuth } =
     useAdminAuthStore();
+
+  const { allUsers } = useAdminStore();
 
   const handleLogout = async () => {
     try {
@@ -46,7 +49,7 @@ export default function AdminDashboard() {
   const statsCards = [
     {
       title: "Total Users",
-      value: "1,234",
+      value: `${allUsers.length}`,
       icon: Users,
       description: "Active users this month",
     },
@@ -92,16 +95,16 @@ export default function AdminDashboard() {
         <main className="p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {statsCards.map((card, index) => (
-              <Card key={index}>
+              <Card key={index} className=" bg-primaryBgColor text-white">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">
                     {card.title}
                   </CardTitle>
-                  <card.icon className="h-4 w-4 text-gray-500" />
+                  <card.icon className="h-5 w-5 text-white" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{card.value}</div>
-                  <p className="text-xs text-gray-500">{card.description}</p>
+                  <p className="text-xs text-gray-200">{card.description}</p>
                 </CardContent>
               </Card>
             ))}

@@ -31,6 +31,7 @@ import {
 import EmailVerificationPage from "./pages/(auth)/EmailVerificationPage";
 import ManageUsers from "./pages/(AdminDashboard)/ManageUsers";
 import LandlordDashboard from "./pages/(LandlordDashboard)/LandlordDashboard";
+import AddListings from "./pages/(LandlordDashboard)/AddListings";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -162,6 +163,15 @@ function App() {
           element={
             <LandlordProtectedRoute>
               <LandlordDashboard />
+            </LandlordProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/landlord/:landlordId/:email/add-listings"
+          element={
+            <LandlordProtectedRoute>
+              <AddListings />
             </LandlordProtectedRoute>
           }
         />

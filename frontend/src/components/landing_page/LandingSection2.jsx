@@ -22,7 +22,7 @@ function LandingSection2() {
         </p>
         <button
           className="bg-primaryBgColor text-white px-5 py-3 rounded-lg hover:bg-green-700"
-          onClick={() => navigate('/all listings')}
+          onClick={() => navigate('/all-listings')}
         >
           Browse Boarding Options
         </button>

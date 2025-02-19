@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { useParams } from "react-router-dom";
 import Sidebar from "@/components/admin_dashboard/Sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,34 +9,61 @@ import { notification } from "antd";
 import LoadingSpinner from "@/components/include/LoadingSpinner";
 import { useAdminStore } from "@/store/adminStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import axios from "axios";  // Add this import at the top
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+
+const RoleBadge = ({ role }) => {
+  const roleStyles = {
+    landlord: "bg-purple-100 text-blue-800 border-purple-200",
+    user: "bg-blue-100 text-green-800 border-blue-200",
+  };
+
+  return (
+    <span
+      className={`px-3 py-1 rounded-full text-sm font-medium border ${roleStyles[role]
+        }`}
+    >
+      {role}
+    </span>
+  );
+};
 
 export default function ManageUsers() {
   const [currentTab, setCurrentTab] = useState("pending-landlords");
   const { adminId, email } = useParams();
-  const { 
-    unverifiedLandlords, 
-    fetchUnverifiedLandlords, 
+  const {
+    unverifiedLandlords,
+    fetchUnverifiedLandlords,
     shouldRefresh,
     setShouldRefresh,
-    isLoading, 
-    error 
+    isLoading,
+    error,
+    allUsers,
+    fetchAllUsers,
   } = useAdminStore();
 
   // Effect for title update
   useEffect(() => {
     if (currentTab === "pending-landlords") {
-      document.title = `We have (${unverifiedLandlords.length}) pending accounts`;
+      document.title = `Review Needed For (${unverifiedLandlords.length})`;
     } else {
-      document.title = "User Management";
+      document.title = `(${allUsers.length}) Verify Members`;
     }
-  }, [currentTab, unverifiedLandlords.length]);
+  }, [currentTab, unverifiedLandlords.length, allUsers.length]);
 
   useEffect(() => {
     const controller = new AbortController();
-    
+
     // Initial fetch
     fetchUnverifiedLandlords(controller.signal);
+    fetchAllUsers(controller.signal);
 
     let refreshInterval;
     if (shouldRefresh) {
@@ -71,7 +99,7 @@ export default function ManageUsers() {
           },
         }
       );
-      
+
       if (response.status === 200) {
         notification.success({
           message: "Success",
@@ -98,7 +126,7 @@ export default function ManageUsers() {
           },
         }
       );
-      
+
       if (response.status === 200) {
         notification.success({
           message: "Success",
@@ -185,7 +213,7 @@ export default function ManageUsers() {
                   ) : (
                     unverifiedLandlords.map((landlord) => (
                       <Card key={landlord._id}>
-                        <CardHeader>
+                        <CardHeader className=" -mb-5">
                           <div className=" flex space-x-2">
                             <CardTitle>
                               {landlord?.username || "Unknown"}
@@ -194,18 +222,28 @@ export default function ManageUsers() {
                           </div>
                         </CardHeader>
                         <CardContent>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>NIC</TableHead>
+                              <TableHead>Contact Number</TableHead>
+                              <TableHead>Address</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            <TableRow>
+                              <TableCell className="font-medium">
+                                {landlord?.nationalIdCardNumber}
+                              </TableCell>
+                              <TableCell>
+                                {landlord?.phoneNumber || "Not provided"}
+                              </TableCell>
+                              <TableCell>
+                                {landlord?.residentialAddress}
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+
                           <div className="grid gap-2">
-                            <div className=" flex space-x-4">
-                              <div className=" flex space-x-2">
-                                <h2 className=" text-gray-500">NIC:</h2> <h2 className=" font-semibold">{landlord?.nationalIdCardNumber}</h2>
-                              </div>
-                              <div className=" flex space-x-2">
-                                <h2 className=" text-gray-500">Phone:</h2> <h2 className=" font-semibold">{landlord?.phoneNumber || "Not provided"}</h2>
-                              </div>
-                              <div className=" flex space-x-2">
-                                <h2 className=" text-gray-500">Address:</h2> <h2 className=" font-semibold">{landlord?.residentialAddress}</h2>
-                              </div>
-                            </div>
                             <div className="flex gap-2 mt-4 justify-between">
                               <div>
                                 {landlord?.verificationDocuments?.length > 0 && (
@@ -249,10 +287,46 @@ export default function ManageUsers() {
 
           <TabsContent value="all-users">
             <Card>
-              <CardContent className="p-6">
-                <p className="text-center text-gray-500">
-                  All users will be displayed here
-                </p>
+              <CardContent className="p-4">
+                <ScrollArea className="h-[calc(100vh-200px)]">
+                  <Table>
+                    <TableCaption className=" text-center">A list of all verified users.</TableCaption>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Username</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Joined Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allUsers.map((user) => (
+                        <TableRow key={user._id}>
+                          <TableCell className="font-medium">
+                            {user.username}
+                          </TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            <RoleBadge role={user.role} />
+                          </TableCell>
+                          <TableCell>
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className=" bg-orange-500"
+                            >
+                              Flag
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
               </CardContent>
             </Card>
           </TabsContent>
