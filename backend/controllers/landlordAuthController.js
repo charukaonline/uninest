@@ -196,8 +196,8 @@ exports.landlordSignin = async (req, res) => {
     landlord.lastLogin = new Date();
     await landlord.save();
 
-    // Generate token and set cookie
-    generateTokenAndSetCookie(res, landlord._id);
+    // Generate token with landlord type
+    generateTokenAndSetCookie(res, landlord._id, 'landlord');
 
     res.status(200).json({
       success: true,
@@ -221,7 +221,7 @@ exports.landlordSignin = async (req, res) => {
 
 exports.checkLandlordAuth = async (req, res) => {
   try {
-    const token = req.cookies.token;
+    const token = req.cookies.landlordToken;  // Change to landlordToken
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -264,6 +264,6 @@ exports.checkLandlordAuth = async (req, res) => {
 };
 
 exports.logoutLandlord = async (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("landlordToken");  // Change to landlordToken
   res.status(200).json({ success: true, message: "Logged out successfully" });
 };
