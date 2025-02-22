@@ -9,18 +9,32 @@ const AddListingStep01 = () => {
   const navigate = useNavigate();
 
   const onFinish = async (values) => {
-    const formData = new FormData();
-    Object.keys(values).forEach((key) => {
-      if (key === "propertyImages") {
-        values[key].fileList.forEach((file) => {
-          formData.append("images", file.originFileObj);
-        });
-      } else {
-        formData.append(key, values[key]);
-      }
-    });
-
     try {
+      const formData = new FormData();
+      
+      // Handle numeric fields properly
+      const numericFields = ['size', 'bedrooms', 'bathrooms', 'garage', 'monthlyRent', 'builtYear'];
+      numericFields.forEach(field => {
+        if (values[field] !== undefined && values[field] !== '') {
+          formData.append(field, Number(values[field]));
+        } else {
+          formData.append(field, 0);
+        }
+      });
+
+      // Handle other fields
+      Object.keys(values).forEach((key) => {
+        if (!numericFields.includes(key)) {
+          if (key === "propertyImages") {
+            values[key].fileList.forEach((file) => {
+              formData.append("images", file.originFileObj);
+            });
+          } else {
+            formData.append(key, values[key]);
+          }
+        }
+      });
+
       const response = await axios.post(
         "http://localhost:5000/api/listings/add",
         formData,
@@ -123,6 +137,7 @@ const AddListingStep01 = () => {
                   name="size"
                 >
                   <Input
+                    type="number"
                     className="w-full h-10"
                     placeholder="Approximate size in square meters"
                   />
