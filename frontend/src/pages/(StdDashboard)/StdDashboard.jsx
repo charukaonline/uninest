@@ -30,6 +30,7 @@ export default function StudentDashboard() {
       <StudentSidebar></StudentSidebar>
 
       <h1>Hello {user?.username}</h1>
+      <h1>{user?.email}</h1>
     </>
   );
 }
