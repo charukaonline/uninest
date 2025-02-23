@@ -1,59 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Input, Upload, Select, notification } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-const AddListingStep01 = () => {
+const AddListingStep01 = ({ onFinish, initialValues }) => {
   const [form] = Form.useForm();
-  const navigate = useNavigate();
 
-  const onFinish = async (values) => {
-    try {
-      const formData = new FormData();
-      
-      // Handle numeric fields properly
-      const numericFields = ['size', 'bedrooms', 'bathrooms', 'garage', 'monthlyRent', 'builtYear'];
-      numericFields.forEach(field => {
-        if (values[field] !== undefined && values[field] !== '') {
-          formData.append(field, Number(values[field]));
-        } else {
-          formData.append(field, 0);
-        }
-      });
-
-      // Handle other fields
-      Object.keys(values).forEach((key) => {
-        if (!numericFields.includes(key)) {
-          if (key === "propertyImages") {
-            values[key].fileList.forEach((file) => {
-              formData.append("images", file.originFileObj);
-            });
-          } else {
-            formData.append(key, values[key]);
-          }
-        }
-      });
-
-      const response = await axios.post(
-        "http://localhost:5000/api/listings/add",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
-
-      notification.success({ message: "Listing added successfully!" });
-      navigate("/add-listing-step-2");
-    } catch (error) {
-      notification.error({
-        message: "Failed to add listing",
-        description: error.response?.data?.message || error.message,
-      });
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues);
     }
+  }, [initialValues, form]);
+
+  const handleSubmit = (values) => {
+    onFinish(values);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -69,8 +30,9 @@ const AddListingStep01 = () => {
       <Form
         form={form}
         name="add-listing-step-01"
-        onFinish={onFinish}
+        onFinish={handleSubmit}
         onFinishFailed={onFinishFailed}
+        initialValues={initialValues}
         layout="vertical"
         className="max-w-[1400px] mx-auto"
       >
