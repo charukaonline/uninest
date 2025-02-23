@@ -66,6 +66,7 @@ const sendInquiryEmail = async (inquiryType, email, name, phone, message) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: process.env.EMAIL_USER,
+      replyTo: email,
       subject: `New Inquiry: ${inquiryType}`,
       html: `
         <h2>New Inquiry from Website</h2>
