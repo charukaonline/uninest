@@ -44,7 +44,6 @@ const AddListings = () => {
             formData.append("images", file.originFileObj);
           });
         } else {
-          // Convert property type value to string
           if (key === "propertyType") {
             const propertyTypes = {
               1: "Boarding House",
@@ -57,11 +56,12 @@ const AddListings = () => {
         }
       });
 
-      // Add step 2 data
+      // Add coordinates properly
       if (values.coordinates) {
-        formData.append("coordinates[latitude]", values.coordinates.latitude);
-        formData.append("coordinates[longitude]", values.coordinates.longitude);
+        formData.append('coordinates[latitude]', String(values.coordinates.latitude));
+        formData.append('coordinates[longitude]', String(values.coordinates.longitude));
       }
+
       // Add other step 2 fields
       [
         "address",

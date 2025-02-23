@@ -37,9 +37,13 @@ const AddListingStep02 = ({ onFinish, initialValues }) => {
       return;
     }
 
+    // Ensure coordinates are numbers
     const formData = {
       ...values,
-      coordinates: selectedCoordinates,
+      coordinates: {
+        latitude: parseFloat(selectedCoordinates.latitude),
+        longitude: parseFloat(selectedCoordinates.longitude)
+      }
     };
     onFinish(formData);
   };

@@ -48,6 +48,12 @@ exports.addListing = async (req, res) => {
       imageUrls = uploadResults.map((result) => result.Location);
     }
 
+    // Parse coordinates correctly
+    const coordinates = {
+      latitude: parseFloat(req.body.coordinates?.latitude) || 0,
+      longitude: parseFloat(req.body.coordinates?.longitude) || 0
+    };
+
     // Create new listing
     const newListing = new Listing({
       landlordId,
@@ -66,10 +72,7 @@ exports.addListing = async (req, res) => {
       province: req.body.province,
       postalCode: req.body.postalCode,
       nearestUniversity: req.body.nearestUniversity,
-      coordinates: {
-        latitude: parseNumber(req.body["coordinates[latitude]"]),
-        longitude: parseNumber(req.body["coordinates[longitude]"]),
-      },
+      coordinates: coordinates,
       images: imageUrls,
       status: "available",
     });
