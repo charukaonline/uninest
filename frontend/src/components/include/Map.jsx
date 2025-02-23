@@ -57,15 +57,12 @@ const Map = ({
     const handleMapClick = (e) => {
       const { lat, lng } = e.latlng;
 
-      // Remove existing marker
       if (markerRef.current) {
         markerRef.current.remove();
       }
 
-      // Add new marker
       markerRef.current = L.marker([lat, lng]).addTo(mapRef.current);
 
-      // Call the callback with coordinates
       if (onLocationSelect) {
         onLocationSelect({ latitude: lat, longitude: lng });
       }

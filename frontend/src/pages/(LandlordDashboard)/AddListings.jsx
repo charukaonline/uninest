@@ -12,6 +12,14 @@ const AddListings = () => {
     step2: null,
   });
 
+  useEffect(() => {
+    if (step === 1) {
+      document.title = "Add Property Details";
+    } else if (step === 2) {
+      document.title = "Provide Location Information";
+    }
+  })
+
   const handleFirstStep = (values) => {
     try {
       setListingData((prev) => ({

@@ -148,7 +148,6 @@ const AddListingStep02 = ({ onFinish, initialValues }) => {
 
               {/* Second Column */}
               <div className="space-y-4 w-full">
-                {/* Map here */}
                 <Form.Item
                   label={
                     <span className="text-base font-medium">
@@ -171,7 +170,7 @@ const AddListingStep02 = ({ onFinish, initialValues }) => {
                     },
                   ]}
                 >
-                  <div className="h-[420px] w-full">
+                  <div className="h-[420px] w-[620px]">
                     <Map
                       onLocationSelect={handleLocationSelect}
                       selectedLocations={
