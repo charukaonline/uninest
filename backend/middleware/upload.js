@@ -1,22 +1,8 @@
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, "..", "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Storage configuration for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
+// Use memory storage instead of disk storage
+const storage = multer.memoryStorage();
 
 // File filter to validate file types (PDFs for NICs, images for listings)
 const fileFilter = (req, file, cb) => {
@@ -33,7 +19,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Multer instance with defined storage, file filter, and limits
+// Multer instance with memory storage
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,

@@ -52,11 +52,10 @@ const listingSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // This will automatically handle createdAt and updatedAt
+    timestamps: true,
   }
 );
 
-// Add index for better search performance
 listingSchema.index({ city: 1, propertyType: 1 });
 listingSchema.index({ coordinates: "2dsphere" }); // For geospatial queries
 

@@ -5,8 +5,6 @@ const tempStorage = require("../utils/tempStorage");
 const fs = require("fs");
 
 exports.addListing = async (req, res) => {
-  let savedImagePaths = [];
-
   try {
     const landlordId = req.user?.id;
 
@@ -32,71 +30,57 @@ exports.addListing = async (req, res) => {
       return isNaN(num) ? 0 : num;
     };
 
-    try {
-      // Save files temporarily
-      if (req.files && req.files.length > 0) {
-        savedImagePaths = await tempStorage.saveImages(req.files);
-      }
-
-      // Upload to S3
-      const uploadPromises = savedImagePaths.map((file) => {
+    // Handle file uploads directly to S3
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      const uploadPromises = req.files.map((file) => {
         const params = {
           Bucket: process.env.AWS_BUCKET_NAME,
-          Key: `listings/${file.name}`,
-          Body: fs.createReadStream(file.path),
-          ContentType: "image/jpeg",
+          Key: `listings/${Date.now()}-${file.originalname}`,
+          Body: file.buffer,
+          ContentType: file.mimetype,
           ACL: "public-read",
         };
         return s3.upload(params).promise();
       });
 
       const uploadResults = await Promise.all(uploadPromises);
-
-      // Create new listing
-      const newListing = new Listing({
-        landlordId,
-        landlordEmail: landlord.email,
-        propertyName: req.body.propertyName,
-        propertyType: req.body.propertyType,
-        builtYear: parseNumber(req.body.builtYear),
-        size: parseNumber(req.body.size),
-        bedrooms: parseNumber(req.body.bedrooms),
-        bathrooms: parseNumber(req.body.bathrooms),
-        garage: parseNumber(req.body.garage),
-        monthlyRent: parseNumber(req.body.monthlyRent),
-        description: req.body.description || "",
-        address: req.body.address,
-        city: req.body.city,
-        province: req.body.province,
-        postalCode: req.body.postalCode,
-        nearestUniversity: req.body.nearestUniversity,
-        coordinates: {
-          latitude: parseNumber(req.body["coordinates[latitude]"]),
-          longitude: parseNumber(req.body["coordinates[longitude]"]),
-        },
-        images: uploadResults.map((result) => result.Location),
-        status: "available",
-      });
-
-      await newListing.save();
-
-      // Cleanup temporary files
-      await tempStorage.cleanupImages(savedImagePaths.map((file) => file.path));
-
-      res.status(201).json({
-        success: true,
-        message: "Listing added successfully",
-        listing: newListing,
-      });
-    } catch (uploadError) {
-      // Cleanup temporary files in case of error during upload
-      if (savedImagePaths.length > 0) {
-        await tempStorage.cleanupImages(
-          savedImagePaths.map((file) => file.path)
-        );
-      }
-      throw uploadError;
+      imageUrls = uploadResults.map((result) => result.Location);
     }
+
+    // Create new listing
+    const newListing = new Listing({
+      landlordId,
+      landlordEmail: landlord.email,
+      propertyName: req.body.propertyName,
+      propertyType: req.body.propertyType,
+      builtYear: parseNumber(req.body.builtYear),
+      size: parseNumber(req.body.size),
+      bedrooms: parseNumber(req.body.bedrooms),
+      bathrooms: parseNumber(req.body.bathrooms),
+      garage: parseNumber(req.body.garage),
+      monthlyRent: parseNumber(req.body.monthlyRent),
+      description: req.body.description || "",
+      address: req.body.address,
+      city: req.body.city,
+      province: req.body.province,
+      postalCode: req.body.postalCode,
+      nearestUniversity: req.body.nearestUniversity,
+      coordinates: {
+        latitude: parseNumber(req.body["coordinates[latitude]"]),
+        longitude: parseNumber(req.body["coordinates[longitude]"]),
+      },
+      images: imageUrls,
+      status: "available",
+    });
+
+    await newListing.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Listing added successfully",
+      listing: newListing,
+    });
   } catch (error) {
     console.error("Error adding listing:", error);
     res.status(500).json({
