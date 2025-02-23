@@ -6,7 +6,8 @@ const User = require("../models/User");
 const LandlordProfile = require("../models/LandlordProfile");
 const drive = require("../config/googleDrive");
 const fs = require("fs").promises;
-const fsSync = require("fs"); // Add this line for synchronous fs operations
+const fsSync = require("fs");
+const { Readable } = require('stream');
 
 const {
   generateTokenAndSetCookie,
@@ -57,7 +58,6 @@ exports.registerLandlord = async (req, res) => {
 };
 
 exports.completeLandlordProfile = async (req, res) => {
-  let uploadedFile = null;
   try {
     console.log("Starting landlord profile completion...");
     const { userId } = req.params;
@@ -75,20 +75,6 @@ exports.completeLandlordProfile = async (req, res) => {
       return res.status(400).json({ message: "NIC document is required" });
     }
 
-    uploadedFile = nicDocument.path;
-    console.log("File path:", uploadedFile);
-
-    // Check if file exists before upload
-    try {
-      await fs.access(uploadedFile);
-      console.log("File exists and is accessible");
-    } catch (error) {
-      console.error("File access error:", error);
-      return res
-        .status(400)
-        .json({ message: "File access error", error: error.message });
-    }
-
     // Check if user exists
     const user = await User.findById(userId);
     if (!user) {
@@ -96,7 +82,12 @@ exports.completeLandlordProfile = async (req, res) => {
     }
 
     console.log("Uploading to Google Drive...");
-    // Upload to Google Drive
+    // Create a readable stream from the buffer
+    const bufferStream = new Readable();
+    bufferStream.push(nicDocument.buffer);
+    bufferStream.push(null);
+
+    // Upload to Google Drive using stream
     let driveResponse;
     try {
       driveResponse = await drive.files.create({
@@ -107,7 +98,7 @@ exports.completeLandlordProfile = async (req, res) => {
         },
         media: {
           mimeType: "application/pdf",
-          body: fsSync.createReadStream(uploadedFile),
+          body: bufferStream,
         },
       });
       console.log("Drive upload successful:", driveResponse.data);
@@ -140,32 +131,12 @@ exports.completeLandlordProfile = async (req, res) => {
     console.log("Saving landlord profile...");
     await landlordProfile.save();
 
-    // Clean up uploaded file
-    try {
-      await fs.access(uploadedFile);
-      await fs.unlink(uploadedFile);
-      console.log("File cleanup successful");
-    } catch (unlinkError) {
-      console.error("File cleanup error:", unlinkError);
-    }
-
     res.status(200).json({
       message: "Landlord profile completed, waiting for verification",
       profile: landlordProfile,
     });
   } catch (error) {
     console.error("Complete error:", error);
-
-    // Clean up file if it exists
-    if (uploadedFile) {
-      try {
-        await fs.access(uploadedFile);
-        await fs.unlink(uploadedFile);
-      } catch (unlinkError) {
-        console.error("Cleanup error:", unlinkError);
-      }
-    }
-
     res.status(500).json({
       message: "Server error",
       error: error.message,

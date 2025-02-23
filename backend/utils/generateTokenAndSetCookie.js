@@ -5,11 +5,13 @@ const generateTokenAndSetCookie = (res, userId, role = "landlord") => {
     expiresIn: "1d",
   });
 
-  res.cookie("landlordToken", token, {
-    httpOnly: true, // ✅ Secure and prevents XSS attacks
-    secure: process.env.NODE_ENV === "production", // ✅ Enable in production
-    sameSite: "Lax", // ✅ Prevents CSRF attacks while allowing frontend access
-    path: "/", // ✅ Ensures accessibility across routes
+  const cookieName = role === "admin" ? "adminToken" : "landlordToken";
+
+  res.cookie(cookieName, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Lax",
+    path: "/",
   });
 
   return token;
