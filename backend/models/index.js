@@ -8,4 +8,5 @@ module.exports = {
   Conversation: require("./Conversation"),
   Notification: require("./Notification"),
   Report: require("./Report"),
+  Listing: require("./Listing"),
 };

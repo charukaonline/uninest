@@ -46,7 +46,7 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className="bg-[#181818] h-fit fixed top-1 left-2 w-52 border-r border-gray-300 p-4 rounded-xl">
+        <div className="bg-[#181818] h-full fixed w-52 border-r border-gray-300 p-4">
 
             {/* Profile Section */}
             <div className="flex flex-col items-center space-y-2">

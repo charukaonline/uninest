@@ -56,27 +56,49 @@ export default function HomeContactSection() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validate()) {
-      notification.success({
-        message: "Form Submitted",
-        description: "Your form has been submitted successfully.",
-        duration: 3,
-      });
+      try {
+        const response = await fetch('http://localhost:5000/api/send-email/add-inquiry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
 
-      // Reset form after submission
-      setFormData({
-        inquiryType: "",
-        name: "",
-        email: "",
-        phone: "",
-        message: "",
-      });
+        if (response.ok) {
+          notification.success({
+            message: "Success",
+            description: "Your inquiry has been sent successfully!",
+            duration: 3,
+          });
+
+          // Reset form after submission
+          setFormData({
+            inquiryType: "",
+            name: "",
+            email: "",
+            phone: "",
+            message: "",
+          });
+        } else {
+          notification.error({
+            message: "Error",
+            description: "Failed to send inquiry. Please try again.",
+            duration: 3,
+          });
+        }
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: "An error occurred. Please try again later.",
+          duration: 3,
+        });
+      }
     }
-
-    console.log("Form Submitted: ", formData);
   };
 
   return (
@@ -84,6 +106,7 @@ export default function HomeContactSection() {
       className="max-w-screen-xl mx-auto bg-white p-16 flex flex-col lg:flex-row gap-40 w-auto text-center lg:text-left bg-cover bg-center"
       style={{ backgroundImage: "url('/landingContactImage.png')" }}
     >
+      {/* Left section */}
       <div className="space-y-4 text-center md:text-left text-white md:w-1/2">
         <h2 className="text-4xl font-bold leading-tight">
           Why Our Service Is The Perfect Choice?
@@ -91,9 +114,10 @@ export default function HomeContactSection() {
         <p className="text-lg text-gray-200">
           We offer exceptional solutions tailored to your needs, combining expertise, innovation,
           and unmatched customer support to deliver the best experience possible.
-          Choose us for reliability, quality, and results that exceed expectations!
         </p>
       </div>
+
+      {/* Right section */}
       <div className="w-full md:w-1/2 lg:w-2/5 mt-8 md:mt-0">
         <div
           className="p-5 rounded-lg shadow-lg"
@@ -103,6 +127,7 @@ export default function HomeContactSection() {
             Feel free to reach us anytime!
           </h1>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Form fields */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Inquiry Type <span className="text-red-500">*</span>
