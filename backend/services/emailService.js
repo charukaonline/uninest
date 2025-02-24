@@ -65,12 +65,13 @@ const sendInquiryEmail = async (inquiryType, email, name, phone, message) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: 'sanojaminda@gmail.com',
+      to: "nkcharuka1@gmail.com",
       subject: `New Inquiry: ${inquiryType}`,
+      replyTo: email,
       html: `
         <h2>New Inquiry from Website</h2>
         <p><strong>From:</strong> ${name} (${email})</p>
-        <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+        <p><strong>Phone:</strong> ${phone || "Not provided"}</p>
         <p><strong>Inquiry Type:</strong> ${inquiryType}</p>
         <p><strong>Message:</strong></p>
         <p>${message}</p>
@@ -78,12 +79,12 @@ const sendInquiryEmail = async (inquiryType, email, name, phone, message) => {
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', result);
+    console.log("Email sent successfully:", result);
     return result;
   } catch (error) {
     console.error("Error sending inquiry email:", error);
     throw error; // Re-throw the error to be handled by the controller
   }
-}
+};
 
 module.exports = { sendVerificationEmail, sendWelcomeEmail, sendInquiryEmail };
