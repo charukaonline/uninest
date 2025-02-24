@@ -68,7 +68,7 @@ exports.loginAdmin = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    generateTokenAndSetCookie(res, admin._id, "admin");
+    generateTokenAndSetCookie(res, admin._id);
 
     // Update last login
     admin.lastLogin = new Date();
@@ -93,13 +93,14 @@ exports.loginAdmin = async (req, res) => {
 };
 
 exports.logoutAdmin = async (req, res) => {
-  res.clearCookie("adminToken");
+  res.clearCookie("token");
   res.status(200).json({ success: true, message: "Logged out successfully" });
 };
 
 exports.checkAdminAuth = async (req, res) => {
     try {
-        const token = req.cookies.adminToken;
+        // Get token from cookies
+        const token = req.cookies.token;
         if (!token) {
             return res.status(401).json({ 
                 success: false, 
