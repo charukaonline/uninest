@@ -1,19 +1,34 @@
+// server.js
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const passport = require("./config/passport");
 const { ensureUploadsDirectory } = require("./config/init");
-const punycode = require("punycode");
 const cookieParser = require("cookie-parser");
+const session = require("express-session"); // Added session import
 const adminRoutes = require("./routes/admin");
+const listingRoutes = require("./routes/listingRoutes");
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware to parse JSON
+// Body parser to handle form data
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Session middleware
+app.use(
+  session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+// CORS configuration
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
@@ -21,18 +36,18 @@ app.use(
   })
 );
 
-app.use(express.json());
+// Parse cookies
 app.use(cookieParser());
 
 // Initialize passport
 app.use(passport.initialize());
 
-// MongoDB Connection
+// Ensure uploads directory exists
+ensureUploadsDirectory();
+
+// MongoDB Connection and Server Start
 const startServer = async () => {
   try {
-    // Ensure uploads directory exists
-    ensureUploadsDirectory();
-
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB");
 
@@ -67,3 +82,4 @@ app.get("/", (req, res) => {
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/admin", adminRoutes);
 app.use("/api/send-email", require("./routes/inquiry"));
+app.use("/api/listings", listingRoutes);
