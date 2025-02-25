@@ -48,7 +48,7 @@ exports.addListing = async (req, res) => {
 
       // Set S3 upload parameters
       const params = {
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Bucket: process.env.AWS_BUCKET_NAME,
         Key: `listings/${file.filename}`, // This is the key (path) in the bucket
         Body: fileContent,
         ContentType: file.mimetype,
