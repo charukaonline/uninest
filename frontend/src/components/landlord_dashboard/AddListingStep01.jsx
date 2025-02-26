@@ -95,6 +95,7 @@ const AddListingStep01 = ({ onFinish }) => {
                                     name="size"
                                     rules={[
                                         {
+                                            required: true,
                                             type: 'number',
                                             transform: (value) => Number(value),
                                             min: 0,
@@ -113,6 +114,7 @@ const AddListingStep01 = ({ onFinish }) => {
                                     name="bedrooms"
                                     rules={[
                                         {
+                                            required: true,
                                             type: 'number',
                                             transform: (value) => Number(value),
                                             min: 0,
@@ -128,6 +130,7 @@ const AddListingStep01 = ({ onFinish }) => {
                                     name="bathrooms"
                                     rules={[
                                         {
+                                            required: true,
                                             type: 'number',
                                             transform: (value) => Number(value),
                                             min: 0,
@@ -143,6 +146,7 @@ const AddListingStep01 = ({ onFinish }) => {
                                     name="garage"
                                     rules={[
                                         {
+                                            required: true,
                                             type: 'number',
                                             transform: (value) => Number(value),
                                             min: 0,

@@ -74,6 +74,10 @@ const AddListings = () => {
                 message: 'Listing added successfully',
                 description: 'Your listing is now live.',
             });
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
             
         } catch (error) {
             console.error('Full error:', error);
