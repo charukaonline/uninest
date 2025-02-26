@@ -1,8 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const { validateSignup, validateSignin, validateLandlordSignup1, validateLandlordSignup2, validateLandlordSignin } = require("../middleware/validation");
-const upload = require('../middleware/upload');
+const {
+  validateSignup,
+  validateSignin,
+  validateLandlordSignup1,
+  validateLandlordSignup2,
+  validateLandlordSignin,
+} = require("../middleware/validation");
+const nicUpload = require("../middleware/nicUpload");
 
 const {
   login,
@@ -18,7 +24,8 @@ const {
   completeLandlordProfile,
   landlordSignin,
   checkLandlordAuth,
-  logoutLandlord } = require("../controllers/landlordAuthController");
+  logoutLandlord,
+} = require("../controllers/landlordAuthController");
 
 const {
   registerAdmin,
@@ -27,7 +34,7 @@ const {
   checkAdminAuth,
 } = require("../controllers/adminAuthController");
 
-const { verifyToken } = require('../middleware/verifyToken');
+const { verifyToken } = require("../middleware/verifyToken");
 
 // Student auth routes
 router.get("/check-auth", verifyToken, checkAuth);
@@ -54,16 +61,20 @@ router.get(
 );
 
 // Landlord auth routes
-router.post("/landlord/signup/step1", validateLandlordSignup1, registerLandlord);
+router.post(
+  "/landlord/signup/step1",
+  validateLandlordSignup1,
+  registerLandlord
+);
 router.post(
   "/landlord/signup/step2/:userId",
-  upload.single('nicDocument'),
+  nicUpload.single("nicDocument"),
   validateLandlordSignup2,
   completeLandlordProfile
 );
 
 router.post("/landlord/signin", validateLandlordSignin, landlordSignin);
-router.get('/landlord/checkLandlordAuth', verifyToken, checkLandlordAuth);
+router.get("/landlord/checkLandlordAuth", verifyToken, checkLandlordAuth);
 router.post("/landlord/logout", logoutLandlord);
 
 // Admin auth routes
