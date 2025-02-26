@@ -17,12 +17,33 @@ const AddListingStep01 = ({ onFinish }) => {
         form.resetFields();
     }
 
+    const normFile = (e) => {
+        console.log('Upload event:', e);
+        if (Array.isArray(e)) {
+            return e;
+        }
+        return e?.fileList || [];
+    };
+
+    const handleFormFinish = (values) => {
+        // Log the form values before submitting
+        console.log('Form values before submit:', values);
+        
+        // Ensure propertyImages is properly formatted
+        const formattedValues = {
+            ...values,
+            propertyImages: values.propertyImages || []
+        };
+        
+        onFinish(formattedValues);
+    };
+
     return (
         <div className='w-full min-h-screen bg-gray-50 px-4 py-6'>
             <Form
                 form={form}
                 name='add-listing-step-01'
-                onFinish={onFinish}
+                onFinish={handleFormFinish}
                 onFinishFailed={onFinishFailed}
                 layout='vertical'
                 className='max-w-[1400px] mx-auto'
@@ -66,14 +87,23 @@ const AddListingStep01 = ({ onFinish }) => {
                                     name="builtYear"  // Changed from "built-year" to "builtYear"
                                     rules={[{ required: true, message: "Please enter built year!" }]}
                                 >
-                                    <Input className="w-full h-10" placeholder='Ex: 2020' />
+                                    <Input type='text' className="w-full h-10" placeholder='Ex: 2020' />
                                 </Form.Item>
 
                                 <Form.Item
                                     label={<span className='text-base font-medium'>Size (m²)</span>}
                                     name="size"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            type: 'number',
+                                            transform: (value) => Number(value),
+                                            min: 0,
+                                            message: 'Please enter a valid size'
+                                        }
+                                    ]}
                                 >
-                                    <Input className="w-full h-10" placeholder='Approximate size in square meters' />
+                                    <Input type='number' min={0} className="w-full h-10" placeholder='Approximate size in square meters' />
                                 </Form.Item>
                             </div>
 
@@ -82,31 +112,67 @@ const AddListingStep01 = ({ onFinish }) => {
                                 <Form.Item
                                     label={<span className='text-base font-medium'>Number of Bedrooms</span>}
                                     name="bedrooms"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            type: 'number',
+                                            transform: (value) => Number(value),
+                                            min: 0,
+                                            message: 'Please enter a valid number of bedrooms'
+                                        }
+                                    ]}
                                 >
-                                    <Input type="number" className="w-full h-10" placeholder='Number of bedrooms' />
+                                    <Input type="number" min={0} className="w-full h-10" placeholder='Number of bedrooms' />
                                 </Form.Item>
 
                                 <Form.Item
                                     label={<span className='text-base font-medium'>Number of Bathrooms</span>}
                                     name="bathrooms"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            type: 'number',
+                                            transform: (value) => Number(value),
+                                            min: 0,
+                                            message: 'Please enter a valid number of bathrooms'
+                                        }
+                                    ]}
                                 >
-                                    <Input type="number" className="w-full h-10" placeholder='Number of bathrooms' />
+                                    <Input type="number" min={0} className="w-full h-10" placeholder='Number of bathrooms' />
                                 </Form.Item>
 
                                 <Form.Item
                                     label={<span className='text-base font-medium'>Number of Garages</span>}
                                     name="garage"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            type: 'number',
+                                            transform: (value) => Number(value),
+                                            min: 0,
+                                            message: 'Please enter a valid number of garages'
+                                        }
+                                    ]}
                                 >
-                                    <Input type="number" className="w-full h-10" placeholder='Number of garage' />
+                                    <Input type="number" min={0} className="w-full h-10" placeholder='Number of garage' />
                                 </Form.Item>
 
                                 <Form.Item
                                     label={<span className='text-base font-medium'>Monthly Rent (Rs.)</span>}
                                     name="monthlyRent"
-                                    rules={[{ required: true, message: "Please enter monthly rent!" }]}
+                                    rules={[
+                                        { required: true, message: "Please enter monthly rent!" },
+                                        {
+                                            type: 'number',
+                                            transform: (value) => Number(value),
+                                            min: 0,
+                                            message: 'Please enter a valid monthly rent'
+                                        }
+                                    ]}
                                 >
                                     <Input
                                         type="number"
+                                        min={0}
                                         className="w-full h-10"
                                         placeholder='Enter monthly rent'
                                         prefix="Rs."
@@ -130,12 +196,26 @@ const AddListingStep01 = ({ onFinish }) => {
                                 <Form.Item
                                     label={<span className='text-base font-medium'>Property Images</span>}
                                     name="propertyImages"
-                                    rules={[{ required: true, message: 'Please upload property images!' }]}
+                                    valuePropName="fileList"
+                                    getValueFromEvent={normFile}
+                                    rules={[{ 
+                                        required: true,
+                                        validator: (_, value) => {
+                                            if (!value || value.length === 0) {
+                                                return Promise.reject('Please upload at least one image!');
+                                            }
+                                            return Promise.resolve();
+                                        }
+                                    }]}
                                 >
                                     <Upload.Dragger
+                                        name="propertyImages"
                                         accept=".jpg,.jpeg,.png"
                                         multiple
                                         beforeUpload={() => false}
+                                        onChange={(info) => {
+                                            console.log('Upload onChange:', info);
+                                        }}
                                         className='p-8'
                                     >
                                         <p className="ant-upload-drag-icon text-primaryBgColor">
