@@ -11,7 +11,7 @@ const AllListings = () => {
   useEffect(() => {
     document.title = `${listings.length} Listings Available`;
     fetchAllListings();
-  }, []);
+  }, [listings.length]);
 
   useEffect(() => {
     scrollTo(0, 0);

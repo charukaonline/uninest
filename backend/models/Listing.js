@@ -27,6 +27,7 @@ const listingSchema = new mongoose.Schema({
     required: true,
   },
   createdAt: { type: Date, default: Date.now },
+  eloRating: { type: Number, default: 1400 },
 });
 
 module.exports = mongoose.model("Listing", listingSchema);

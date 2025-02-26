@@ -34,7 +34,15 @@ const useListingStore = create((set) => ({
             console.error('Error fetching listings:', error);
             set({ error: error.message, loading: false });
         }
-    }
+    },
+
+    trackListingClick: async (listingId) => {
+        try {
+            await axios.post(`${API_URL}/${listingId}/track-click`);
+        } catch (error) {
+            console.error('Error tracking click:', error);
+        }
+    },
 }));
 
 export default useListingStore;

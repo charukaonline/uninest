@@ -1,12 +1,20 @@
 import React from "react";
 import { IoMdPin } from "react-icons/io";
 import { Link } from "react-router-dom";
+import useListingStore from '@/store/listingStore';
 
 const PropertyCard = ({ listing }) => {
+  const { trackListingClick } = useListingStore();
+
+  const handleClick = () => {
+    trackListingClick(listing._id);
+  };
+
   return (
     <Link
       key={listing._id}
       to={`/listing/${listing._id}`}
+      onClick={handleClick}
     >
       <div className=" overflow-hidden p-4 border border-gray-200 bg-gray-100 rounded-lg shadow-lg transition transform hover:scale-105">
         <img

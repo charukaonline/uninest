@@ -78,6 +78,24 @@ exports.addListing = async (req, res) => {
 
     // console.log('Image URLs:', imageUrls);
 
+    // Calculate initial eloRating based on filled fields
+    let initialEloRating = 1400;
+    const ratingRules = {
+      description: 80,
+      postalCode: 20,
+      size: 50,
+      bedrooms: 30,
+      bathrooms: 30,
+      garage: 20,
+      builtYear: 20
+    };
+
+    Object.keys(ratingRules).forEach(field => {
+      if (req.body[field] && req.body[field].toString().trim() !== '') {
+        initialEloRating += ratingRules[field];
+      }
+    });
+
     const newListing = new Listing({
       ...req.body,
       coordinates: typeof req.body.coordinates === 'string' 
@@ -85,6 +103,7 @@ exports.addListing = async (req, res) => {
         : req.body.coordinates,
       images: imageUrls,
       landlord: req.user._id,
+      eloRating: initialEloRating
     });
 
     await newListing.save();
@@ -107,6 +126,7 @@ exports.getListings = async (req, res) => {
   try {
     const listings = await Listing.find()
       .populate('landlord', 'firstName lastName email phoneNumber')
+      .sort({ eloRating: -1 }) // Sort by eloRating in descending order
       .exec();
 
     res.status(200).json(listings);
@@ -134,6 +154,30 @@ exports.getListingById = async (req, res) => {
     console.error('Error fetching listing:', err);
     res.status(500).json({ 
       message: "Error fetching listing", 
+      error: err.message 
+    });
+  }
+};
+
+exports.trackListingClick = async (req, res) => {
+  try {
+    const listing = await Listing.findById(req.params.id);
+    
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found" });
+    }
+
+    // Increase ELO rating by 2 points per click
+    listing.eloRating += 2;
+    await listing.save();
+
+    res.status(200).json({ 
+      success: true,
+      newRating: listing.eloRating 
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      message: "Error tracking click", 
       error: err.message 
     });
   }

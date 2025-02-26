@@ -12,10 +12,10 @@ router.post(
   listingController.addListing
 );
 
-// Get all listings
 router.get('/', listingController.getListings);
 
-// Get single listing by ID
 router.get('/:id', listingController.getListingById);
+
+router.post('/:id/track-click', listingController.trackListingClick);
 
 module.exports = router;
