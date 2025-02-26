@@ -8,7 +8,7 @@ const PropertyCard = ({ listing }) => {
       key={listing._id}
       to={`/listing/${listing._id}`}
     >
-      <div className=" overflow-hidden p-4 border border-gray-200 bg-gray-100 rounded-lg shadow-lg">
+      <div className=" overflow-hidden p-4 border border-gray-200 bg-gray-100 rounded-lg shadow-lg transition transform hover:scale-105">
         <img
           src={listing.images[0]}
           alt={listing.propertyName}
@@ -20,8 +20,8 @@ const PropertyCard = ({ listing }) => {
             LKR {listing.monthlyRent.toLocaleString()}/month
           </p>
           <div className="flex items-center space-y-0 space-x-1">
-            <IoMdPin className="text-gray-500" />
-            <p className="text-gray-500 text-base truncate">{listing.address}</p>
+            <IoMdPin className="text-gray-600" />
+            <p className="text-gray-600 text-base truncate">{listing.address}</p>
           </div>
         </div>
       </div>
