@@ -76,7 +76,7 @@ exports.addListing = async (req, res) => {
       }
     }
 
-    console.log('Image URLs:', imageUrls);
+    // console.log('Image URLs:', imageUrls);
 
     const newListing = new Listing({
       ...req.body,
@@ -88,7 +88,7 @@ exports.addListing = async (req, res) => {
     });
 
     await newListing.save();
-    console.log('Saved listing:', newListing);
+    // console.log('Saved listing:', newListing);
 
     res
       .status(201)
@@ -99,6 +99,42 @@ exports.addListing = async (req, res) => {
       message: "Server error", 
       error: err.message,
       details: err.errors
+    });
+  }
+};
+
+exports.getListings = async (req, res) => {
+  try {
+    const listings = await Listing.find()
+      .populate('landlord', 'firstName lastName email phoneNumber')
+      .exec();
+
+    res.status(200).json(listings);
+  } catch (err) {
+    console.error('Error fetching listings:', err);
+    res.status(500).json({ 
+      message: "Error fetching listings", 
+      error: err.message 
+    });
+  }
+};
+
+exports.getListingById = async (req, res) => {
+  try {
+    const listing = await Listing.findById(req.params.id)
+      .populate('landlord', 'firstName lastName email phoneNumber')
+      .exec();
+
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found" });
+    }
+
+    res.status(200).json(listing);
+  } catch (err) {
+    console.error('Error fetching listing:', err);
+    res.status(500).json({ 
+      message: "Error fetching listing", 
+      error: err.message 
     });
   }
 };
