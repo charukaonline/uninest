@@ -9,6 +9,8 @@ const AddListingStep02 = ({ onFinish }) => {
 
   const handleLocationSelect = (coords) => {
     setSelectedCoordinates(coords);
+
+    form.setFieldsValue({ coordinates: coords });
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -16,10 +18,18 @@ const AddListingStep02 = ({ onFinish }) => {
   };
 
   const handleSubmit = (values) => {
-    // Include coordinates in form data
+    if (!selectedCoordinates) {
+      notification.error({
+        message: "Location Required",
+        description: "Please select a location on the map",
+      });
+      return;
+    }
+
     const formData = {
       ...values,
       coordinates: selectedCoordinates,
+      nearestUniversity: values['nearest-university']
     };
     onFinish(formData);
   };
@@ -123,7 +133,6 @@ const AddListingStep02 = ({ onFinish }) => {
 
               {/* Second Column */}
               <div className="space-y-4 w-full">
-                {/* Map here */}
                 <Form.Item
                   label={
                     <span className="text-base font-medium">
@@ -134,7 +143,12 @@ const AddListingStep02 = ({ onFinish }) => {
                   rules={[
                     {
                       required: true,
-                      message: "Please select a location on the map!",
+                      validator: (_, value) => {
+                        if (!selectedCoordinates) {
+                          return Promise.reject('Please select a location on the map!');
+                        }
+                        return Promise.resolve();
+                      },
                     },
                   ]}
                 >
@@ -166,7 +180,7 @@ const AddListingStep02 = ({ onFinish }) => {
               <button
                 type="button"
                 className="px-8 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
-                // onClick={handleCancel}
+              // onClick={handleCancel}
               >
                 Cancel
               </button>

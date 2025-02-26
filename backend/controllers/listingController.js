@@ -4,13 +4,16 @@ const s3 = require("../config/awsS3");
 
 exports.addListing = async (req, res) => {
   try {
-    // Retrieve landlord info from session (attached by ensureLandlordAuth middleware)
+    
     const landlord = req.user;
     if (!landlord) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Extract data from the form
+    // Debug log
+    // console.log('Files received:', req.files);
+    // console.log('Body received:', req.body);
+
     const {
       propertyName,
       propertyType,
@@ -29,7 +32,13 @@ exports.addListing = async (req, res) => {
       coordinates,
     } = req.body;
 
-    // Parse coordinates if needed (the frontend sends JSON.stringify(coordinates))
+    const numericFields = ['size', 'bedrooms', 'bathrooms', 'garage', 'monthlyRent'];
+    numericFields.forEach(field => {
+      if (req.body[field]) {
+        req.body[field] = Number(req.body[field]);
+      }
+    });
+
     let parsedCoordinates;
     try {
       parsedCoordinates =
@@ -38,59 +47,58 @@ exports.addListing = async (req, res) => {
       return res.status(400).json({ message: "Invalid coordinates" });
     }
 
-    // Process images from temporary upload folder using multer (files available in req.files)
-    const imageFiles = req.files;
     const imageUrls = [];
 
-    for (const file of imageFiles) {
-      // Read the file from local storage
-      const fileContent = fs.readFileSync(file.path);
-
-      // Set S3 upload parameters
-      const params = {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: `listings/${file.filename}`, // This is the key (path) in the bucket
-        Body: fileContent,
-        ContentType: file.mimetype,
-        ACL: "public-read", // Adjust ACL as needed
-      };
-
-      // Upload file to S3
-      const s3Response = await s3.upload(params).promise();
-      imageUrls.push(s3Response.Location);
-
-      // Remove the file from local storage after upload
-      fs.unlinkSync(file.path);
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No images were uploaded" });
     }
 
-    // Create the new listing document with all data and S3 image URLs
+    for (const file of req.files) {
+      try {
+        const fileContent = fs.readFileSync(file.path);
+        
+        const params = {
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: `listings/${Date.now()}-${file.originalname}`,
+          Body: fileContent,
+          ContentType: file.mimetype,
+          ACL: "public-read",
+        };
+
+        const s3Response = await s3.upload(params).promise();
+        console.log('S3 upload response:', s3Response);
+        imageUrls.push(s3Response.Location);
+
+        fs.unlinkSync(file.path);
+      } catch (uploadError) {
+        console.error('S3 upload error:', uploadError);
+        throw new Error(`Failed to upload image: ${uploadError.message}`);
+      }
+    }
+
+    console.log('Image URLs:', imageUrls);
+
     const newListing = new Listing({
-      propertyName,
-      propertyType,
-      builtYear,
-      size,
-      bedrooms,
-      bathrooms,
-      garage,
-      monthlyRent,
-      description,
-      address,
-      city,
-      province,
-      postalCode,
-      nearestUniversity,
-      coordinates: parsedCoordinates,
+      ...req.body,
+      coordinates: typeof req.body.coordinates === 'string' 
+        ? JSON.parse(req.body.coordinates) 
+        : req.body.coordinates,
       images: imageUrls,
-      landlord: landlord._id, // Attach the authenticated landlord's ID
+      landlord: req.user._id,
     });
 
     await newListing.save();
+    console.log('Saved listing:', newListing);
 
     res
       .status(201)
       .json({ message: "Listing added successfully", listing: newListing });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error", error: err.message });
+    console.error('Error details:', err);
+    res.status(500).json({ 
+      message: "Server error", 
+      error: err.message,
+      details: err.errors
+    });
   }
 };
