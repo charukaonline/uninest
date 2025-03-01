@@ -32,6 +32,7 @@ import EmailVerificationPage from "./pages/(auth)/EmailVerificationPage";
 import ManageUsers from "./pages/(AdminDashboard)/ManageUsers";
 import LandlordDashboard from "./pages/(LandlordDashboard)/LandlordDashboard";
 import AddListings from "./pages/(LandlordDashboard)/AddListings";
+import ManageListings from "./pages/(AdminDashboard)/ManageListings";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -204,8 +205,17 @@ function App() {
             </AdminProtectedRoute>
           }
         />
-        {/* <Route path="/admin/listings" element={<ManageListings />} />
-        <Route path="/admin/analytics" element={<Analytics />} />
+
+        <Route
+          path="/admin/:adminId/:email/listings"
+          element={
+            <AdminProtectedRoute>
+              <ManageListings />
+            </AdminProtectedRoute>
+          }
+        />
+
+        {/* <Route path="/admin/analytics" element={<Analytics />} />
         <Route path="/admin/reports" element={<Reports />} />
         <Route path="/admin/feedbacks" element={<Feedbacks />} /> */}
       </Routes>
