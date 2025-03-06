@@ -5,11 +5,15 @@ import Logo from '/uninestLogo.png';
 import { ChevronDown, List } from 'lucide-react';
 import { Button } from '../ui/button';
 
+import { useAuthStore } from '@/store/authStore';
+
 const Header = () => {
 
   const [aboutDropdown, setAboutDropdown] = useState(false);
   const [userDropdown, setUserDropdown] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // const {isAuthenticated} = useAuthStore();
 
   const navigate = useNavigate();
 
