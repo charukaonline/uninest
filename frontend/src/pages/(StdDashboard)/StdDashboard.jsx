@@ -1,36 +1,45 @@
-// import DashboardLayout from "@/components/include/DashboardLayout";
+
+import LoadingSpinner from "@/components/include/LoadingSpinner";
 import StudentSidebar from "@/components/student_dashboard/StudentSidebar";
 import { useAuthStore } from "@/store/authStore";
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function StudentDashboard() {
-  const navigate = useNavigate();
 
-  const { userId, email } = useParams();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, checkAuth, isCheckingAuth } = useAuthStore();
 
   useEffect(() => {
-    document.title = `${user?.username}`;
+    if (!isAuthenticated) {
+      checkAuth();
+    }
+  }, []);
+
+  if (isCheckingAuth) {
+    return <LoadingSpinner />;
+  }
+
+  if (!isAuthenticated || !user) {
+    return null;
+  }
+
+  useEffect(() => {
+    document.title = `${user?.username}'s dashboard`;
   }, []);
 
   return (
     <>
-      {/* <DashboardLayout
-        userType="student"
-        userName={user?.username}
-        currentPath={"/"}
-        onNavigate={(path) => navigate(path)}
-        messageCount={3}
-        notificationCount={2}
-      > */}
-      {/* Student dashboard content */}
-      {/* </DashboardLayout> */}
+      <div className="flex h-screen bg-white">
 
-      <StudentSidebar></StudentSidebar>
+        <div><StudentSidebar /></div>
 
-      <h1>Hello {user?.username}</h1>
-      <h1>{user?.email}</h1>
+        <div style={{ marginLeft: '220px', padding: '1rem' }}>
+          <h1 className="text-2xl font-bold mb-4">
+            Dashboard content goes here...
+          </h1>
+        </div>
+      </div>
     </>
   );
 }
