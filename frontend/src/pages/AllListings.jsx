@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import useListingStore from "@/store/listingStore";
 import Card from "@/components/listing_page/Card";
 import LoadingSpinner from "@/components/include/LoadingSpinner";
+import Filter from "@/components/include/Filter";
 
 const AllListings = () => {
   const { listings, loading, error, fetchAllListings } = useListingStore();
@@ -12,10 +13,6 @@ const AllListings = () => {
     document.title = `${listings.length} Listings Available`;
     fetchAllListings();
   }, [listings.length]);
-
-  useEffect(() => {
-    scrollTo(0, 0);
-  })
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
@@ -29,17 +26,24 @@ const AllListings = () => {
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
+
+      <div className=" mb-5">
+        <Filter />
+      </div>
+
       <h1 className="text-xl font-bold mb-6">
         We have {listings.length} listings available
       </h1>
@@ -55,8 +59,8 @@ const AllListings = () => {
           onClick={prevPage}
           disabled={currentPage === 1}
           className={`px-4 py-2 rounded ${currentPage === 1
-              ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-primaryBgColor text-white hover:bg-primaryBgColor/90'
+            ? 'bg-gray-300 cursor-not-allowed'
+            : 'bg-primaryBgColor text-white hover:bg-primaryBgColor/90'
             }`}
         >
           Previous
@@ -68,8 +72,8 @@ const AllListings = () => {
           onClick={nextPage}
           disabled={currentPage === totalPages}
           className={`px-4 py-2 rounded ${currentPage === totalPages
-              ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-primaryBgColor text-white hover:bg-primaryBgColor/90'
+            ? 'bg-gray-300 cursor-not-allowed'
+            : 'bg-primaryBgColor text-white hover:bg-primaryBgColor/90'
             }`}
         >
           Next
