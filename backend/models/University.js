@@ -14,8 +14,14 @@ const universitySchema = new mongoose.Schema({
       default: "Point",
     },
     coordinates: {
-      type: [Number], // [longitude, latitude]
-      required: true,
+      latitude: {
+        type: Number,
+        required: true,
+      },
+      longitude: {
+        type: Number,
+        required: true,
+      },
     },
   },
   createdAt: {
@@ -29,6 +35,9 @@ const universitySchema = new mongoose.Schema({
 });
 
 // Create a 2dsphere index for geospatial queries
-universitySchema.index({ location: "2dsphere" });
+universitySchema.index({
+  "location.coordinates.longitude": 1,
+  "location.coordinates.latitude": 1,
+});
 
 module.exports = mongoose.model("University", universitySchema);

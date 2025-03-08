@@ -13,12 +13,15 @@ exports.addUniversity = async (req, res) => {
       });
     }
 
-    // Create new university
+    // Create new university with separate latitude and longitude
     const university = new University({
       name,
       location: {
         type: "Point",
-        coordinates: [longitude, latitude], // GeoJSON format expects [longitude, latitude]
+        coordinates: {
+          latitude: latitude,
+          longitude: longitude,
+        },
       },
     });
 
