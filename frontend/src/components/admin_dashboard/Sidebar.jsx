@@ -31,6 +31,11 @@ export default function Sidebar() {
       path: `/admin/${adminId}/${email}/listings`,
     },
     {
+      icon: Building2,
+      label: "Add University",
+      path: `/admin/${adminId}/${email}/add-university`,
+    },
+    {
       icon: BarChart3,
       label: "Analytics",
       path: `/admin/${adminId}/${email}/analytics`,
