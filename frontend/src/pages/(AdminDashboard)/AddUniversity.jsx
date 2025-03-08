@@ -5,11 +5,13 @@ import Sidebar from "@/components/admin_dashboard/Sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useParams } from "react-router-dom";
 
 const AddUniversity = () => {
   const [form] = Form.useForm();
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { adminId, email } = useParams();
 
   useEffect(() => {
     document.title = "Add University";
@@ -24,30 +26,39 @@ const AddUniversity = () => {
       return;
     }
 
-    const payload = {
-      name: values.universityName,
-      latitude: selectedLocation.latitude,
-      longitude: selectedLocation.longitude,
-    };
+    setIsLoading(true);
 
     try {
-      const response = await fetch("/api/admin/universities", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/admin/add-university`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            name: values.universityName,
+            latitude: selectedLocation.latitude,
+            longitude: selectedLocation.longitude,
+          }),
+        }
+      );
+
+      const data = await response.json();
 
       if (response.ok) {
         notification.success({
           message: "Success",
-          description: "University added successfully!",
+          description: data.message || "University added successfully!",
         });
         form.resetFields();
         setSelectedLocation(null);
       } else {
         notification.error({
           message: "Error",
-          description: "Failed to add university.",
+          description: data.message || "Failed to add university.",
         });
       }
     } catch (error) {
@@ -56,6 +67,8 @@ const AddUniversity = () => {
         message: "Error",
         description: "An error occurred while adding the university.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -133,8 +146,9 @@ const AddUniversity = () => {
                   <Button
                     type="submit"
                     className="bg-primaryBgColor hover:bg-primaryBgColor/90 text-white"
+                    disabled={isLoading}
                   >
-                    Add University
+                    {isLoading ? "Adding..." : "Add University"}
                   </Button>
                 </div>
               </Form>
