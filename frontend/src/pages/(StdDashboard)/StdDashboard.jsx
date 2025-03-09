@@ -2,11 +2,12 @@ import LoadingSpinner from "@/components/include/LoadingSpinner";
 import StudentSidebar from "@/components/student_dashboard/StudentSidebar";
 import { useAuthStore } from "@/store/authStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch, Tooltip } from "antd";
+import Map from "@/components/include/Map";
 
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Switch } from "antd";
-import Map from "@/components/include/Map";
+import PopularCard from "@/components/student_dashboard/PopularCard";
 
 export default function StudentDashboard() {
   const [isMapView, setIsMapView] = useState(false);
@@ -46,7 +47,7 @@ export default function StudentDashboard() {
 
   return (
     <>
-      <div className="flex h-screen bg-white">
+      <div className="flex bg-white">
 
         <div><StudentSidebar /></div>
 
@@ -90,7 +91,9 @@ export default function StudentDashboard() {
             </div>
 
             {isMapView ? (
-              <Map />
+              <div className=" mt-5 mb-5 w-full">
+                <Map />
+              </div>
             ) : (
               <>
                 <TabsContent value="recommended">
@@ -117,8 +120,14 @@ export default function StudentDashboard() {
             )}
           </Tabs>
 
-          <div>
-            <h1>Most Popular Boarding House Among All</h1>
+          <div className=" mb-5">
+            <h1 className=" mb-3 font-semibold text-lg text-gray-600">Most Popular Boarding House</h1>
+
+            <PopularCard />
+          </div>
+
+          <div className=" mt-10 items-center justify-center w-full">
+            <h1 className=" text-gray-600 font-semibold text-center">UniNest © {new Date().getFullYear()}</h1>
           </div>
 
         </div>
