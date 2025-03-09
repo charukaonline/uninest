@@ -1,10 +1,8 @@
-import React from "react";
-import { motion } from "framer-motion";
-import houseImage from "../../assets/HouseOwnerDashboard-img/Image.png";
-import houseImage1 from "../../assets/HouseOwnerDashboard-img/Image (1).png";
-import houseImage2 from "../../assets/HouseOwnerDashboard-img/Image (2).png";
-import houseImage3 from "../../assets/HouseOwnerDashboard-img/Image (3).png";
-import houseImage4 from "../../assets/HouseOwnerDashboard-img/Image (4).png";
+const houseImage = "/UserDashboardimg/Image.png";
+const houseImage1 = "/assets/HouseOwnerDashboard-img/Image (1).png";
+const houseImage2 = "/assets/HouseOwnerDashboard-img/Image (2).png";
+const houseImage3 = "/assets/HouseOwnerDashboard-img/Image (3).png";
+const houseImage4 = "/assets/HouseOwnerDashboard-img/Image (4).png";
 
 const properties = [
   { name: "Meadow View", price: "$960.99", location: "Fremont, CA", image: houseImage },
@@ -14,6 +12,8 @@ const properties = [
   { name: "The Old Rectory", price: "$998.99", location: "Arvada, CO", image: houseImage4 },
   { name: "Holly Cottage", price: "$2989.99", location: "Annapolis, MD", image: houseImage },
 ];
+
+
 
 const PropertyList = () => {
   return (

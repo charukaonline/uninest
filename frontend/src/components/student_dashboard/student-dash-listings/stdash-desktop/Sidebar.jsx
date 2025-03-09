@@ -1,11 +1,11 @@
 import React from "react";
 
 const messages = [
-  { id: 1, name: "James Benny", text: "Hey, let me know if you're still available...", image: "src/assets/HouseOwnerDashboard-img/janko-ferlic-G-jo31ESuRE-unsplash 2.png" },
-  { id: 2, name: "William Chyntia", text: "Okay thanks!", image: "src/assets/HouseOwnerDashboard-img/studio-portrait-emotional-happy-funny-smiling-boyfriend-man-with-heavy-beard-stands-with-arms-crossed-dressed-red-t-shirt-isolated-blue 1 (8).png" },
-  { id: 3, name: "Henry David", text: "Alright! I'll get back to you ASAP.", image: "src/assets/HouseOwnerDashboard-img/young-bearded-man-with-striped-shirt 1.png" },
-  { id: 4, name: "Charlotte Flair", text: "Sounds good buddy.", image: "src/assets/HouseOwnerDashboard-img/cheerful-indian-businessman-smiling-closeup-portrait-jobs-career-campaign 1.png" },
-  { id: 5, name: "James Benny", text: "Hey, let me know if you're still available...", image: "src/assets/HouseOwnerDashboard-img/janko-ferlic-G-jo31ESuRE-unsplash 2.png" },
+  { id: 1, name: "James Benny", text: "Hey, let me know if you're still available...", image: "/UserDashboardimg/janko-ferlic-G-jo31ESuRE-unsplash 2.png" },
+  { id: 2, name: "William Chyntia", text: "Okay thanks!", image: "/UserDashboardimg/studio-portrait-emotional-happy-funny-smiling-boyfriend-man-with-heavy-beard-stands-with-arms-crossed-dressed-red-t-shirt-isolated-blue 1 (8).png" },
+  { id: 3, name: "Henry David", text: "Alright! I'll get back to you ASAP.", image: "/UserDashboardimg/young-bearded-man-with-striped-shirt 1.png" },
+  { id: 4, name: "Charlotte Flair", text: "Sounds good buddy.", image: "/UserDashboardimg/cheerful-indian-businessman-smiling-closeup-portrait-jobs-career-campaign 1.png" },
+  { id: 5, name: "James Benny", text: "Hey, let me know if you're still available...", image: "/UserDashboardimg/janko-ferlic-G-jo31ESuRE-unsplash 2.png" },
 ];
 
 const Sidebar = () => {
