@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import profilePic from "../../../public/ProfilePic/profilePic.avif";
+import profilePic from "../../../../public/ProfilePic/profilePic.avif";
 
 const InputField = ({ type, placeholder }) => (
     <input

@@ -5,7 +5,7 @@ import { FaTachometerAlt, FaList, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronR
 import ProfileSettings from "../student-dash-settings/ProfileSettings.jsx";
 import UserDashboardListing from "../student-dash-listings/UserDashboardListing.jsx";
 import Inbox from "../student-dash-chatui/Chatbox.jsx";
-import dashimage from "../../../public/ProfilePic/dashimage.jpeg";
+import dashimage from "../../../../public/ProfilePic/dashimage.jpeg";
 
 export default function Dashboard() {
     const [isOpen, setIsOpen] = useState(true);

@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import SearchFilters from "../../components/UserDashboard/SearchFilters.jsx";
-import PropertyList from "../../components/UserDashboard/PropertyList.jsx";
-import FeaturedProperty from "../../components/UserDashboard/FeaturedProperty.jsx";
-import Sidebar from "../../components/UserDashboard/Sidebar.jsx";
-import ToggleSwitch from "../../components/listingpage/listing_page/ToggleSwitch"; // Ensure path is correct
+import SearchFilters from "./SearchFilters.jsx";
+import PropertyList from "./PropertyList.jsx";
+import FeaturedProperty from "./FeaturedProperty.jsx";
+import Sidebar from "./Sidebar.jsx";
 
 const containerVariants = {
     hidden: { opacity: 0 },

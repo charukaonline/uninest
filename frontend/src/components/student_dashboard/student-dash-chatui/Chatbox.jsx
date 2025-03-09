@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { List, Avatar, Button, Input, Dropdown, Menu, Card } from "antd";
 import { SendOutlined, MoreOutlined, LeftOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
-import JamesImage from "../profileimg/james.jpg";
-import WilliamImage from "../profileimg/william.jpg";
-import HenryImage from "../profileimg/henry.jpg";
-import CharlotteImage from "../profileimg/charlotte.jpg";
+import JamesImage from "../../../../public/profileimg/james.jpg";
+import WilliamImage from "../../../../public/profileimg/william.jpg";
+import HenryImage from "../../../../public/profileimg/henry.jpg";
+import CharlotteImage from "../../../../public/profileimg/charlotte.jpg";
 
 const contactsData = [
   { name: "James Benny", image: JamesImage },
