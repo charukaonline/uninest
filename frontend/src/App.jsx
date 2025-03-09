@@ -34,6 +34,8 @@ import LandlordDashboard from "./pages/(LandlordDashboard)/LandlordDashboard";
 import AddListings from "./pages/(LandlordDashboard)/AddListings";
 import ManageListings from "./pages/(AdminDashboard)/ManageListings";
 import AddUniversity from "./pages/(AdminDashboard)/AddUniversity";
+import StdSettings from "./pages/(StdDashboard)/StdSettings";
+import Inbox from "./pages/(StdDashboard)/Inbox";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -155,6 +157,24 @@ function App() {
           element={
             <ProtectedRoute>
               <StudentDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/:userId/:email/settings"
+          element={
+            <ProtectedRoute>
+              <StdSettings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/:userId/:email/inbox"
+          element={
+            <ProtectedRoute>
+              <Inbox />
             </ProtectedRoute>
           }
         />
