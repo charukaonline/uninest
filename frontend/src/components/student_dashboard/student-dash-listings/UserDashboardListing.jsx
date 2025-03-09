@@ -1,7 +1,7 @@
 import React from "react";
 import { Grid } from "antd";
-import UserDashboardMobile from "./MobileUserDashboard.jsx";
-import UserDashboardListingDesktop from "../UserDashboard/UserDashboard.jsx";
+import UserDashboardMobile from "./stdash-mobile/MobileUserDashboard.jsx";
+import UserDashboardListingDesktop from "../student-dash-listings/stdash-desktop/UserDashboard.jsx";
 
 
 const { useBreakpoint } = Grid;

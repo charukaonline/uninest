@@ -14,7 +14,7 @@ import { FiFileText } from "react-icons/fi";
 import { FaInbox, FaSignOutAlt } from "react-icons/fa";
 import ProfileSettings from "../student-dash-settings/ProfileSettings.jsx";
 import UserDashboardListing from "../student-dash-listings/UserDashboardListing.jsx";
-import Inbox from "../student-dash-chatui/chatbox.jsx";
+import Inbox from "../student-dash-chatui/Chatbox.jsx";
 
 const { Header, Content, Footer } = Layout;
 

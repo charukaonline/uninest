@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaTachometerAlt, FaList, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import ProfileSettings from "../student-dash-settings/ProfileSettings.jsx";
 import UserDashboardListing from "../student-dash-listings/UserDashboardListing.jsx";
-import Inbox from "../student-dash-chatui/chatbox.jsx";
+import Inbox from "../student-dash-chatui/Chatbox.jsx";
 import dashimage from "../../../public/ProfilePic/dashimage.jpeg";
 
 export default function Dashboard() {
