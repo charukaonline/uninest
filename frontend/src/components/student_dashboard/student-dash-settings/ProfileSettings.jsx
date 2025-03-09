@@ -1,6 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
-import profilePic from "../../../../public/ProfilePic/profilePic.avif";
+
+// Reference the asset by its URL rather than importing from the public directory.
+const profilePic = "/ProfilePic/profilePic.avif?url";
 
 const InputField = ({ type, placeholder }) => (
     <input
@@ -24,7 +26,6 @@ const ProfileSettings = () => {
         </h2>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
           <motion.div
               className="space-y-4"
               initial={{ opacity: 0, x: -50 }}
@@ -67,9 +68,7 @@ const ProfileSettings = () => {
 
         <hr className="my-8 border-gray-300" />
 
-        
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
           <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}

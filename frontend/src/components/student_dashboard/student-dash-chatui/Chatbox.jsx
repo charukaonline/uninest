@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { List, Avatar, Button, Input, Dropdown, Menu, Card } from "antd";
 import { SendOutlined, MoreOutlined, LeftOutlined } from "@ant-design/icons";
-import { motion, AnimatePresence } from "framer-motion";
-import JamesImage from "../../../../public/profileimg/james.jpg";
-import WilliamImage from "../../../../public/profileimg/william.jpg";
-import HenryImage from "../../../../public/profileimg/henry.jpg";
-import CharlotteImage from "../../../../public/profileimg/charlotte.jpg";
+import { motion } from "framer-motion";
 
+// Instead of importing from /public, we reference the assets by URL
 const contactsData = [
-  { name: "James Benny", image: JamesImage },
-  { name: "William Chynita", image: WilliamImage },
-  { name: "Henry David", image: HenryImage },
-  { name: "Charlotte Flair", image: CharlotteImage },
+  { name: "James Benny", image: "/profileimg/james.jpg?url" },
+  { name: "William Chynita", image: "/profileimg/william.jpg?url" },
+  { name: "Henry David", image: "/profileimg/henry.jpg?url" },
+  { name: "Charlotte Flair", image: "/profileimg/charlotte.jpg?url" },
 ];
 
 const Inbox = () => {
@@ -30,7 +27,10 @@ const Inbox = () => {
     if (input.trim() !== "") {
       const newMessage = {
         text: input,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
       setMessages((prev) => ({
         ...prev,
@@ -48,7 +48,10 @@ const Inbox = () => {
     const lastMessageA = messages[a.name]?.[messages[a.name]?.length - 1];
     const lastMessageB = messages[b.name]?.[messages[b.name]?.length - 1];
     if (lastMessageA && lastMessageB) {
-      return new Date(`1970-01-01T${lastMessageB.time}:00`) - new Date(`1970-01-01T${lastMessageA.time}:00`);
+      return (
+          new Date(`1970-01-01T${lastMessageB.time}:00`) -
+          new Date(`1970-01-01T${lastMessageA.time}:00`)
+      );
     }
     if (!lastMessageA) return 1;
     if (!lastMessageB) return -1;
@@ -65,7 +68,9 @@ const Inbox = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
             >
-              <h2 className="text-xl font-semibold text-green-700 mb-4">All Messages</h2>
+              <h2 className="text-xl font-semibold text-green-700 mb-4">
+                All Messages
+              </h2>
               <List
                   itemLayout="horizontal"
                   dataSource={sortedContacts}
@@ -73,7 +78,9 @@ const Inbox = () => {
                       <motion.div
                           key={contact.name}
                           className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                              activeContact?.name === contact.name ? "bg-green-100" : "hover:bg-green-50"
+                              activeContact?.name === contact.name
+                                  ? "bg-green-100"
+                                  : "hover:bg-green-50"
                           }`}
                           onClick={() => setActiveContact(contact)}
                           initial={{ opacity: 0 }}
@@ -85,8 +92,11 @@ const Inbox = () => {
                               avatar={<Avatar src={contact.image} size={50} />}
                               title={<span className="font-medium">{contact.name}</span>}
                               description={
-                                messages[contact.name] && messages[contact.name].length > 0
-                                    ? messages[contact.name][messages[contact.name].length - 1].text
+                                messages[contact.name] &&
+                                messages[contact.name].length > 0
+                                    ? messages[contact.name][
+                                    messages[contact.name].length - 1
+                                        ].text
                                     : "No messages yet"
                               }
                           />
@@ -100,7 +110,11 @@ const Inbox = () => {
                               }
                               trigger={["click"]}
                           >
-                            <Button type="text" icon={<MoreOutlined className="text-gray-500" />} onClick={(e) => e.stopPropagation()} />
+                            <Button
+                                type="text"
+                                icon={<MoreOutlined className="text-gray-500" />}
+                                onClick={(e) => e.stopPropagation()}
+                            />
                           </Dropdown>
                         </List.Item>
                       </motion.div>
@@ -129,7 +143,9 @@ const Inbox = () => {
                       />
                   )}
                   <Avatar src={activeContact.image} size={55} className="mr-3" />
-                  <h2 className="text-lg font-bold text-green-700">{activeContact.name}</h2>
+                  <h2 className="text-lg font-bold text-green-700">
+                    {activeContact.name}
+                  </h2>
                 </div>
               </Card>
 

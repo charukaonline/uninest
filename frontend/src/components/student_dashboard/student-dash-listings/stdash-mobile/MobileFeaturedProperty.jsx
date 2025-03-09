@@ -5,7 +5,7 @@ const FeaturedProperty = () => {
     <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col gap-6">
       {/* Image at the top */}
       <img
-        src="/src/assets/HouseOwnerDashboard-img/BG.png"
+        src="../../../../../public/UserDashboardimg/BG.png"
         alt="House"
         className="w-full h-64 object-cover rounded-lg"
       />

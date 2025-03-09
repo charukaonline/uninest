@@ -6,7 +6,7 @@ const FeaturedProperty = () => {
       {/* Left: Image Section */}
       <div className="w-1/3">
         <img
-          src="/src/assets/HouseOwnerDashboard-img/BG.png"
+          src="frontend/public/UserDashboardimg/BG.png"
           alt="House"
           className="w-full h-48 object-cover rounded-lg"
         />

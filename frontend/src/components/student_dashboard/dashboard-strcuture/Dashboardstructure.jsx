@@ -1,11 +1,26 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, NavLink, useLocation } from "react-router-dom";
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    NavLink,
+    useLocation,
+} from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTachometerAlt, FaList, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+    FaTachometerAlt,
+    FaList,
+    FaCog,
+    FaSignOutAlt,
+    FaChevronLeft,
+    FaChevronRight,
+} from "react-icons/fa";
 import ProfileSettings from "../student-dash-settings/ProfileSettings.jsx";
 import UserDashboardListing from "../student-dash-listings/UserDashboardListing.jsx";
 import Inbox from "../student-dash-chatui/Chatbox.jsx";
-import dashimage from "../../../../public/ProfilePic/dashimage.jpeg";
+
+// Instead of importing, we reference the asset by URL
+const dashimage = "/ProfilePic/dashimage.jpeg?url";
 
 export default function Dashboard() {
     const [isOpen, setIsOpen] = useState(true);
@@ -38,8 +53,13 @@ export default function Dashboard() {
                     {/* Profile Section */}
                     <motion.div
                         initial={{ scale: 0 }}
-                        animate={{ scale: 1, transition: { duration: 0.35, ease: "easeOut" } }}
-                        className={`flex flex-col items-center py-6 border-b border-[#A3DAB7] transition-all ${isOpen ? "px-4" : "px-2"}`}
+                        animate={{
+                            scale: 1,
+                            transition: { duration: 0.35, ease: "easeOut" },
+                        }}
+                        className={`flex flex-col items-center py-6 border-b border-[#A3DAB7] transition-all ${
+                            isOpen ? "px-4" : "px-2"
+                        }`}
                     >
                         <img
                             src={dashimage}
@@ -47,8 +67,14 @@ export default function Dashboard() {
                             className="w-16 h-16 rounded-full shadow-lg"
                         />
                         {isOpen && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
-                                <p className="mt-4 text-[#16a34a] font-semibold text-lg">Indica Watson</p>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.35 }}
+                            >
+                                <p className="mt-4 text-[#16a34a] font-semibold text-lg">
+                                    Indica Watson
+                                </p>
                                 <p className="text-[#2F855A] text-sm">Real Estate Builders</p>
                             </motion.div>
                         )}
@@ -56,23 +82,39 @@ export default function Dashboard() {
 
                     {/* Navigation Links */}
                     <nav className="flex-1 mt-6 space-y-1 px-2">
-                        {[{ key: "1", path: "/", icon: <FaTachometerAlt />, label: "Listings" },
-                            { key: "2", path: "/Listings", icon: <FaList />, label: "Inbox" },
-                            { key: "3", path: "/Settings", icon: <FaCog />, label: "Settings" }]
-                            .map(({ key, path, icon, label }) => (
-                                <NavLink
-                                    key={key}
-                                    to={path}
-                                    className={({ isActive }) =>
-                                        isActive
-                                            ? "text-[#16a34a] font-bold flex items-center p-3 rounded-lg text-lg transition"
-                                            : "flex items-center p-3 rounded-lg text-lg transition hover:text-[#16a34a] text-[#276749]"
-                                    }
-                                >
-                                    <span className="text-2xl">{icon}</span>
-                                    {isOpen && <span className="ml-4">{label}</span>}
-                                </NavLink>
-                            ))}
+                        {[
+                            {
+                                key: "1",
+                                path: "/",
+                                icon: <FaTachometerAlt />,
+                                label: "Listings",
+                            },
+                            {
+                                key: "2",
+                                path: "/Listings",
+                                icon: <FaList />,
+                                label: "Inbox",
+                            },
+                            {
+                                key: "3",
+                                path: "/Settings",
+                                icon: <FaCog />,
+                                label: "Settings",
+                            },
+                        ].map(({ key, path, icon, label }) => (
+                            <NavLink
+                                key={key}
+                                to={path}
+                                className={({ isActive }) =>
+                                    isActive
+                                        ? "text-[#16a34a] font-bold flex items-center p-3 rounded-lg text-lg transition"
+                                        : "flex items-center p-3 rounded-lg text-lg transition hover:text-[#16a34a] text-[#276749]"
+                                }
+                            >
+                                <span className="text-2xl">{icon}</span>
+                                {isOpen && <span className="ml-4">{label}</span>}
+                            </NavLink>
+                        ))}
                     </nav>
 
                     {/* Logout Button */}

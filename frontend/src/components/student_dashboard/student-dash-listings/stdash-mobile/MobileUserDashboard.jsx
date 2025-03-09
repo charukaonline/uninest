@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import SearchFilters from "../../components/UserDashboardMobile/MobileSearchFilters.jsx";
-import PropertyList from "../../components/UserDashboardMobile/MobilePropertyList.jsx";
-import FeaturedProperty from "../../components/UserDashboardMobile/MobileFeaturedProperty.jsx";
-import Sidebar from "../../components/UserDashboardMobile/MobileSideBar.jsx";
-import ToggleSwitch from "../../components/listingpage/listing_page/ToggleSwitch"; // Ensure path is correct
+import SearchFilters from "./MobileSearchFilters.jsx";
+import PropertyList from "./MobilePropertyList.jsx";
+import FeaturedProperty from "./MobileFeaturedProperty.jsx";
+import Sidebar from "./MobileSideBar.jsx";
 
 const UserDashboardMobile = () => {
   const [mapView, setMapView] = useState(false); // Manage the map view state

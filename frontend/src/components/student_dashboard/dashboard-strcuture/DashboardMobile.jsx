@@ -50,7 +50,6 @@ function MobileApp() {
 
     const handleLogout = () => {
         console.log("Logging out...");
-
     };
 
     return (
@@ -58,8 +57,12 @@ function MobileApp() {
             {/* Header */}
             <Header className="bg-gradient-to-r from-[#E6F4EA] to-[#C6E6D1] p-4 shadow-md flex items-center justify-start">
                 <div className="flex items-center">
-                    {/* Profile Image */}
-                    <div className="w-12 h-12 bg-[#A3DAB7] rounded-full border-2 border-[#16a34a]"></div>
+                    {/* Instead of importing an image from the public folder, reference it via URL */}
+                    <img
+                        src="/ProfilePic/dashimage.jpeg?url"
+                        alt="Profile"
+                        className="w-12 h-12 rounded-full border-2 border-[#16a34a]"
+                    />
                     {/* Text Content */}
                     <div className="ml-3">
                         <h2 className="font-semibold text-lg text-[#16a34a]">Indica Watson</h2>
