@@ -76,8 +76,8 @@ const AddListingStep01 = ({ onFinish }) => {
                                         placeholder="Select Property Type"
                                         className='w-full h-10'
                                         options={[
-                                            { value: '1', label: 'Boarding House' },
-                                            { value: '2', label: 'Apartment' },
+                                            { value: 'Boarding House', label: 'Boarding House' },
+                                            { value: 'Apartment', label: 'Apartment' },
                                         ]}
                                     />
                                 </Form.Item>

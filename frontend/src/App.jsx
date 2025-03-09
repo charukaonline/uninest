@@ -32,6 +32,10 @@ import EmailVerificationPage from "./pages/(auth)/EmailVerificationPage";
 import ManageUsers from "./pages/(AdminDashboard)/ManageUsers";
 import LandlordDashboard from "./pages/(LandlordDashboard)/LandlordDashboard";
 import AddListings from "./pages/(LandlordDashboard)/AddListings";
+import ManageListings from "./pages/(AdminDashboard)/ManageListings";
+import AddUniversity from "./pages/(AdminDashboard)/AddUniversity";
+import StdSettings from "./pages/(StdDashboard)/StdSettings";
+import Inbox from "./pages/(StdDashboard)/Inbox";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -157,6 +161,24 @@ function App() {
           }
         />
 
+        <Route
+          path="/student/:userId/:email/settings"
+          element={
+            <ProtectedRoute>
+              <StdSettings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/:userId/:email/inbox"
+          element={
+            <ProtectedRoute>
+              <Inbox />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Landlord Dashboard - Update this route */}
         <Route
           path="/landlord/:landlordId/:email"
@@ -204,8 +226,26 @@ function App() {
             </AdminProtectedRoute>
           }
         />
-        {/* <Route path="/admin/listings" element={<ManageListings />} />
-        <Route path="/admin/analytics" element={<Analytics />} />
+
+        <Route
+          path="/admin/:adminId/:email/listings"
+          element={
+            <AdminProtectedRoute>
+              <ManageListings />
+            </AdminProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/:adminId/:email/add-university"
+          element={
+            <AdminProtectedRoute>
+              <AddUniversity />
+            </AdminProtectedRoute>
+          }
+        />
+
+        {/* <Route path="/admin/analytics" element={<Analytics />} />
         <Route path="/admin/reports" element={<Reports />} />
         <Route path="/admin/feedbacks" element={<Feedbacks />} /> */}
       </Routes>
