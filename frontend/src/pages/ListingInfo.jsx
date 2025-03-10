@@ -1,66 +1,54 @@
-import PropertyHeroSection from '@/components/propertyInfo_page/PropertyHeroSection';
-import PropertyInformation01 from '@/components/propertyInfo_page/PropertyInformation01';
-import PropertyInformation02 from '@/components/propertyInfo_page/PropertyInformation02';
+import ListingInfoHeroSection from '@/components/listingInfo_page/ListingInfoHeroSection';
+import ListingInfo01 from '@/components/listingInfo_page/ListingInfo01';
+import ListingInfo02 from '@/components/listingInfo_page/ListingInfo02';
+import LoadingSpinner from '@/components/include/LoadingSpinner';
 
 import React, { useEffect, useState } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
-
-import { FaMapMarkedAlt } from "react-icons/fa";
+import { useParams } from 'react-router-dom'
+import useListingStore from '@/store/listingStore';
 
 const ListingInfo = () => {
-    const { propertyId } = useParams();
-    const location = useLocation();
-    const { name, address, price, image } = location.state;
-
-    const [additionalDetails, setAdditionalDetails] = useState({});
-
-    // if (!additionalDetails) return <div>Loading...</div>;
+    const { getListingById } = useListingStore();
+    const { listingId } = useParams();
+    const [listing, setListing] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
+        const fetchListing = async () => {
+            try {
+                const data = await getListingById(listingId);
+                setListing(data);
+                document.title = `${data.propertyName}`;
+            } catch (err) {
+                setError('Failed to load listing details');
+                console.error(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
+        fetchListing();
         window.scrollTo(0, 0);
+    }, [listingId, getListingById]);
 
-        document.title = `UniNest | ${name}`;
-    }, []);
+    if (isLoading) {
+        return <LoadingSpinner />;
+    }
 
-    const heroSectionProps = {
-        name: name,
-        image: image,
-        address: address,
-        price: price,
-        ownerName: additionalDetails.ownerName,
-        status: additionalDetails.status,
-        featured: additionalDetails.featured,
-    };
+    if (error) {
+        return <div className="text-center text-red-500 p-4">{error}</div>;
+    }
 
-    const propertyInfo01 = {
-        propertyType: additionalDetails.propertyType,
-        yearBuild: additionalDetails.yearBuild,
-        size: additionalDetails.size,
-        bedrooms: additionalDetails.bedrooms,
-        bathrooms: additionalDetails.bathrooms,
-        parking: additionalDetails.parking,
-        address: address,
-        city: additionalDetails.city,
-        state: additionalDetails.country,
-        postalCode: additionalDetails.postalCode,
-        universityProximity: additionalDetails.universityProximity,
-        country: additionalDetails.country
-    };
-
-    const propertyInfo02 = {
-        description: additionalDetails.description,
-        features: additionalDetails.features,
-        mapLocation: additionalDetails.mapLocation
-    };
+    if (!listing) {
+        return <div className="text-center p-4">Listing not found</div>;
+    }
 
     return (
         <div className=''>
-
-            <PropertyHeroSection details01={heroSectionProps} />
-            <PropertyInformation01 details02={propertyInfo01} />
-            <PropertyInformation02 details03={propertyInfo02} />
-
+            <ListingInfoHeroSection listing={listing} />
+            <ListingInfo01 listing={listing} />
+            <ListingInfo02 listing={listing} />
         </div>
     )
 }

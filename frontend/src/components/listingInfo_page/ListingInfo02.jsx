@@ -2,7 +2,7 @@ import React from 'react'
 
 import { GoCheckCircleFill } from "react-icons/go";
 
-const PropertyInformation02 = ({ details03 }) => {
+const ListingInfo02 = ({ listing }) => {
     return (
         <div className=' overflow-x-hidden px-12 w-full'>
 
@@ -12,7 +12,7 @@ const PropertyInformation02 = ({ details03 }) => {
 
                 <div className=' flex space-x-3 justify-between mt-6'>
                     <div className='space-y-4'>
-                        <h2 className=''>{details03.description} Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum voluptatibus unde consequuntur culpa accusantium esse architecto soluta. Obcaecati pariatur molestias sunt beatae magnam odio possimus quam quisquam, non culpa! Asperiores.</h2>
+                        <h2 className=''>{listing.description}</h2>
                     </div>
                 </div>
             </div>
@@ -46,4 +46,4 @@ const PropertyInformation02 = ({ details03 }) => {
     )
 }
 
-export default PropertyInformation02
+export default ListingInfo02

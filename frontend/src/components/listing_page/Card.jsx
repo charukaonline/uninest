@@ -23,13 +23,23 @@ const PropertyCard = ({ listing }) => {
           className="w-full h-48 object-cover rounded-md"
         />
         <div className="p-4">
-          <h2 className="font-bold text-lg">{listing.propertyName}</h2>
-          <p className="text-primaryBgColor text-[15px] font-bold mt-2">
-            LKR {listing.monthlyRent.toLocaleString()}/month
-          </p>
-          <div className="flex items-center space-y-0 space-x-1">
-            <IoMdPin className="text-gray-600" />
-            <p className="text-gray-600 text-base truncate">{listing.address}</p>
+          <div className=" flex items-center justify-between">
+            <h2 className="font-bold text-lg">{listing.propertyName}</h2>
+            <p className="text-primaryBgColor text-[15px] font-bold mt-2">
+              LKR {listing.monthlyRent.toLocaleString()}/month
+            </p>
+          </div>
+          <div>
+            <div className="flex items-center space-y-0 space-x-1">
+              <IoMdPin className="text-gray-600" />
+              <p className="text-gray-600 text-base truncate">{listing.address}</p>
+            </div>
+
+            <div>
+              {/* Property Type */}
+              {/* Size */}
+              {/* Build year */}
+            </div>
           </div>
         </div>
       </div>

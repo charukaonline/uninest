@@ -4,7 +4,7 @@ import { IoMdPin } from "react-icons/io";
 import { Form, Input, Tooltip } from "antd";
 import TextArea from 'antd/es/input/TextArea';
 
-const PropertyHeroSection = ({ details01 }) => {
+const ListingInfoHeroSection = ({ listing }) => {
 
     const handleInquiry = () => {
         console.log('Inquiry submitted');
@@ -16,28 +16,30 @@ const PropertyHeroSection = ({ details01 }) => {
 
                 <div className='flex justify-between items-center'>
                     <div className='flex items-center space-x-3'>
-                        <h1 className='text-2xl font-semibold'>{details01.name}</h1>
+                        <h1 className='text-2xl font-semibold'>{listing.propertyName}</h1>
                         <div className='flex items-center space-x-1 text-gray-500'>
                             <h2><IoMdPin className="text-lg" /></h2>
-                            <h2 className='text-base leading-none'>{details01.address}</h2>
+                            <h2 className='text-base leading-none'>{listing.address}</h2>
                         </div>
                     </div>
 
                     <div>
-                        <h2 className=' text-xl text-primaryBgColor'>{details01.price}</h2>
+                        <h2 className=' text-xl text-primaryBgColor'>
+                            LKR {listing.monthlyRent.toLocaleString()}/month
+                        </h2>
                     </div>
                 </div>
 
                 <div className="flex space-x-3">
                     <Tooltip title="The status of the property">
                         <h2 className="bg-primaryBgColor text-white font-semibold uppercase text-sm p-2 rounded-lg cursor-pointer">
-                            {details01.status} For Rent
+                            {listing.status} For Rent
                         </h2>
                     </Tooltip>
 
                     <Tooltip title="Indicates if this property is sponsored">
                         <h2 className="bg-[#90D4D6] text-black font-semibold uppercase text-sm p-2 rounded-lg cursor-pointer">
-                            {details01.featured} Featured
+                            {listing.featured} Featured
                         </h2>
                     </Tooltip>
                 </div>
@@ -45,20 +47,18 @@ const PropertyHeroSection = ({ details01 }) => {
                 <div className=' flex space-x-2 mt-2'>
                     <div className=' items-center'>
                         <img
-                            src={details01.image}
-                            alt={details01.name}
+                            src={listing.images}
+                            alt={listing.propertyName}
                             className=' h-full w-full object-cover rounded-lg'
                         />
                     </div>
                     <div className=' p-4 rounded-lg w-full bg-primaryBgColor'>
 
                         <div className=' mb-2'>
-                            <h1 className=' text-xl font-semibold text-white'>Submit an Inquiry</h1>
-                            <hr />
                             <div className=' flex space-x-3 items-center mt-2'>
                                 <img src='/' alt='house owner' className=' rounded-full w-14 h-14' />
                                 <div className=' flex flex-col items-center'>
-                                    <h1 className=' text-base text-white'>{details01.ownerName} Sanoj Aminda</h1>
+                                    <h1 className=' text-base text-white'>{listing.username} Sanoj Aminda</h1>
                                     <h1 className=' text-sm text-gray-300'>House Owner</h1>
                                 </div>
                             </div>
@@ -150,4 +150,4 @@ const PropertyHeroSection = ({ details01 }) => {
     )
 }
 
-export default PropertyHeroSection
+export default ListingInfoHeroSection

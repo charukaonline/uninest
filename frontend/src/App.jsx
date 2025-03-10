@@ -9,7 +9,7 @@ import HouseownerSigninPage from "./pages/(auth)/HouseownerSigninPage";
 import HouseownerSignupPage from "./pages/(auth)/HouseownerSignupPage";
 import PendingHouseowner from "./pages/(auth)/PendingHouseowner";
 import AllListings from "./pages/AllListings";
-import PropertyInfo from "./pages/PropertyInfo";
+import ListingInfo from "./pages/ListingInfo";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import StudentDashboard from "./pages/(StdDashboard)/StdDashboard";
 import AdminDashboard from "./pages/(AdminDashboard)/AdminDashboard";
@@ -131,12 +131,12 @@ function App() {
           }
         />
 
-        {/* One Property Details */}
+        {/* One Listing Details */}
         <Route
-          path="/property/:propertyId"
+          path="/listing/:listingId"
           element={
             <Layout>
-              <PropertyInfo />
+              <ListingInfo />
             </Layout>
           }
         />

@@ -1,153 +1,108 @@
 import React from 'react'
 
+import { FaHouseChimney } from "react-icons/fa6";
+import { FaBath, FaBed, FaCalendarAlt, FaRulerCombined } from "react-icons/fa";
 import { IoMdPin } from "react-icons/io";
-import { Form, Input, Tooltip } from "antd";
-import TextArea from 'antd/es/input/TextArea';
+import { PiGarageFill } from "react-icons/pi";
 
-const PropertyHeroSection = ({ details01 }) => {
-
-    const handleInquiry = () => {
-        console.log('Inquiry submitted');
-    };
-
+const ListingInfo01 = ({ listing }) => {
     return (
-        <div className=' overflow-x-hidden px-6 w-full'>
-            <div className=' p-6 mt-3'>
+        <div className=' overflow-x-hidden px-12 w-full'>
 
-                <div className='flex justify-between items-center'>
-                    <div className='flex items-center space-x-3'>
-                        <h1 className='text-2xl font-semibold'>{details01.name}</h1>
-                        <div className='flex items-center space-x-1 text-gray-500'>
-                            <h2><IoMdPin className="text-lg" /></h2>
-                            <h2 className='text-base leading-none'>{details01.address}</h2>
+            <div className=' p-3 px-8 mt-1 bg-[#eee] rounded-lg mb-3'>
+                <h2 className=' font-semibold text-lg'>Overview</h2>
+
+                <div className=' flex space-x-3 justify-between mt-6'>
+                    <div className=' space-y-3'>
+                        <h2>Property Type</h2>
+                        <h2 className=' font-semibold text-lg'>{listing.propertyType}</h2>
+                    </div>
+
+                    <div className='space-y-4'>
+                        <h2>Year Built</h2>
+                        <div className='flex space-x-2 -space-y-1'>
+                            <FaCalendarAlt className=' text-lg' />
+                            <h2 className=' font-semibold text-lg'>{listing.builtYear}</h2>
                         </div>
                     </div>
 
-                    <div>
-                        <h2 className=' text-xl text-primaryBgColor'>{details01.price}</h2>
-                    </div>
-                </div>
-
-                <div className="flex space-x-3">
-                    <Tooltip title="The status of the property">
-                        <h2 className="bg-primaryBgColor text-white font-semibold uppercase text-sm p-2 rounded-lg cursor-pointer">
-                            {details01.status} For Rent
-                        </h2>
-                    </Tooltip>
-
-                    <Tooltip title="Indicates if this property is sponsored">
-                        <h2 className="bg-[#90D4D6] text-black font-semibold uppercase text-sm p-2 rounded-lg cursor-pointer">
-                            {details01.featured} Featured
-                        </h2>
-                    </Tooltip>
-                </div>
-
-                <div className=' flex space-x-2 mt-2'>
-                    <div className=' items-center'>
-                        <img
-                            src={details01.image}
-                            alt={details01.name}
-                            className=' h-full w-full object-cover rounded-lg'
-                        />
-                    </div>
-                    <div className=' p-4 rounded-lg w-full bg-primaryBgColor'>
-
-                        <div className=' mb-2'>
-                            <h1 className=' text-xl font-semibold text-white'>Submit an Inquiry</h1>
-                            <hr />
-                            <div className=' flex space-x-3 items-center mt-2'>
-                                <img src='/' alt='house owner' className=' rounded-full w-14 h-14' />
-                                <div className=' flex flex-col items-center'>
-                                    <h1 className=' text-base text-white'>{details01.ownerName} Sanoj Aminda</h1>
-                                    <h1 className=' text-sm text-gray-300'>House Owner</h1>
-                                </div>
-                            </div>
+                    <div className='space-y-4'>
+                        <h2>Size (m2)</h2>
+                        <div className='flex space-x-2 -space-y-1'>
+                            <FaRulerCombined className=' text-lg' />
+                            <h2 className=' font-semibold text-lg'>{listing.size}</h2>
                         </div>
+                    </div>
 
-                        <Form
-                            layout='vertical'
-                            onFinish={handleInquiry}
-                            requiredMark={true}
-                            className=' text-white'
-                        >
-                            <Form.Item
-                                label={<span className="text-white">Your Name</span>}
-                                name="name"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please enter your name!'
-                                    },
-                                ]}
-                            >
-                                <Input
-                                    placeholder='John Doe'
-                                    className="bg-white text-black placeholder-gray-400 focus:border-primaryBgColor hover:border-primaryBgColor"
-                                />
-                            </Form.Item>
+                    <div className='space-y-4'>
+                        <h2>Bedrooms</h2>
+                        <div className='flex space-x-2 -space-y-1'>
+                            <FaBed className=' text-xl' />
+                            <h2 className=' font-semibold text-lg'>{listing.bedrooms}</h2>
+                        </div>
+                    </div>
 
-                            <Form.Item
-                                label={<span className="text-white">Email</span>}
-                                name="email"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please enter your email!'
-                                    },
-                                ]}
-                            >
-                                <Input
-                                    placeholder='email@domain.com'
-                                    className="bg-white text-black placeholder-gray-400 focus:border-primaryBgColor hover:border-primaryBgColor"
-                                />
-                            </Form.Item>
+                    <div className='space-y-4'>
+                        <h2>Bathrooms</h2>
+                        <div className='flex space-x-2 -space-y-1'>
+                            <FaBath className=' text-lg' />
+                            <h2 className=' font-semibold text-lg'>{listing.bathrooms}</h2>
+                        </div>
+                    </div>
 
-                            <Form.Item
-                                label={<span className="text-white">Phone Number</span>}
-                                name="phoneNumber"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please enter your phone number!'
-                                    },
-                                ]}
-                            >
-                                <Input
-                                    placeholder='+94 77 123 3456'
-                                    className="bg-white text-black placeholder-gray-400 focus:border-primaryBgColor hover:border-primaryBgColor"
-                                />
-                            </Form.Item>
+                    <div className='space-y-4'>
+                        <h2>Garage</h2>
+                        <div className='flex space-x-2 -space-y-1'>
+                            <PiGarageFill className=' text-xl' />
+                            <h2 className=' font-semibold text-lg'>{listing.garage}</h2>
+                        </div>
+                    </div>
+                </div>
 
-                            <Form.Item
-                                label={<span className="text-white">Message</span>}
-                                name="message"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please enter your message!'
-                                    },
-                                ]}
-                            >
-                                <TextArea
-                                    placeholder='Type your message here...'
-                                    className="bg-white text-black placeholder-gray-400 focus:border-primaryBgColor hover:border-primaryBgColor"
-                                />
-                            </Form.Item>
+            </div>
 
-                            <Form.Item>
-                                <button
-                                    type="submit"
-                                    className="bg-white text-primaryBgColor px-6 py-2 rounded-lg focus:outline-none w-full hover:bg-white-[#eee] font-semibold"
-                                >
-                                    Submit Inquiry
-                                </button>
-                            </Form.Item>
-                        </Form>
+            <div className=' p-3 px-8 mt-8 bg-[#eee] rounded-lg'>
+                <h2 className=' font-semibold text-lg'>Location</h2>
+
+                <div className=' flex space-x-20 justify-between mt-6'>
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
+                        <h2 className=''>Address</h2>
+                        <h2 className='font-semibold'>{listing.address}</h2>
+                    </div>
+
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
+                        <h2 className=''>Zip/Postal Code</h2>
+                        <h2 className='font-semibold'>{listing.postalCode}</h2>
+                    </div>
+                </div>
+
+                <div className=' flex space-x-20 justify-between mt-2'>
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
+                        <h2 className=''>City</h2>
+                        <h2 className='font-semibold'>{listing.city}</h2>
+                    </div>
+
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
+                        <h2 className=''>University Proximity</h2>
+                        <h2 className='font-semibold'>{listing.nearestUniversity}</h2>
+                    </div>
+                </div>
+
+                <div className=' flex space-x-20 justify-between mt-2'>
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
+                        <h2 className=''>State/Province</h2>
+                        <h2 className='font-semibold'>{listing.province}</h2>
+                    </div>
+
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
+                        <h2 className=''>Country</h2>
+                        <h2 className='font-semibold'>Sri Lanka</h2>
                     </div>
                 </div>
             </div>
+
         </div>
     )
 }
 
-export default PropertyHeroSection
+export default ListingInfo01
