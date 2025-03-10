@@ -83,11 +83,14 @@ const ChatInterface = ({ user }) => {
                                 'bg-white text-[#181818]'} p-3 rounded-lg shadow`}>
 
                                 <p className="text-base">{message.text}</p>
-                                <p className={`text-xs ${message.sender === 'me' ?
-                                    'text-gray-400' :
-                                    'text-gray-500'} text-right mt-1`}>
-                                    {message.time}
-                                </p>
+                                <div className=' flex items-center justify-between'>
+                                    <p className={`text-xs ${message.sender === 'me' ?
+                                        'text-gray-400' :
+                                        'text-gray-500'} text-right mt-1`}>
+                                        {message.time}
+                                    </p>
+                                    {message.sender === 'me' && <MessageStatus status="read" />}
+                                </div>
                             </div>
                         </div>
                     ))}
