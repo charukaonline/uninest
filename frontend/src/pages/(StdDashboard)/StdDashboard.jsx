@@ -5,9 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch, Tooltip } from "antd";
 import Map from "@/components/include/Map";
+import { motion } from "framer-motion";
 
 import { useEffect, useState } from "react";
 import PopularCard from "@/components/student_dashboard/PopularCard";
+import RecommendationCard from "@/components/student_dashboard/RecommendationCard";
 
 export default function StudentDashboard() {
   const [isMapView, setIsMapView] = useState(false);
@@ -56,26 +58,7 @@ export default function StudentDashboard() {
           <Tabs defaultValue="recommended">
             <div className=" flex justify-between items-center w-full">
               <div>
-                <TabsList>
-                  <TabsTrigger
-                    value="recommended"
-                    className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
-                  >
-                    Recommended
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="popular"
-                    className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
-                  >
-                    Popular
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="nearest"
-                    className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
-                  >
-                    Nearest
-                  </TabsTrigger>
-                </TabsList>
+                <h2 className=" font-semibold text-xl">Recommended for you</h2>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-base font-semibold">Map View</span>
@@ -96,35 +79,20 @@ export default function StudentDashboard() {
               </div>
             ) : (
               <>
-                <TabsContent value="recommended">
-                  <div className="mt-4">
-                    <h2 className="text-2xl font-bold mb-4">Recommended Listings</h2>
-                    {/* Add your recommended listings content here */}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="popular">
-                  <div className="mt-4">
-                    <h2 className="text-2xl font-bold mb-4">Popular Listings</h2>
-                    {/* Add your popular listings content here */}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="nearest">
-                  <div className="mt-4">
-                    <h2 className="text-2xl font-bold mb-4">Nearest Listings</h2>
-                    {/* Add your nearest listings content here */}
-                  </div>
-                </TabsContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  mt-5 mb-8">
+                  <RecommendationCard />
+                </div>
               </>
             )}
           </Tabs>
 
-          <div className=" mb-5">
-            <h1 className=" mb-3 font-semibold text-lg text-gray-600">Most Popular Boarding House</h1>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <div className=" mb-5">
+              <h1 className=" mb-3 font-semibold text-lg text-gray-600">Most Popular Boarding House</h1>
 
-            <PopularCard />
-          </div>
+              <PopularCard />
+            </div>
+          </motion.div>
 
           <div className=" mt-10 items-center justify-center w-full">
             <h1 className=" text-gray-600 font-semibold text-center">UniNest © {new Date().getFullYear()}</h1>
