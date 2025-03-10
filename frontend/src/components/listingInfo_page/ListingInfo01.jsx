@@ -27,7 +27,7 @@ const ListingInfo01 = ({ listing }) => {
                     </div>
 
                     <div className='space-y-4'>
-                        <h2>Size (m2)</h2>
+                        <h2>Size (m²)</h2>
                         <div className='flex space-x-2 -space-y-1'>
                             <FaRulerCombined className=' text-lg' />
                             <h2 className=' font-semibold text-lg'>{listing.size}</h2>
