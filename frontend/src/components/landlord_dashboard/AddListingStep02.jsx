@@ -1,16 +1,99 @@
-import React, { useEffect, useState } from "react";
-import { Form, Input, Upload, Select, notification } from "antd";
-import { InboxOutlined } from "@ant-design/icons";
-import Map from "../include/Map";
+import React, { useEffect, useState, useRef } from "react";
+import { Form, Input, Select, notification } from "antd";
+import MapboxMap from "../include/MapboxMap"; // Import the new MapboxMap component
 
 const AddListingStep02 = ({ onFinish }) => {
   const [form] = Form.useForm();
   const [selectedCoordinates, setSelectedCoordinates] = useState(null);
+  const [universities, setUniversities] = useState([]);
+  const [selectedUniversity, setSelectedUniversity] = useState(null);
+  const [universityCoordinates, setUniversityCoordinates] = useState(null);
+  const [distance, setDistance] = useState(null);
+  const mapRef = useRef(null);
 
+  // Handle university selection
+  const handleUniversityChange = (value) => {
+    const selected = universities.find((uni) => uni._id === value);
+    setSelectedUniversity(selected);
+
+    if (selected && selected.location && selected.location.coordinates) {
+      const uniCoords = {
+        latitude: selected.location.coordinates.latitude,
+        longitude: selected.location.coordinates.longitude,
+      };
+
+      setUniversityCoordinates(uniCoords);
+
+      // Pan map to university location
+      if (mapRef.current) {
+        mapRef.current.panTo(uniCoords);
+      }
+
+      // If property location is already selected, calculate distance
+      if (selectedCoordinates) {
+        calculateDistance(uniCoords, selectedCoordinates);
+      }
+    }
+  };
+
+  // Update handleLocationSelect to calculate distance when property location is selected
   const handleLocationSelect = (coords) => {
     setSelectedCoordinates(coords);
-
     form.setFieldsValue({ coordinates: coords });
+
+    // Calculate distance if university is already selected
+    if (universityCoordinates) {
+      calculateDistance(universityCoordinates, coords);
+    }
+  };
+
+  // Function to calculate distance using Mapbox Directions API
+  const calculateDistance = async (origin, destination) => {
+    try {
+      // Format coordinates as lng,lat (Mapbox format) and URL encode them
+      const originCoord = `${origin.longitude},${origin.latitude}`;
+      const destinationCoord = `${destination.longitude},${destination.latitude}`;
+      const encodedCoords = encodeURIComponent(
+        `${originCoord};${destinationCoord}`
+      );
+
+      // Build the complete URL with required parameters
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${encodedCoords}?alternatives=true&geometries=geojson&language=en&overview=full&steps=true&access_token=${
+        import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
+      }`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.routes && data.routes.length > 0) {
+        const distanceInKm = (data.routes[0].distance / 1000).toFixed(2);
+        setDistance(distanceInKm);
+
+        // Auto-fill the distance field
+        form.setFieldsValue({
+          "university-distance": distanceInKm,
+        });
+
+        // You could also save the route geometry for display if needed
+        const routeGeometry = data.routes[0].geometry;
+
+        // Update map with route if your map component supports it
+        if (mapRef.current && typeof mapRef.current.showRoute === "function") {
+          mapRef.current.showRoute(routeGeometry);
+        }
+      } else {
+        notification.warning({
+          message: "Route Not Found",
+          description: "Could not calculate distance between these locations",
+        });
+      }
+    } catch (error) {
+      console.error("Error calculating distance:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to calculate distance",
+      });
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -29,13 +112,34 @@ const AddListingStep02 = ({ onFinish }) => {
     const formData = {
       ...values,
       coordinates: selectedCoordinates,
-      nearestUniversity: values['nearest-university']
+      nearestUniversity: values["nearest-university"],
+      "university-distance": distance, // Make sure the distance is included
     };
     onFinish(formData);
   };
 
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/university/all-universities`
+        );
+        const data = await response.json();
+        setUniversities(data);
+      } catch (error) {
+        console.error("Error fetching universities:", error);
+        notification.error({
+          message: "Error",
+          description: "Failed to load university data",
+        });
+      }
+    };
+
+    fetchUniversities();
   }, []);
 
   return (
@@ -120,15 +224,37 @@ const AddListingStep02 = ({ onFinish }) => {
                   rules={[
                     {
                       required: true,
-                      message: "Please enter nearest university!",
+                      message: "Please select nearest university!",
                     },
                   ]}
                 >
-                  <Input
+                  <Select
                     className="w-full h-10"
-                    placeholder="University Proximity (km)"
+                    placeholder="Select nearest university"
+                    onChange={handleUniversityChange}
+                    options={universities.map((uni) => ({
+                      label: uni.name,
+                      value: uni._id,
+                    }))}
                   />
                 </Form.Item>
+                {distance && (
+                  <Form.Item
+                    label={
+                      <span className="text-base font-medium">
+                        Distance to University
+                      </span>
+                    }
+                    name="university-distance"
+                  >
+                    <Input
+                      className="w-full h-10"
+                      suffix="km"
+                      disabled
+                      value={distance}
+                    />
+                  </Form.Item>
+                )}
               </div>
 
               {/* Second Column */}
@@ -145,7 +271,9 @@ const AddListingStep02 = ({ onFinish }) => {
                       required: true,
                       validator: (_, value) => {
                         if (!selectedCoordinates) {
-                          return Promise.reject('Please select a location on the map!');
+                          return Promise.reject(
+                            "Please select a location on the map!"
+                          );
                         }
                         return Promise.resolve();
                       },
@@ -153,13 +281,23 @@ const AddListingStep02 = ({ onFinish }) => {
                   ]}
                 >
                   <div className="h-[420px] w-full">
-                    <Map
+                    <MapboxMap
                       onLocationSelect={handleLocationSelect}
-                      selectedLocations={
-                        selectedCoordinates ? [selectedCoordinates] : []
+                      initialCenter={
+                        universityCoordinates
+                          ? [
+                              universityCoordinates.longitude,
+                              universityCoordinates.latitude,
+                            ]
+                          : [79.8612, 6.9271] // Default center (Colombo)
                       }
-                      initialCenter={[6.9271, 79.8612]}
                       initialZoom={12}
+                      markers={{
+                        university: universityCoordinates,
+                        property: selectedCoordinates,
+                      }}
+                      distance={distance} // Pass the calculated distance
+                      ref={mapRef} // Add ref to control map from outside
                     />
                     {selectedCoordinates && (
                       <div className="mt-2 p-2 bg-gray-50 rounded">
@@ -180,7 +318,7 @@ const AddListingStep02 = ({ onFinish }) => {
               <button
                 type="button"
                 className="px-8 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
-              // onClick={handleCancel}
+                // onClick={handleCancel}
               >
                 Cancel
               </button>

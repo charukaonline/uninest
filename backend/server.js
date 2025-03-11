@@ -83,3 +83,4 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/admin", adminRoutes);
 app.use("/api/send-email", require("./routes/inquiry"));
 app.use("/api/listings", listingRoutes);
+app.use("/api/university", require("./routes/university"));

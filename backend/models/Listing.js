@@ -16,6 +16,7 @@ const listingSchema = new mongoose.Schema({
   province: { type: String, required: true },
   postalCode: { type: String },
   nearestUniversity: { type: String, required: true },
+  universityDistance: { type: Number },
   coordinates: {
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true },
