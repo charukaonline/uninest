@@ -1,14 +1,19 @@
 import React from 'react'
 
 import { IoMdPin } from "react-icons/io";
+import { BiSolidConversation } from "react-icons/bi";
+import { FaBookmark } from "react-icons/fa6";
+import { RiCalendarScheduleFill } from "react-icons/ri";
+import { MdRateReview, MdReport } from "react-icons/md";
+
 import { Form, Input, Tooltip } from "antd";
 import TextArea from 'antd/es/input/TextArea';
+import StarRating from '../include/StarRating';
+import { Button } from '../ui/button';
 
 const ListingInfoHeroSection = ({ listing }) => {
 
-    const handleInquiry = () => {
-        console.log('Inquiry submitted');
-    };
+    const averageRating = 4.5;
 
     return (
         <div className=' overflow-x-hidden px-6 w-full'>
@@ -45,104 +50,55 @@ const ListingInfoHeroSection = ({ listing }) => {
                 </div>
 
                 <div className=' flex space-x-2 mt-2'>
-                    <div className=' items-center'>
+                    <div className=' items-center w-2/3'>
                         <img
                             src={listing.images}
                             alt={listing.propertyName}
                             className=' h-full w-full object-cover rounded-lg'
                         />
                     </div>
-                    <div className=' p-4 rounded-lg w-full bg-primaryBgColor'>
+                    <div className=' p-4 rounded-lg w-1/3 bg-primaryBgColor'>
 
                         <div className=' mb-2'>
                             <div className=' flex space-x-3 items-center mt-2'>
-                                <img src='/' alt='house owner' className=' rounded-full w-14 h-14' />
-                                <div className=' flex flex-col items-center'>
-                                    <h1 className=' text-base text-white'>{listing.username} Sanoj Aminda</h1>
-                                    <h1 className=' text-sm text-gray-300'>House Owner</h1>
+                                <img src='/' alt='house owner' className=' rounded-full w-14 h-14 bg-purple-400' />
+                                <div className=' items-center -space-y-2'>
+                                    <div className=' flex flex-row items-center -space-y-2 space-x-2'>
+                                        <h1 className=' text-lg text-white'>{listing.username} Sanoj Aminda</h1>
+                                        <h1 className=' text-sm text-gray-300'>(House Owner)</h1>
+                                    </div>
+                                    <div>
+                                        <h2 className=' text-gray-200'>Listed At: {new Date(listing.createdAt).toLocaleString()}</h2>
+                                    </div>
                                 </div>
                             </div>
+                            {/* Needs to be dynamic */}
+                            <h1 className=' mt-6 bg-white text-primaryBgColor font-semibold p-2 rounded-lg w-fit'>This boarding house is only for boys</h1>
                         </div>
 
-                        <Form
-                            layout='vertical'
-                            onFinish={handleInquiry}
-                            requiredMark={true}
-                            className=' text-white'
-                        >
-                            <Form.Item
-                                label={<span className="text-white">Your Name</span>}
-                                name="name"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please enter your name!'
-                                    },
-                                ]}
-                            >
-                                <Input
-                                    placeholder='John Doe'
-                                    className="bg-white text-black placeholder-gray-400 focus:border-primaryBgColor hover:border-primaryBgColor"
-                                />
-                            </Form.Item>
+                        <div className=' mt-6 flex items-center space-y-0 space-x-2'>
+                            <StarRating rating={averageRating} /><h2 className=' text-white'>({averageRating})</h2>
+                        </div>
 
-                            <Form.Item
-                                label={<span className="text-white">Email</span>}
-                                name="email"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please enter your email!'
-                                    },
-                                ]}
-                            >
-                                <Input
-                                    placeholder='email@domain.com'
-                                    className="bg-white text-black placeholder-gray-400 focus:border-primaryBgColor hover:border-primaryBgColor"
-                                />
-                            </Form.Item>
-
-                            <Form.Item
-                                label={<span className="text-white">Phone Number</span>}
-                                name="phoneNumber"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please enter your phone number!'
-                                    },
-                                ]}
-                            >
-                                <Input
-                                    placeholder='+94 77 123 3456'
-                                    className="bg-white text-black placeholder-gray-400 focus:border-primaryBgColor hover:border-primaryBgColor"
-                                />
-                            </Form.Item>
-
-                            <Form.Item
-                                label={<span className="text-white">Message</span>}
-                                name="message"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Please enter your message!'
-                                    },
-                                ]}
-                            >
-                                <TextArea
-                                    placeholder='Type your message here...'
-                                    className="bg-white text-black placeholder-gray-400 focus:border-primaryBgColor hover:border-primaryBgColor"
-                                />
-                            </Form.Item>
-
-                            <Form.Item>
-                                <button
-                                    type="submit"
-                                    className="bg-white text-primaryBgColor px-6 py-2 rounded-lg focus:outline-none w-full hover:bg-white-[#eee] font-semibold"
-                                >
-                                    Submit Inquiry
-                                </button>
-                            </Form.Item>
-                        </Form>
+                        <div className=' flex flex-col  h-fit rounded-lg p-2'>
+                            <div className=' flex flex-col space-y-3 items-center mt-6'>
+                                <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
+                                    <BiSolidConversation className=' text-black' />Start Conversation
+                                </Button>
+                                <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
+                                    <FaBookmark className=' text-black' />Add to Bookmark
+                                </Button>
+                                <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
+                                    <RiCalendarScheduleFill className=' text-black' />Create a Schedule
+                                </Button>
+                                <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
+                                    <MdRateReview className=' text-black' />Rate this Listing
+                                </Button>
+                                <Button className=" w-full bg-red-500 text-white font-semibold hover:bg-red-600">
+                                    <MdReport className=' text-black' />Report Abuse
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
