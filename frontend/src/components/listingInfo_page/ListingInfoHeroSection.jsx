@@ -37,13 +37,13 @@ const ListingInfoHeroSection = ({ listing }) => {
                 </div>
 
                 <div className="flex space-x-3">
-                    <Tooltip title="The status of the property">
+                    <Tooltip title="The status of the listing">
                         <h2 className="bg-primaryBgColor text-white font-semibold uppercase text-sm p-2 rounded-lg cursor-pointer">
                             {listing.status} For Rent
                         </h2>
                     </Tooltip>
 
-                    <Tooltip title="Indicates if this property is sponsored">
+                    <Tooltip title="Sponsored Listing">
                         <h2 className="bg-[#90D4D6] text-black font-semibold uppercase text-sm p-2 rounded-lg cursor-pointer">
                             {listing.featured} Featured
                         </h2>

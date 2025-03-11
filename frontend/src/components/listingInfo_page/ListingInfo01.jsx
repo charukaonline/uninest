@@ -65,38 +65,38 @@ const ListingInfo01 = ({ listing }) => {
                 <h2 className=' font-semibold text-lg'>Location</h2>
 
                 <div className=' flex space-x-20 justify-between mt-6'>
-                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
-                        <h2 className=''>Address</h2>
-                        <h2 className='font-semibold'>{listing.address}</h2>
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-primaryBgColor p-2 items-center rounded-lg'>
+                        <h2 className=' text-gray-200'>Address</h2>
+                        <h2 className='font-semibold text-white'>{listing.address}</h2>
                     </div>
 
-                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
-                        <h2 className=''>Zip/Postal Code</h2>
-                        <h2 className='font-semibold'>{listing.postalCode}</h2>
-                    </div>
-                </div>
-
-                <div className=' flex space-x-20 justify-between mt-2'>
-                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
-                        <h2 className=''>City</h2>
-                        <h2 className='font-semibold'>{listing.city}</h2>
-                    </div>
-
-                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
-                        <h2 className=''>University Proximity</h2>
-                        <h2 className='font-semibold'>{listing.nearestUniversity}</h2>
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-primaryBgColor p-2 items-center rounded-lg'>
+                        <h2 className=' text-gray-200'>Zip/Postal Code</h2>
+                        <h2 className='font-semibold text-white'>{listing.postalCode}</h2>
                     </div>
                 </div>
 
                 <div className=' flex space-x-20 justify-between mt-2'>
-                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
-                        <h2 className=''>State/Province</h2>
-                        <h2 className='font-semibold'>{listing.province}</h2>
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-primaryBgColor p-2 items-center rounded-lg'>
+                        <h2 className=' text-gray-200'>City</h2>
+                        <h2 className='font-semibold text-white'>{listing.city}</h2>
                     </div>
 
-                    <div className=' flex space-x-3 justify-between w-1/2 bg-white p-2 items-center rounded-lg'>
-                        <h2 className=''>Country</h2>
-                        <h2 className='font-semibold'>Sri Lanka</h2>
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-primaryBgColor p-2 items-center rounded-lg'>
+                        <h2 className=' text-gray-200'>University Proximity</h2>
+                        <h2 className='font-semibold text-white'>{listing.nearestUniversity}</h2>
+                    </div>
+                </div>
+
+                <div className=' flex space-x-20 justify-between mt-2'>
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-primaryBgColor p-2 items-center rounded-lg'>
+                        <h2 className=' text-gray-200'>State/Province</h2>
+                        <h2 className='font-semibold text-white'>{listing.province}</h2>
+                    </div>
+
+                    <div className=' flex space-x-3 justify-between w-1/2 bg-primaryBgColor p-2 items-center rounded-lg'>
+                        <h2 className=' text-gray-200'>Country</h2>
+                        <h2 className='font-semibold text-white'>Sri Lanka</h2>
                     </div>
                 </div>
             </div>

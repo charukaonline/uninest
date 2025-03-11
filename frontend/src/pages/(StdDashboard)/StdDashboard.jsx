@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import PopularCard from "@/components/student_dashboard/PopularCard";
 import RecommendationCard from "@/components/student_dashboard/RecommendationCard";
+import { Link } from "react-router-dom";
 
 export default function StudentDashboard() {
   const [isMapView, setIsMapView] = useState(false);
@@ -60,16 +61,29 @@ export default function StudentDashboard() {
               <div>
                 <h2 className=" font-semibold text-xl">Recommended for you</h2>
               </div>
-              <div className="flex items-center space-x-3">
-                <span className="text-base font-semibold">Map View</span>
-                <Switch
-                  checked={isMapView}
-                  onChange={(checked) => setIsMapView(checked)}
-                  size="default"
-                  style={{
-                    backgroundColor: isMapView ? '#006845' : '#adadad'
-                  }}
-                />
+              <div className="flex items-center space-x-4">
+
+                <div className=" space-x-4">
+                  <span className=" p-2 bg-primaryBgColor text-white rounded-lg">
+                    <Link to="/">Home</Link>
+                  </span>
+                  <span className=" p-2 bg-primaryBgColor text-white rounded-lg">
+                    <Link to="/all-listings">All Listings</Link>
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <span className="text-base font-semibold">Map View</span>
+                  <Switch
+                    checked={isMapView}
+                    onChange={(checked) => setIsMapView(checked)}
+                    size="default"
+                    style={{
+                      backgroundColor: isMapView ? '#006845' : '#adadad'
+                    }}
+                  />
+                </div>
+
               </div>
             </div>
 
