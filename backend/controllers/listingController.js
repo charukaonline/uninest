@@ -4,7 +4,6 @@ const s3 = require("../config/awsS3");
 
 exports.addListing = async (req, res) => {
   try {
-    
     const landlord = req.user;
     if (!landlord) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -30,10 +29,18 @@ exports.addListing = async (req, res) => {
       postalCode,
       nearestUniversity,
       coordinates,
+      "university-distance": universityDistance, // Extract university distance
     } = req.body;
 
-    const numericFields = ['size', 'bedrooms', 'bathrooms', 'garage', 'monthlyRent'];
-    numericFields.forEach(field => {
+    const numericFields = [
+      "size",
+      "bedrooms",
+      "bathrooms",
+      "garage",
+      "monthlyRent",
+      "university-distance",
+    ];
+    numericFields.forEach((field) => {
       if (req.body[field]) {
         req.body[field] = Number(req.body[field]);
       }
@@ -44,7 +51,7 @@ exports.addListing = async (req, res) => {
       parsedCoordinates =
         typeof coordinates === "string" ? JSON.parse(coordinates) : coordinates;
     } catch (err) {
-      return res.status(400).json({ message: "Invalid coordinates" });
+      return res.status(400).json({ message: "Invalid coordinates format" });
     }
 
     const imageUrls = [];
@@ -56,7 +63,7 @@ exports.addListing = async (req, res) => {
     for (const file of req.files) {
       try {
         const fileContent = fs.readFileSync(file.path);
-        
+
         const params = {
           Bucket: process.env.AWS_BUCKET_NAME,
           Key: `listings/${Date.now()}-${file.originalname}`,
@@ -66,12 +73,12 @@ exports.addListing = async (req, res) => {
         };
 
         const s3Response = await s3.upload(params).promise();
-        console.log('S3 upload response:', s3Response);
+        console.log("S3 upload response:", s3Response);
         imageUrls.push(s3Response.Location);
 
         fs.unlinkSync(file.path);
       } catch (uploadError) {
-        console.error('S3 upload error:', uploadError);
+        console.error("S3 upload error:", uploadError);
         throw new Error(`Failed to upload image: ${uploadError.message}`);
       }
     }
@@ -87,23 +94,35 @@ exports.addListing = async (req, res) => {
       bedrooms: 30,
       bathrooms: 30,
       garage: 20,
-      builtYear: 20
+      builtYear: 20,
     };
 
-    Object.keys(ratingRules).forEach(field => {
-      if (req.body[field] && req.body[field].toString().trim() !== '') {
+    Object.keys(ratingRules).forEach((field) => {
+      if (req.body[field] && req.body[field].toString().trim() !== "") {
         initialEloRating += ratingRules[field];
       }
     });
 
     const newListing = new Listing({
-      ...req.body,
-      coordinates: typeof req.body.coordinates === 'string' 
-        ? JSON.parse(req.body.coordinates) 
-        : req.body.coordinates,
+      propertyName,
+      propertyType,
+      builtYear,
+      size: req.body.size,
+      bedrooms: req.body.bedrooms,
+      bathrooms: req.body.bathrooms,
+      garage: req.body.garage,
+      monthlyRent: req.body.monthlyRent,
+      description,
+      address,
+      city,
+      province,
+      postalCode,
+      nearestUniversity,
+      universityDistance: req.body["university-distance"], // Add university distance
+      coordinates: parsedCoordinates,
       images: imageUrls,
-      landlord: req.user._id,
-      eloRating: initialEloRating
+      landlord: landlord._id,
+      eloRating: initialEloRating,
     });
 
     await newListing.save();
@@ -113,11 +132,11 @@ exports.addListing = async (req, res) => {
       .status(201)
       .json({ message: "Listing added successfully", listing: newListing });
   } catch (err) {
-    console.error('Error details:', err);
-    res.status(500).json({ 
-      message: "Server error", 
+    console.error("Error details:", err);
+    res.status(500).json({
+      message: "Server error",
       error: err.message,
-      details: err.errors
+      details: err.errors,
     });
   }
 };
@@ -125,16 +144,16 @@ exports.addListing = async (req, res) => {
 exports.getListings = async (req, res) => {
   try {
     const listings = await Listing.find()
-      .populate('landlord', 'firstName lastName email phoneNumber')
+      .populate("landlord", "firstName lastName email phoneNumber")
       .sort({ eloRating: -1 }) // Sort by eloRating in descending order
       .exec();
 
     res.status(200).json(listings);
   } catch (err) {
-    console.error('Error fetching listings:', err);
-    res.status(500).json({ 
-      message: "Error fetching listings", 
-      error: err.message 
+    console.error("Error fetching listings:", err);
+    res.status(500).json({
+      message: "Error fetching listings",
+      error: err.message,
     });
   }
 };
@@ -142,7 +161,7 @@ exports.getListings = async (req, res) => {
 exports.getListingById = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id)
-      .populate('landlord', 'firstName lastName email phoneNumber')
+      .populate("landlord", "firstName lastName email phoneNumber")
       .exec();
 
     if (!listing) {
@@ -151,10 +170,10 @@ exports.getListingById = async (req, res) => {
 
     res.status(200).json(listing);
   } catch (err) {
-    console.error('Error fetching listing:', err);
-    res.status(500).json({ 
-      message: "Error fetching listing", 
-      error: err.message 
+    console.error("Error fetching listing:", err);
+    res.status(500).json({
+      message: "Error fetching listing",
+      error: err.message,
     });
   }
 };
@@ -162,7 +181,7 @@ exports.getListingById = async (req, res) => {
 exports.trackListingClick = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
-    
+
     if (!listing) {
       return res.status(404).json({ message: "Listing not found" });
     }
@@ -171,14 +190,14 @@ exports.trackListingClick = async (req, res) => {
     listing.eloRating += 2;
     await listing.save();
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
-      newRating: listing.eloRating 
+      newRating: listing.eloRating,
     });
   } catch (err) {
-    res.status(500).json({ 
-      message: "Error tracking click", 
-      error: err.message 
+    res.status(500).json({
+      message: "Error tracking click",
+      error: err.message,
     });
   }
 };

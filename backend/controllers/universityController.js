@@ -48,10 +48,8 @@ exports.getAllUniversities = async (req, res) => {
       .select("name location")
       .sort({ name: 1 });
 
-    res.status(200).json({
-      success: true,
-      data: universities,
-    });
+    // Return the array directly without wrapping in an object
+    res.status(200).json(universities);
   } catch (error) {
     console.error("Error in getAllUniversities:", error);
     res.status(500).json({
