@@ -43,6 +43,59 @@ const MapboxMap = forwardRef(
         }
       },
       getMap: () => mapRef.current,
+      showRoute: (routeGeometry) => {
+        if (!mapRef.current || !mapRef.current.loaded()) return;
+
+        // Clean up previous route
+        if (routeRef.current) {
+          if (mapRef.current.getLayer("route")) {
+            mapRef.current.removeLayer("route");
+          }
+          if (mapRef.current.getSource("route")) {
+            mapRef.current.removeSource("route");
+          }
+          routeRef.current = null;
+        }
+
+        // Add new route using the geometry from the Directions API
+        if (mapRef.current.loaded()) {
+          // If map already has the source, update it
+          if (mapRef.current.getSource("route")) {
+            mapRef.current.getSource("route").setData({
+              type: "Feature",
+              properties: {},
+              geometry: routeGeometry,
+            });
+          } else {
+            // Add new source and layer
+            mapRef.current.addSource("route", {
+              type: "geojson",
+              data: {
+                type: "Feature",
+                properties: {},
+                geometry: routeGeometry,
+              },
+            });
+
+            mapRef.current.addLayer({
+              id: "route",
+              type: "line",
+              source: "route",
+              layout: {
+                "line-join": "round",
+                "line-cap": "round",
+              },
+              paint: {
+                "line-color": "#4A90E2",
+                "line-width": 4,
+                "line-opacity": 0.8,
+              },
+            });
+          }
+
+          routeRef.current = true;
+        }
+      },
     }));
 
     // Initialize map
@@ -174,8 +227,8 @@ const MapboxMap = forwardRef(
     useEffect(() => {
       if (!mapRef.current || !mapRef.current.loaded()) return;
 
-      // Clean up previous route
-      if (routeRef.current) {
+      // Clean up previous route if no distance is available (no route to show)
+      if (!distance && routeRef.current) {
         if (mapRef.current.getLayer("route")) {
           mapRef.current.removeLayer("route");
         }
@@ -191,24 +244,12 @@ const MapboxMap = forwardRef(
         distanceMarkerRef.current = null;
       }
 
-      // Draw route if both markers exist
+      // Only proceed if both markers exist and we have a distance value
       if (markers.university && markers.property && distance) {
-        // Add source and layer for route (simplified straight line)
-        if (mapRef.current.loaded()) {
-          // If map already has the source, update it
-          if (mapRef.current.getSource("route")) {
-            mapRef.current.getSource("route").setData({
-              type: "Feature",
-              properties: {},
-              geometry: {
-                type: "LineString",
-                coordinates: [
-                  [markers.university.longitude, markers.university.latitude],
-                  [markers.property.longitude, markers.property.latitude],
-                ],
-              },
-            });
-          } else {
+        // If no route has been drawn by the showRoute method, draw a simple line
+        if (!routeRef.current) {
+          // Add a simple straight line (fallback if route geometry is not available)
+          if (mapRef.current.loaded()) {
             // Add new source and layer
             mapRef.current.addSource("route", {
               type: "geojson",
@@ -239,34 +280,35 @@ const MapboxMap = forwardRef(
                 "line-dasharray": [2, 2],
               },
             });
+
+            routeRef.current = true;
           }
+        }
 
-          routeRef.current = true;
+        // Add distance marker regardless of route source
+        // Calculate midpoint for distance marker
+        const midpoint = [
+          (markers.university.longitude + markers.property.longitude) / 2,
+          (markers.university.latitude + markers.property.latitude) / 2,
+        ];
 
-          // Calculate midpoint for distance marker
-          const midpoint = [
-            (markers.university.longitude + markers.property.longitude) / 2,
-            (markers.university.latitude + markers.property.latitude) / 2,
-          ];
-
-          // Create distance marker element
-          const distanceEl = document.createElement("div");
-          distanceEl.className = "distance-marker";
-          distanceEl.innerHTML = `
+        // Create distance marker element
+        const distanceEl = document.createElement("div");
+        distanceEl.className = "distance-marker";
+        distanceEl.innerHTML = `
           <div style="background-color: white; padding: 5px 10px; border-radius: 20px; 
                       border: 2px solid #4A90E2; font-weight: bold; min-width: 80px; text-align: center;">
             ${distance} km
           </div>
         `;
 
-          // Add distance marker
-          distanceMarkerRef.current = new mapboxgl.Marker({
-            element: distanceEl,
-            anchor: "center",
-          })
-            .setLngLat(midpoint)
-            .addTo(mapRef.current);
-        }
+        // Add distance marker
+        distanceMarkerRef.current = new mapboxgl.Marker({
+          element: distanceEl,
+          anchor: "center",
+        })
+          .setLngLat(midpoint)
+          .addTo(mapRef.current);
 
         // Fit bounds to include both markers
         const bounds = new mapboxgl.LngLatBounds()

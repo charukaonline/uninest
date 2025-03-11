@@ -50,11 +50,17 @@ const AddListingStep02 = ({ onFinish }) => {
   // Function to calculate distance using Mapbox Directions API
   const calculateDistance = async (origin, destination) => {
     try {
-      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${
-        origin.longitude
-      },${origin.latitude};${destination.longitude},${
-        destination.latitude
-      }?access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}`;
+      // Format coordinates as lng,lat (Mapbox format) and URL encode them
+      const originCoord = `${origin.longitude},${origin.latitude}`;
+      const destinationCoord = `${destination.longitude},${destination.latitude}`;
+      const encodedCoords = encodeURIComponent(
+        `${originCoord};${destinationCoord}`
+      );
+
+      // Build the complete URL with required parameters
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${encodedCoords}?alternatives=true&geometries=geojson&language=en&overview=full&steps=true&access_token=${
+        import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
+      }`;
 
       const response = await fetch(url);
       const data = await response.json();
@@ -66,6 +72,19 @@ const AddListingStep02 = ({ onFinish }) => {
         // Auto-fill the distance field
         form.setFieldsValue({
           "university-distance": distanceInKm,
+        });
+
+        // You could also save the route geometry for display if needed
+        const routeGeometry = data.routes[0].geometry;
+
+        // Update map with route if your map component supports it
+        if (mapRef.current && typeof mapRef.current.showRoute === "function") {
+          mapRef.current.showRoute(routeGeometry);
+        }
+      } else {
+        notification.warning({
+          message: "Route Not Found",
+          description: "Could not calculate distance between these locations",
         });
       }
     } catch (error) {
