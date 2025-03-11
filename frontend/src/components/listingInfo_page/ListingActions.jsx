@@ -1,0 +1,221 @@
+import React, { useState } from 'react'
+import { Button } from "@/components/ui/button"
+import { Form, Rate, Input, Select } from 'antd'
+import { MdRateReview, MdReport } from "react-icons/md"
+import { motion, AnimatePresence } from "framer-motion"
+import { useAuthStore } from '@/store/authStore'
+import { useLocation, useNavigate } from 'react-router-dom'
+
+export function ScheduleDialog() {
+    return (
+        <div>Schedule</div>
+    );
+}
+
+export function RatingDialog() {
+    const [showForm, setShowForm] = useState(false);
+    const [form] = Form.useForm();
+    const { isAuthenticated } = useAuthStore();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleRatingClick = () => {
+        if (!isAuthenticated) {
+            // Store current location before redirecting
+            localStorage.setItem('redirectAfterLogin', location.pathname);
+            navigate('/auth/user-signin');
+            return;
+        }
+        setShowForm(true);
+    };
+
+    const handleSubmit = (values) => {
+        try {
+            console.log('Rating:', values);
+            form.resetFields();
+            setShowForm(false);
+        } catch (error) {
+            console.error('Error submitting rating:', error);
+        }
+    };
+
+    return (
+        <>
+            <Button
+                className="w-full bg-white text-black font-semibold hover:bg-gray-100"
+                onClick={handleRatingClick}
+            >
+                <MdRateReview className='text-black' />Rate this Listing
+            </Button>
+
+            <AnimatePresence>
+                {showForm && (
+                    <div className="fixed -inset-3 h-screen bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ type: "spring", duration: 0.3 }}
+                            className="bg-white p-6 rounded-lg w-[400px]"
+                        >
+                            <h2 className="text-xl font-semibold mb-4">Rate this Listing</h2>
+                            <Form
+                                form={form}
+                                layout="vertical"
+                                onFinish={handleSubmit}
+                            >
+                                <Form.Item
+                                    name="rating"
+                                    label="Your Rating"
+                                    rules={[{ required: true, message: 'Please give a rating' }]}
+                                >
+                                    <Rate
+                                        allowHalf
+                                        className=' p-2 w-full rounded-lg'
+                                        style={{ fontSize: 24 }}
+                                    />
+                                </Form.Item>
+
+                                <Form.Item
+                                    name="review"
+                                    label="Your Review"
+                                    rules={[{ required: true, message: 'Please write a review' }]}
+                                >
+                                    <Input.TextArea
+                                        rows={4}
+                                        placeholder="Write your review here..."
+                                        className="resize-none focus:border-primaryBgColor"
+                                    />
+                                </Form.Item>
+
+                                <div className="flex justify-end space-x-2 mt-4">
+                                    <Button
+                                        type="button"
+                                        onClick={() => setShowForm(false)}
+                                        className="bg-gray-200 text-black hover:bg-gray-300"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        className="bg-primaryBgColor text-white hover:bg-green-600"
+                                    >
+                                        Submit Review
+                                    </Button>
+                                </div>
+                            </Form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </>
+    )
+}
+
+export function ReportDialog() {
+
+    const [showReportForm, setShowReportForm] = useState(false);
+    const [reportForm] = Form.useForm();
+    const { isAuthenticated } = useAuthStore();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleReportClick = () => {
+        if (!isAuthenticated) {
+            localStorage.setItem('redirectAfterLogin', location.pathname);
+            navigate('/auth/user-signin');
+            return;
+        }
+        setShowReportForm(true);
+    };
+
+    const reportReasons = [
+        { value: 'wrong_info', label: 'Wrong Information' },
+        { value: 'performance', label: 'Performance Issues Reporting' },
+        { value: 'privacy', label: 'Privacy Violation Reporting' },
+        { value: 'broken_link', label: 'Broken Link or Missing Page Reporting' },
+        { value: 'scam', label: 'Scam or Fraud Reporting' },
+    ];
+
+    const handleReportSubmit = (values) => {
+        try {
+            console.log('Report:', values);
+            reportForm.resetFields();
+            setShowReportForm(false);
+        } catch (error) {
+            console.error('Error submitting report:', error);
+        }
+    };
+
+    return (
+        <>
+            <Button
+                className="w-full bg-red-500 text-white font-semibold hover:bg-red-600"
+                onClick={handleReportClick}
+            >
+                <MdReport className='text-white' />Report misconduct
+            </Button>
+
+            <AnimatePresence>
+                {showReportForm && (
+                    <div className="fixed -inset-3 h-screen bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ type: "spring", duration: 0.3 }}
+                            className="bg-white p-6 rounded-lg w-[400px]"
+                        >
+                            <h2 className="text-xl font-semibold mb-4">Why are you reporting this listing?</h2>
+                            <Form
+                                form={reportForm}
+                                layout="vertical"
+                                onFinish={handleReportSubmit}
+                            >
+                                <Form.Item
+                                    name="reason"
+                                    label="Reason for Report"
+                                    rules={[{ required: true, message: 'Please select a reason' }]}
+                                >
+                                    <Select
+                                        placeholder="Select a reason"
+                                        options={reportReasons}
+                                        className=' focus:border-primaryBgColor'
+                                    />
+                                </Form.Item>
+
+                                <Form.Item
+                                    name="report"
+                                    label="Explain your reporting"
+                                    rules={[{ required: true, message: 'Please explain clearly' }]}
+                                >
+                                    <Input.TextArea
+                                        rows={4}
+                                        placeholder="Explain you report here..."
+                                        className="resize-none focus:border-primaryBgColor"
+                                    />
+                                </Form.Item>
+
+                                <div className="flex justify-end space-x-2 mt-4">
+                                    <Button
+                                        type="button"
+                                        onClick={() => setShowReportForm(false)}
+                                        className="bg-gray-200 text-black hover:bg-gray-300"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        className="bg-primaryBgColor text-white hover:bg-green-600"
+                                    >
+                                        Submit Report
+                                    </Button>
+                                </div>
+                            </Form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </>
+    );
+}

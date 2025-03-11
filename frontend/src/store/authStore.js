@@ -34,6 +34,16 @@ export const useAuthStore = create((set) => ({
         isLoading: false,
       });
 
+      // Get redirect path from localStorage
+      const redirectPath = localStorage.getItem('redirectAfterLogin');
+      if (redirectPath) {
+        localStorage.removeItem('redirectAfterLogin'); 
+        window.location.href = redirectPath; // Use direct navigation to handle the redirect
+      } else {
+        // Default redirect to dashboard if no stored path
+        window.location.href = `/student/${response.data.user._id}/${response.data.user.email}`;
+      }
+
       return response.data;
     } catch (error) {
       set({ error: error.response?.data?.message || "Error logging in", isLoading: false });

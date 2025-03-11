@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import { IoMdPin } from "react-icons/io";
 import { BiSolidConversation } from "react-icons/bi";
@@ -6,17 +6,18 @@ import { FaBookmark } from "react-icons/fa6";
 import { RiCalendarScheduleFill } from "react-icons/ri";
 import { MdRateReview, MdReport } from "react-icons/md";
 
-import { Form, Input, Tooltip } from "antd";
+import { Form, Input, Tooltip, Rate } from "antd";
 import TextArea from 'antd/es/input/TextArea';
 import StarRating from '../include/StarRating';
 import { Button } from '../ui/button';
+import { RatingDialog, ReportDialog } from './ListingActions';
 
 const ListingInfoHeroSection = ({ listing }) => {
 
     const averageRating = 4.5;
 
     return (
-        <div className=' overflow-x-hidden px-6 w-full'>
+        <div className='overflow-x-hidden px-6 w-full'>
             <div className=' p-6 mt-3'>
 
                 <div className='flex justify-between items-center'>
@@ -89,14 +90,10 @@ const ListingInfoHeroSection = ({ listing }) => {
                                     <FaBookmark className=' text-black' />Add to Bookmark
                                 </Button>
                                 <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
-                                    <RiCalendarScheduleFill className=' text-black' />Create a Schedule
+                                    <RiCalendarScheduleFill className=' text-black' />Schedule a Visit
                                 </Button>
-                                <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
-                                    <MdRateReview className=' text-black' />Rate this Listing
-                                </Button>
-                                <Button className=" w-full bg-red-500 text-white font-semibold hover:bg-red-600">
-                                    <MdReport className=' text-black' />Report Abuse
-                                </Button>
+                                <RatingDialog />
+                                <ReportDialog />
                             </div>
                         </div>
                     </div>
