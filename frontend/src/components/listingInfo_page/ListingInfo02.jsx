@@ -43,9 +43,9 @@ const ListingInfo02 = ({ listing }) => {
 
             {/* Map view */}
 
-            {/* Feedbacks for listing */}
+            {/* Review for listing */}
             <div className="p-3 px-8 mt-8 bg-[#eee] rounded-lg mb-3">
-                <h2 className="font-semibold text-lg">Feedbacks</h2>
+                <h2 className="font-semibold text-lg">Reviews</h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                     {/* Feedback 1 */}

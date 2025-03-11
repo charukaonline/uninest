@@ -11,36 +11,13 @@ const reviewSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  ratings: {
-    overall: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 5,
-    },
-    safety: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 5,
-    },
-    cleanliness: {
-      type: Number,
-      min: 1,
-      max: 5,
-    },
-    valueForMoney: {
-      type: Number,
-      min: 1,
-      max: 5,
-    },
+  overallRating: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5,
   },
   review: String,
-  images: [
-    {
-      url: String,
-    },
-  ],
   status: {
     type: String,
     enum: ["pending", "approved", "rejected"],
