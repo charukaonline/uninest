@@ -22,6 +22,7 @@ const useListingStore = create((set) => ({
     listings: [],
     loading: false,
     error: null,
+    currentListing: null,
 
     fetchAllListings: async () => {
         set({ loading: true });
@@ -33,6 +34,21 @@ const useListingStore = create((set) => ({
         } catch (error) {
             console.error('Error fetching listings:', error);
             set({ error: error.message, loading: false });
+        }
+    },
+
+    getListingById: async (id) => {
+        set({ loading: true });
+        try {
+            const response = await axios.get(`${API_URL}/${id}`, {
+                withCredentials: true,
+            });
+            set({ currentListing: response.data, loading: false, error: null });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching listing:', error);
+            set({ error: error.message, loading: false });
+            throw error;
         }
     },
 

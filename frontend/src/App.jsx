@@ -9,7 +9,7 @@ import HouseownerSigninPage from "./pages/(auth)/HouseownerSigninPage";
 import HouseownerSignupPage from "./pages/(auth)/HouseownerSignupPage";
 import PendingHouseowner from "./pages/(auth)/PendingHouseowner";
 import AllListings from "./pages/AllListings";
-import PropertyInfo from "./pages/PropertyInfo";
+import ListingInfo from "./pages/ListingInfo";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import StudentDashboard from "./pages/(StdDashboard)/StdDashboard";
 import AdminDashboard from "./pages/(AdminDashboard)/AdminDashboard";
@@ -35,7 +35,7 @@ import AddListings from "./pages/(LandlordDashboard)/AddListings";
 import ManageListings from "./pages/(AdminDashboard)/ManageListings";
 import AddUniversity from "./pages/(AdminDashboard)/AddUniversity";
 import StdSettings from "./pages/(StdDashboard)/StdSettings";
-import Inbox from "./pages/(StdDashboard)/Inbox";
+import StdInbox from "./pages/(StdDashboard)/StdInbox";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -131,12 +131,12 @@ function App() {
           }
         />
 
-        {/* One Property Details */}
+        {/* One Listing Details */}
         <Route
-          path="/property/:propertyId"
+          path="/listing/:listingId"
           element={
             <Layout>
-              <PropertyInfo />
+              <ListingInfo />
             </Layout>
           }
         />
@@ -174,7 +174,7 @@ function App() {
           path="/student/:userId/:email/inbox"
           element={
             <ProtectedRoute>
-              <Inbox />
+              <StdInbox />
             </ProtectedRoute>
           }
         />
