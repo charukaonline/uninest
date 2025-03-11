@@ -3,14 +3,19 @@ import useListingStore from "@/store/listingStore";
 import Card from "@/components/listing_page/Card";
 import LoadingSpinner from "@/components/include/LoadingSpinner";
 import Filter from "@/components/include/Filter";
+import { Switch } from "antd";
+import { motion } from "framer-motion";
+import Map from "@/components/include/Map";
 
 const AllListings = () => {
   const { listings, loading, error, fetchAllListings } = useListingStore();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
+  const [isMapView, setIsMapView] = useState(false);
+
   useEffect(() => {
-    document.title = `${listings.length} Listings Available`;
+    document.title = `(${listings.length}) Listings Available`;
     fetchAllListings();
   }, [listings.length]);
 
@@ -39,46 +44,70 @@ const AllListings = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-
-      <div className=" mb-5">
+      <div className="mb-5">
         <Filter />
       </div>
 
-      <h1 className="text-xl font-bold mb-6">
-        We have {listings.length} listings available
-      </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {currentListings.map((listing) => (
-          <Card key={listing._id} listing={listing} />
-        ))}
+      <div className="flex justify-between items-center mt-2 mb-6">
+        <div>
+          <span className="text-xl font-bold">
+            We have {listings.length} listings available
+          </span>
+        </div>
+        <div className="flex items-center space-x-3">
+          <span className="text-base font-semibold">Map View</span>
+          <Switch
+            checked={isMapView}
+            onChange={(checked) => setIsMapView(checked)}
+            size="default"
+            style={{
+              backgroundColor: isMapView ? '#006845' : '#adadad'
+            }}
+          />
+        </div>
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-center items-center space-x-4 mt-8">
-        <button
-          onClick={prevPage}
-          disabled={currentPage === 1}
-          className={`px-4 py-2 rounded ${currentPage === 1
-            ? 'bg-gray-300 cursor-not-allowed'
-            : 'bg-primaryBgColor text-white hover:bg-primaryBgColor/90'
-            }`}
-        >
-          Previous
-        </button>
-        <span className="text-gray-600">
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={nextPage}
-          disabled={currentPage === totalPages}
-          className={`px-4 py-2 rounded ${currentPage === totalPages
-            ? 'bg-gray-300 cursor-not-allowed'
-            : 'bg-primaryBgColor text-white hover:bg-primaryBgColor/90'
-            }`}
-        >
-          Next
-        </button>
-      </div>
+      {isMapView ? (
+        <div className="mt-5 mb-5 w-full">
+          <Map />
+        </div>
+      ) : (
+        <>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {currentListings.map((listing) => (
+                <Card key={listing._id} listing={listing} />
+              ))}
+            </div>
+          </motion.div>
+
+          <div className="flex justify-center items-center space-x-4 mt-8">
+            <button
+              onClick={prevPage}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded ${currentPage === 1
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-primaryBgColor text-white hover:bg-primaryBgColor/90'
+                }`}
+            >
+              Previous
+            </button>
+            <span className="text-gray-600">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={nextPage}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded ${currentPage === totalPages
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-primaryBgColor text-white hover:bg-primaryBgColor/90'
+                }`}
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
