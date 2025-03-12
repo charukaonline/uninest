@@ -74,9 +74,12 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 overflow-auto">
+    <div className="flex">
+
+      <div><Sidebar /></div>
+
+      <div style={{ marginLeft: '230px' }} className=" w-full">
+
         <header className="bg-white shadow-sm">
           <div className="flex items-center justify-between px-8 py-4">
             <h1 className="text-2xl font-bold">

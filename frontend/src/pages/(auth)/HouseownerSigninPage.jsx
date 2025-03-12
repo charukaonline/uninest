@@ -24,6 +24,16 @@ const HouseownerSigninPage = () => {
                 password: values.password
             });
 
+            if (response.error && response.isFlagged) {
+                notification.error({
+                    message: "Account Suspended",
+                    description: "Your account has been suspended. Please contact support for assistance.",
+                    duration: 0, // Make notification persist until manually closed
+                    className: "custom-notification-error"
+                });
+                return;
+            }
+
             const landlordData = response.landlord;
 
             if (!landlordData.isVerified) {

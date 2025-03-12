@@ -87,4 +87,26 @@ const sendInquiryEmail = async (inquiryType, email, name, phone, message) => {
   }
 };
 
-module.exports = { sendVerificationEmail, sendWelcomeEmail, sendInquiryEmail };
+const informLandlordVerify = async (email, name) => {
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "UniNest Account Verification",
+      html: `
+        <h2>Hello, ${name}!</h2>
+        <p>Your account has been verified</p>
+        <p>Now you can log into your dashboard and add listings</p>
+        <br/>
+        <p>Best Regards,<br/>The UniNest Team</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Verification email sent to landlord:", email);
+  } catch (error) {
+    console.error("Error sending verification email to landlord:", error);
+  }
+}
+
+module.exports = { sendVerificationEmail, sendWelcomeEmail, sendInquiryEmail, informLandlordVerify };

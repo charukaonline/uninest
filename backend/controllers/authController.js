@@ -108,6 +108,14 @@ exports.login = async (req, res) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
+    // Check if user is flagged
+    if (user.isFlagged) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been suspended. Please contact support."
+      });
+    }
+
     const isPasswordValid = await bcryptjs.compare(password, user.password);
     if (!isPasswordValid) {
       return res

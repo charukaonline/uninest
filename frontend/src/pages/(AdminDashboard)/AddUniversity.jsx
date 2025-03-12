@@ -73,12 +73,15 @@ const AddUniversity = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 p-8 overflow-hidden flex flex-col">
-        <h1 className="text-2xl font-bold mb-6">Add University</h1>
+    <div className="flex">
 
-        <ScrollArea className="h-[calc(100vh-150px)]">
+      <div><Sidebar /></div>
+
+      <div style={{ marginLeft: '230px' }} className=" w-full">
+        <div className="flex-1 p-8 overflow-hidden flex flex-col">
+          <h1 className="text-2xl font-bold mb-6">Add University</h1>
+
+          {/* <ScrollArea className="h-[calc(100vh-150px)]"> */}
           <Card>
             <CardHeader>
               <CardTitle>University Information</CardTitle>
@@ -154,7 +157,8 @@ const AddUniversity = () => {
               </Form>
             </CardContent>
           </Card>
-        </ScrollArea>
+          {/* </ScrollArea> */}
+        </div>
       </div>
     </div>
   );

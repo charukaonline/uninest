@@ -7,7 +7,7 @@ const {
   approveLandlord,
   rejectLandlord,
 } = require("../controllers/landlordVerifyController");
-const { getAllUsers } = require("../controllers/manageUsersController");
+const { getAllUsers, flagUsers } = require("../controllers/manageUsersController");
 const {
   addUniversity,
 } = require("../controllers/universityController");
@@ -20,5 +20,6 @@ router.post("/add-university", verifyToken, addUniversity);
 
 // User management routes
 router.get("/all-users", verifyToken, getAllUsers);
+router.patch("/toggle-user-flag/:userId", verifyToken, flagUsers);
 
 module.exports = router;

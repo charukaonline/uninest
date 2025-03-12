@@ -157,6 +157,37 @@ export default function ManageUsers() {
     );
   };
 
+  const handleFlagUser = async (userId) => {
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/admin/toggle-user-flag/${userId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        notification.success({
+          message: response.data.user.isFlagged ? "Account Suspended" : "Account Restored",
+          description: response.data.user.isFlagged 
+            ? `${response.data.user.username}'s account has been suspended`
+            : `${response.data.user.username}'s account has been restored`,
+          duration: 4,
+        });
+        fetchAllUsers();
+      }
+    } catch (error) {
+      notification.error({
+        message: "Action Failed",
+        description: error.response?.data?.message || "Failed to update user status",
+        duration: 4,
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-screen">
@@ -169,38 +200,41 @@ export default function ManageUsers() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 p-8 overflow-hidden flex flex-col">
-        <h1 className="text-2xl font-bold mb-6">Manage Users</h1>
+    <div className="flex">
 
-        <Tabs defaultValue="pending-landlords" onValueChange={setCurrentTab}>
-          <TabsList>
-            <TabsTrigger
-              value="pending-landlords"
-              className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
-            >
-              Pending Landlords
-            </TabsTrigger>
-            <TabsTrigger
-              value="all-users"
-              className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
-            >
-              All Users
-            </TabsTrigger>
-          </TabsList>
+      <div><Sidebar /></div>
 
-          <TabsContent value="pending-landlords" className="flex-1">
-            <div className="grid gap-4 h-full">
-              {error && (
-                <Card>
-                  <CardContent className="p-6">
-                    <p className="text-center text-red-500">{error}</p>
-                  </CardContent>
-                </Card>
-              )}
+      <div style={{ marginLeft: '230px' }} className=" w-full">
+        <div className="flex-1 p-8 overflow-hidden flex flex-col">
+          <h1 className="text-2xl font-bold mb-6">Manage Users</h1>
 
-              <ScrollArea className="h-[calc(100vh-150px)]">
+          <Tabs defaultValue="pending-landlords" onValueChange={setCurrentTab}>
+            <TabsList>
+              <TabsTrigger
+                value="pending-landlords"
+                className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
+              >
+                Pending Landlords
+              </TabsTrigger>
+              <TabsTrigger
+                value="all-users"
+                className="data-[state=active]:bg-primaryBgColor data-[state=active]:text-white"
+              >
+                All Users
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="pending-landlords" className="flex-1">
+              <div className="grid gap-4 h-full">
+                {error && (
+                  <Card>
+                    <CardContent className="p-6">
+                      <p className="text-center text-red-500">{error}</p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* <ScrollArea className="h-[calc(100vh-150px)]"> */}
                 <div className="space-y-4 p-1">
                   {!error && unverifiedLandlords.length === 0 ? (
                     <Card>
@@ -212,7 +246,7 @@ export default function ManageUsers() {
                     </Card>
                   ) : (
                     unverifiedLandlords.map((landlord) => (
-                      <Card key={landlord._id}>
+                      <Card key={landlord._id} className=" bg-gray-100">
                         <CardHeader className=" -mb-5">
                           <div className=" flex space-x-2">
                             <CardTitle>
@@ -280,15 +314,15 @@ export default function ManageUsers() {
                   )}
 
                 </div>
-              </ScrollArea>
+                {/* </ScrollArea> */}
 
-            </div>
-          </TabsContent>
+              </div>
+            </TabsContent>
 
-          <TabsContent value="all-users">
-            <Card>
-              <CardContent className="p-4">
-                <ScrollArea className="h-[calc(100vh-200px)]">
+            <TabsContent value="all-users">
+              <Card>
+                <CardContent className="p-4">
+                  {/* <ScrollArea className="h-[calc(100vh-200px)]"> */}
                   <Table>
                     <TableCaption className=" text-center">A list of all verified users.</TableCaption>
                     <TableHeader>
@@ -317,20 +351,22 @@ export default function ManageUsers() {
                             <Button
                               variant="default"
                               size="sm"
-                              className=" bg-orange-500"
+                              className={user.isFlagged ? "bg-red-500" : "bg-orange-500"}
+                              onClick={() => handleFlagUser(user._id)}
                             >
-                              Flag
+                              {user.isFlagged ? "Unflag" : "Flag"}
                             </Button>
                           </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  {/* </ScrollArea> */}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
