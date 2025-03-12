@@ -158,6 +158,16 @@ export default function ManageUsers() {
   };
 
   const handleFlagUser = async (userId) => {
+    // Find the current user to determine their current flag status
+    const user = allUsers.find(user => user._id === userId);
+    if (!user) return;
+    
+    // Optimistically update the UI first
+    const updatedUsers = allUsers.map(u => 
+      u._id === userId ? {...u, isFlagged: !u.isFlagged} : u
+    );
+    useAdminStore.setState({ allUsers: updatedUsers });
+    
     try {
       const response = await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/api/admin/toggle-user-flag/${userId}`,
@@ -168,7 +178,7 @@ export default function ManageUsers() {
           },
         }
       );
-
+  
       if (response.data.success) {
         notification.success({
           message: response.data.user.isFlagged ? "Account Suspended" : "Account Restored",
@@ -177,9 +187,18 @@ export default function ManageUsers() {
             : `${response.data.user.username}'s account has been restored`,
           duration: 4,
         });
-        fetchAllUsers();
+        
+        // Don't fetch all users again, we've already updated the state
+        // Instead, ensure our local state matches the server response
+        const finalUpdatedUsers = allUsers.map(u => 
+          u._id === userId ? {...u, isFlagged: response.data.user.isFlagged} : u
+        );
+        useAdminStore.setState({ allUsers: finalUpdatedUsers });
       }
     } catch (error) {
+      // Revert the optimistic update if there was an error
+      useAdminStore.setState({ allUsers: allUsers });
+      
       notification.error({
         message: "Action Failed",
         description: error.response?.data?.message || "Failed to update user status",
@@ -336,15 +355,25 @@ export default function ManageUsers() {
                     </TableHeader>
                     <TableBody>
                       {allUsers.map((user) => (
-                        <TableRow key={user._id}>
-                          <TableCell className="font-medium">
+                        <TableRow 
+                          key={user._id}
+                          className={user.isFlagged ? "bg-red-50" : ""}
+                        >
+                          <TableCell className={`font-medium ${user.isFlagged ? "text-red-600" : ""}`}>
                             {user.username}
+                            {user.isFlagged && (
+                              <span className="ml-2 text-xs bg-red-100 text-red-800 py-1 px-2 rounded-full">
+                                Suspended
+                              </span>
+                            )}
                           </TableCell>
-                          <TableCell>{user.email}</TableCell>
+                          <TableCell className={user.isFlagged ? "text-red-600" : ""}>
+                            {user.email}
+                          </TableCell>
                           <TableCell>
                             <RoleBadge role={user.role} />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className={user.isFlagged ? "text-red-600" : ""}>
                             {new Date(user.createdAt).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
