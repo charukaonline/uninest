@@ -88,10 +88,6 @@ const AddUniversity = () => {
           </h1>
 
           <Card className="shadow-md border-0">
-            <CardHeader className="bg-gray-50 border-b">
-              <CardTitle className="text-xl text-primaryBgColor">University Information</CardTitle>
-              <p className="text-sm text-gray-500 mt-1">Add details about the university and select its location on the map</p>
-            </CardHeader>
             <CardContent className="pt-6">
               <Form
                 form={form}
