@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Map from '@/components/include/Map';
 import ToggleSwitch from '@/components/listing_page/ToggleSwitch';
+import { Building2 } from 'lucide-react';
 
 const ManageListings = () => {
     const { listings, loading, error, fetchAllListings } = useListingStore();
@@ -42,54 +43,58 @@ const ManageListings = () => {
 
             <div style={{ marginLeft: '230px' }} className=" w-full">
                 <div className="flex-1 p-8 overflow-hidden flex flex-col">
-                    <h1 className="text-2xl font-bold mb-6">Manage Listings</h1>
+
+                    <h1 className="text-3xl font-bold mb-6 text-gray-800 flex items-center">
+                        <Building2 className="text-primaryBgColor mr-3 text-2xl" />
+                        Manage Listings
+                    </h1>
 
                     <Card>
                         <CardContent className="p-4">
                             {/* <ScrollArea className="h-[calc(100vh-130px)]"> */}
-                                <Table>
-                                    <TableCaption className=" text-center">A list of all properties</TableCaption>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>House Name</TableHead>
-                                            <TableHead>House Type</TableHead>
-                                            <TableHead>Create Date</TableHead>
-                                            <TableHead>Actions</TableHead>
+                            <Table>
+                                <TableCaption className=" text-center">A list of all properties</TableCaption>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>House Name</TableHead>
+                                        <TableHead>House Type</TableHead>
+                                        <TableHead>Create Date</TableHead>
+                                        <TableHead>Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {listings.map((listing) => (
+                                        <TableRow
+                                            key={listing._id}
+                                            className="cursor-pointer hover:bg-gray-100"
+                                            onClick={() => handleRowClick(listing)}
+                                        >
+                                            <TableCell className="font-medium">
+                                                {listing.propertyName}
+                                            </TableCell>
+                                            <TableCell>{listing.propertyType}</TableCell>
+                                            <TableCell>
+                                                {new Date(listing.createdAt).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button
+                                                    variant="default"
+                                                    size="sm"
+                                                    className="bg-orange-500 mr-2"
+                                                >
+                                                    Flag
+                                                </Button>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </TableCell>
                                         </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {listings.map((listing) => (
-                                            <TableRow
-                                                key={listing._id}
-                                                className="cursor-pointer hover:bg-gray-100"
-                                                onClick={() => handleRowClick(listing)}
-                                            >
-                                                <TableCell className="font-medium">
-                                                    {listing.propertyName}
-                                                </TableCell>
-                                                <TableCell>{listing.propertyType}</TableCell>
-                                                <TableCell>
-                                                    {new Date(listing.createdAt).toLocaleDateString()}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Button
-                                                        variant="default"
-                                                        size="sm"
-                                                        className="bg-orange-500 mr-2"
-                                                    >
-                                                        Flag
-                                                    </Button>
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                    >
-                                                        Delete
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                    ))}
+                                </TableBody>
+                            </Table>
                             {/* </ScrollArea> */}
                         </CardContent>
                     </Card>
