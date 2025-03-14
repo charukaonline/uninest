@@ -98,7 +98,7 @@ const MapboxMap = forwardRef(
       },
     }));
 
-    // Initialize map
+    // Initialize map with extra controls
     useEffect(() => {
       if (!mapContainerRef.current || mapRef.current) return;
 
@@ -109,8 +109,17 @@ const MapboxMap = forwardRef(
         zoom: initialZoom,
       });
 
-      // Add navigation controls
+      // Add navigation, scale, and geolocate controls
       mapRef.current.addControl(new mapboxgl.NavigationControl(), "top-right");
+      mapRef.current.addControl(
+        new mapboxgl.ScaleControl({ position: "bottom-right" })
+      );
+      mapRef.current.addControl(
+        new mapboxgl.GeolocateControl({
+          positionOptions: { enableHighAccuracy: true },
+        }),
+        "bottom-right"
+      );
 
       // Add click handler to select location
       mapRef.current.on("click", (e) => {
@@ -325,8 +334,8 @@ const MapboxMap = forwardRef(
     return (
       <div
         ref={mapContainerRef}
-        style={{ height: "420px", width: "100%", borderRadius: "8px" }}
-        className="border border-gray-300"
+        style={{ height: "100%", width: "100%", minHeight: "420px" }}
+        className="rounded-lg border border-gray-300 md:h-[420px] w-full"
       />
     );
   }
