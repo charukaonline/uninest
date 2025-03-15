@@ -1,6 +1,7 @@
 const Listing = require("../models/Listing");
 const fs = require("fs");
 const s3 = require("../config/awsS3");
+const { calculateInitialEloRating, calculateClickEloIncrease } = require("../utils/eloCalculator");
 
 exports.addListing = async (req, res) => {
   try {
@@ -85,23 +86,8 @@ exports.addListing = async (req, res) => {
 
     // console.log('Image URLs:', imageUrls);
 
-    // Calculate initial eloRating based on filled fields
-    let initialEloRating = 1400;
-    const ratingRules = {
-      description: 80,
-      postalCode: 20,
-      size: 50,
-      bedrooms: 30,
-      bathrooms: 30,
-      garage: 20,
-      builtYear: 20,
-    };
-
-    Object.keys(ratingRules).forEach((field) => {
-      if (req.body[field] && req.body[field].toString().trim() !== "") {
-        initialEloRating += ratingRules[field];
-      }
-    });
+    // Calculate initial ELO rating using the utility function
+    const initialEloRating = calculateInitialEloRating(req.body);
 
     const newListing = new Listing({
       propertyName,
@@ -186,13 +172,20 @@ exports.trackListingClick = async (req, res) => {
       return res.status(404).json({ message: "Listing not found" });
     }
 
-    // Increase ELO rating by 2 points per click
-    listing.eloRating += 2;
+    // Pass the full listing object to get context-aware ELO adjustment
+    listing.eloRating = calculateClickEloIncrease(listing.eloRating, listing);
+    
+    // Increment view counter if it exists
+    if (typeof listing.views === 'number') {
+      listing.views += 1;
+    }
+    
     await listing.save();
 
     res.status(200).json({
       success: true,
       newRating: listing.eloRating,
+      views: listing.views
     });
   } catch (err) {
     res.status(500).json({
