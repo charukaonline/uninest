@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch, Tooltip } from "antd";
 import { FaHouseChimney } from "react-icons/fa6";
-import { FaBath, FaBed, FaCalendarAlt, FaRulerCombined } from "react-icons/fa";
+import { FaBath, FaBed, FaCalendarAlt, FaRulerCombined, FaEye } from "react-icons/fa";
 import { IoMdPin } from "react-icons/io";
 import { PiGarageFill } from "react-icons/pi";
 
@@ -59,6 +59,11 @@ const PopularCard = ({ limit = 1 }) => {
                                         e.target.src = "https://via.placeholder.com/150";
                                     }}
                                 />
+                                {/* View count badge */}
+                                <div className="flex items-center space-x-1 mt-2 bg-gray-800 text-white px-2 py-1 rounded w-fit">
+                                    <FaEye className="text-white" />
+                                    <span>{listing.views || 0} views</span>
+                                </div>
                             </div>
                             <div className="flex flex-col">
                                 <div className="-space-y-4 mb-4">

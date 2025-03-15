@@ -174,11 +174,12 @@ exports.trackListingClick = async (req, res) => {
       return res.status(404).json({ message: "Listing not found" });
     }
 
-    // Pass the full listing object to get context-aware ELO adjustment
     listing.eloRating = calculateClickEloIncrease(listing.eloRating, listing);
     
-    // Increment view counter if it exists
-    if (typeof listing.views === 'number') {
+    // Initialize views if it doesn't exist and increment
+    if (listing.views === undefined) {
+      listing.views = 1;
+    } else {
       listing.views += 1;
     }
     
@@ -199,14 +200,14 @@ exports.trackListingClick = async (req, res) => {
 
 exports.getPopularListings = async (req, res) => {
   try {
-    // Get the limit from query params or default to 5
+
     const limit = parseInt(req.query.limit) || 5;
     
     // Find listings with highest eloRating (most popular)
     const popularListings = await Listing.find()
       .populate("landlord", "username email phoneNumber")
       .populate("nearestUniversity", "name location")
-      .sort({ eloRating: -1 }) // Sort by ELO rating in descending order
+      .sort({ eloRating: -1 })
       .limit(limit)
       .exec();
 

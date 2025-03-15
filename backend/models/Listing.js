@@ -15,7 +15,6 @@ const listingSchema = new mongoose.Schema({
   city: { type: String, required: true },
   province: { type: String, required: true },
   postalCode: { type: String },
-  // Change from String to ObjectId reference
   nearestUniversity: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: "University", 
@@ -34,6 +33,7 @@ const listingSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
   eloRating: { type: Number, default: 1400 },
+  views: { type: Number, default: 0 },
 });
 
 module.exports = mongoose.model("Listing", listingSchema);

@@ -71,7 +71,8 @@ const useListingStore = create((set) => ({
 
     trackListingClick: async (listingId) => {
         try {
-            await axios.post(`${API_URL}/${listingId}/track-click`);
+            const response = await axios.post(`${API_URL}/${listingId}/track-click`);
+            return response.data; // Return the response so we can access the updated view count
         } catch (error) {
             console.error('Error tracking click:', error);
         }
