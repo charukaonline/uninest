@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Building2, MessageSquare, AlertTriangle } from "lucide-react";
 import { useAdminStore } from "@/store/adminStore";
+import CountUp from "@/components/admin_dashboard/CountUp";
+import useListingStore from "@/store/listingStore";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -14,7 +16,8 @@ export default function AdminDashboard() {
   const { admin, isAdminAuthenticated, adminLogout, isCheckingAdminAuth } =
     useAdminAuthStore();
 
-  const { allUsers } = useAdminStore();
+  const { allUsers, fetchAllUsers } = useAdminStore();
+  const { listings, fetchAllListings } = useListingStore();
 
   const handleLogout = async () => {
     try {
@@ -30,6 +33,11 @@ export default function AdminDashboard() {
       checkAdminAuth();
     }
   }, [isAdminAuthenticated, isCheckingAdminAuth, isCheckingAdminAuth]);
+
+  useEffect(() => {
+    fetchAllUsers();
+    fetchAllListings();
+  }, [fetchAllUsers, fetchAllListings]);
 
   useEffect(() => {
     if (admin?.username) {
@@ -55,7 +63,7 @@ export default function AdminDashboard() {
     },
     {
       title: "Total Listings",
-      value: "56",
+      value: `${listings.length}`,
       icon: Building2,
       description: "Active property listings",
     },
@@ -74,9 +82,12 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 overflow-auto">
+    <div className="flex">
+
+      <div><Sidebar /></div>
+
+      <div style={{ marginLeft: '230px' }} className=" w-full">
+
         <header className="bg-white shadow-sm">
           <div className="flex items-center justify-between px-8 py-4">
             <h1 className="text-2xl font-bold">
@@ -103,7 +114,9 @@ export default function AdminDashboard() {
                   <card.icon className="h-5 w-5 text-white" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{card.value}</div>
+                  <div className="text-2xl font-bold">
+                    <CountUp end={parseInt(card.value) || 0} />
+                  </div>
                   <p className="text-xs text-gray-200">{card.description}</p>
                 </CardContent>
               </Card>

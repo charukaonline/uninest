@@ -24,20 +24,39 @@ const HouseownerSigninPage = () => {
                 password: values.password
             });
 
+            // Check for flagged account
+            if (response.error && response.isFlagged) {
+                notification.error({
+                    message: "Account Suspended",
+                    description: response.message || "Your account has been suspended. Please contact support.",
+                    duration: 0, // Persist notification until manually closed
+                    className: "custom-notification-error"
+                });
+                return;
+            }
+
+            if (!response.success) {
+                notification.error({
+                    message: "Login Failed",
+                    description: response.message || "Invalid credentials",
+                    duration: 3
+                });
+                return;
+            }
+
             const landlordData = response.landlord;
 
             if (!landlordData.isVerified) {
                 navigate("/auth/verification-pending");
-                return;
             } else {
                 navigate(`/landlord/${landlordData._id}/${landlordData.email}`);
-                return;
             }
 
         } catch (error) {
             notification.error({
-                message: "Login Failed",
-                description: error.response?.data?.message || "Invalid credentials"
+                message: "Login Failed", 
+                description: error.response?.data?.message || "Invalid credentials",
+                duration: 3
             });
         }
     };

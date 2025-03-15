@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { IoMdPin } from "react-icons/io";
 import { BiSolidConversation } from "react-icons/bi";
-import { FaBookmark } from "react-icons/fa6";
+import { FaBookmark, FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { RiCalendarScheduleFill } from "react-icons/ri";
 import { MdRateReview, MdReport } from "react-icons/md";
 
@@ -15,6 +15,36 @@ import { RatingDialog, ReportDialog } from './ListingActions';
 const ListingInfoHeroSection = ({ listing }) => {
 
     const averageRating = 4.5;
+
+    // Sample images array - replace with actual listing images when available
+    const images = Array.isArray(listing.images) ? listing.images :
+        [listing.images,
+            'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1770&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1780&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1770&auto=format&fit=crop'];
+
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    // Auto cycle through images
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [images.length]);
+
+    const nextImage = () => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    };
+
+    const prevImage = () => {
+        setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+    };
+
+    const selectImage = (index) => {
+        setCurrentImageIndex(index);
+    };
 
     return (
         <div className='overflow-x-hidden px-6 w-full'>
@@ -52,11 +82,54 @@ const ListingInfoHeroSection = ({ listing }) => {
 
                 <div className=' flex space-x-2 mt-2'>
                     <div className=' items-center w-2/3'>
-                        <img
-                            src={listing.images}
-                            alt={listing.propertyName}
-                            className=' h-full w-full object-cover rounded-lg'
-                        />
+                        <div className="relative">
+                            {/* Main image carousel */}
+                            <div className="relative h-[400px] w-full overflow-hidden rounded-lg">
+                                <img
+                                    src={images[currentImageIndex]}
+                                    alt={`${listing.propertyName} - Image ${currentImageIndex + 1}`}
+                                    className="h-full w-full object-cover transition-opacity duration-300"
+                                />
+
+                                {/* Navigation arrows */}
+                                <div className="absolute inset-0 flex items-center justify-between p-4">
+                                    <button
+                                        onClick={prevImage}
+                                        className="rounded-full bg-black bg-opacity-50 p-2 text-white hover:bg-opacity-75"
+                                    >
+                                        <FaChevronLeft />
+                                    </button>
+                                    <button
+                                        onClick={nextImage}
+                                        className="rounded-full bg-black bg-opacity-50 p-2 text-white hover:bg-opacity-75"
+                                    >
+                                        <FaChevronRight />
+                                    </button>
+                                </div>
+
+                                {/* Image counter */}
+                                <div className="absolute bottom-4 right-4 rounded-full bg-black bg-opacity-50 px-2 py-1 text-white text-xs">
+                                    {currentImageIndex + 1}/{images.length}
+                                </div>
+                            </div>
+
+                            {/* Thumbnail preview */}
+                            <div className="flex mt-2 space-x-2 overflow-x-auto py-1">
+                                {images.map((img, index) => (
+                                    <div
+                                        key={index}
+                                        className={`h-16 w-24 flex-shrink-0 cursor-pointer rounded-md border-2 ${currentImageIndex === index ? 'border-primaryBgColor' : 'border-transparent'}`}
+                                        onClick={() => selectImage(index)}
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={`Thumbnail ${index + 1}`}
+                                            className="h-full w-full object-cover rounded-md"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                     <div className=' p-4 rounded-lg w-1/3 bg-primaryBgColor'>
 

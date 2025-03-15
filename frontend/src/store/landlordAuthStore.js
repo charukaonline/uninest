@@ -65,6 +65,16 @@ export const useLandlordAuthStore = create((set, get) => ({
                 throw new Error('Invalid response from server');
             }
 
+            // Check if landlord account is flagged
+            if (response.data.landlord.isFlagged) {
+                set({ isLoading: false });
+                return {
+                    error: true,
+                    isFlagged: true,
+                    message: "Your account has been suspended. Please contact support."
+                };
+            }
+
             set({
                 landlord: response.data.landlord,
                 isLandlordAuthenticated: true,
@@ -74,6 +84,14 @@ export const useLandlordAuthStore = create((set, get) => ({
 
             return response.data;
         } catch (error) {
+            if (error.response?.status === 403) {
+                set({ isLoading: false });
+                return {
+                    error: true,
+                    isFlagged: true,
+                    message: error.response.data.message
+                };
+            }
             set({ landlord: null, isLandlordAuthenticated: false, isLoading: false });
             throw error;
         }

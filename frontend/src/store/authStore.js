@@ -27,6 +27,17 @@ export const useAuthStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axios.post(`${API_URL}/login`, { email, password });
+      
+      // Check if account is flagged
+      if (response.data.user.isFlagged) {
+        set({ isLoading: false });
+        return {
+          error: true,
+          isFlagged: true,
+          message: "Your account has been suspended. Please contact support."
+        };
+      }
+
       set({
         isAuthenticated: true,
         user: response.data.user,
@@ -46,6 +57,14 @@ export const useAuthStore = create((set) => ({
 
       return response.data;
     } catch (error) {
+      if (error.response?.status === 403) {
+        set({ isLoading: false });
+        return {
+          error: true,
+          isFlagged: true,
+          message: error.response.data.message
+        };
+      }
       set({ error: error.response?.data?.message || "Error logging in", isLoading: false });
       throw error;
     }
