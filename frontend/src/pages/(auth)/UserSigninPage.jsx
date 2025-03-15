@@ -45,32 +45,39 @@ function UserSigninPage() {
 
     if (!validateLogin()) return;
 
-    const userResponse = await login(email, password);
+    try {
+      const userResponse = await login(email, password);
 
-    console.log("Full Response:", userResponse);
-    console.log("Extracted User ID:", userResponse?.user?._id);
+      // Check if account is flagged or has error
+      if (userResponse?.error) {
+        notification.error({
+          message: "Access Denied",
+          description: userResponse.message,
+          duration: 0, // Make notification persist until manually closed
+          className: "custom-notification-error"
+        });
+        return;
+      }
 
-    if (userResponse?.success === false) {
+      if (userResponse?.success === false) {
+        notification.error({
+          message: "Login Failed",
+          description: userResponse.message || "Invalid credentials",
+          duration: 3,
+        });
+        return;
+      }
+
+      const userId = userResponse?.user?._id;
+      navigate(`/student/${userId}/${email}`);
+      
+    } catch (error) {
       notification.error({
         message: "Login Failed",
-        description: userResponse.message || "Invalid credentials",
+        description: error.response?.data?.message || "Invalid credentials",
         duration: 3,
       });
-      return;
     }
-
-    const userId = userResponse?.user?._id;
-
-    if (!userId) {
-      notification.error({
-        message: "Login Error",
-        description: "User ID not found",
-        duration: 3,
-      });
-      return;
-    }
-
-    navigate(`/student/${userId}/${email}`);
   };
 
   const handleSignupRedirect = () => {

@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session"); // Added session import
 const adminRoutes = require("./routes/admin");
 const listingRoutes = require("./routes/listingRoutes");
+const reviewRoutes = require("./routes/review");
 
 dotenv.config();
 
@@ -84,3 +85,4 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/send-email", require("./routes/inquiry"));
 app.use("/api/listings", listingRoutes);
 app.use("/api/university", require("./routes/university"));
+app.use("/api/review", reviewRoutes);

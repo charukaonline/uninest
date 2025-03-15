@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const LandlordProfile = require("../models/LandlordProfile");
+const { informLandlordVerify } = require("../services/emailService");
 
 exports.getPendingLandlords = async (req, res) => {
   try {
@@ -78,16 +79,18 @@ exports.approveLandlord = async (req, res) => {
       return res.status(404).json({ message: "Landlord profile not found" });
     }
 
-    res.status(200).json({ 
+    await informLandlordVerify(user.email, user.username);
+
+    res.status(200).json({
       message: "Landlord approved successfully",
       user,
       landlordProfile
     });
   } catch (error) {
     console.error("Error approving landlord:", error);
-    res.status(500).json({ 
-      message: "Error approving landlord", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error approving landlord",
+      error: error.message
     });
   }
 };
@@ -102,14 +105,14 @@ exports.rejectLandlord = async (req, res) => {
       LandlordProfile.findOneAndDelete({ userId: userId })
     ]);
 
-    res.status(200).json({ 
-      message: "Landlord rejected and removed successfully" 
+    res.status(200).json({
+      message: "Landlord rejected and removed successfully"
     });
   } catch (error) {
     console.error("Error rejecting landlord:", error);
-    res.status(500).json({ 
-      message: "Error rejecting landlord", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error rejecting landlord",
+      error: error.message
     });
   }
 };

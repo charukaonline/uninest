@@ -192,6 +192,13 @@ exports.landlordSignin = async (req, res) => {
       return res.status(404).json({ message: "Landlord profile not found" });
     }
 
+    if (landlord.isFlagged) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been suspended. Please contact support."
+      });
+    }
+
     // Update last login
     landlord.lastLogin = new Date();
     await landlord.save();
