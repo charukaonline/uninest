@@ -135,10 +135,12 @@ const ListingInfoHeroSection = ({ listing }) => {
 
                         <div className=' mb-2'>
                             <div className=' flex space-x-3 items-center mt-2'>
-                                <img src='/' alt='house owner' className=' rounded-full w-14 h-14 bg-purple-400' />
+                                <div className="rounded-full w-14 h-14 bg-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                                    {listing.landlord.email ? listing.landlord.email.charAt(0).toUpperCase() : 'U'}
+                                </div>
                                 <div className=' items-center -space-y-2'>
                                     <div className=' flex flex-row items-center -space-y-2 space-x-2'>
-                                        <h1 className=' text-lg text-white'>{listing.username} Sanoj Aminda</h1>
+                                        <h1 className=' text-lg text-white'>{listing.landlord.username}</h1>
                                         <h1 className=' text-sm text-gray-300'>(House Owner)</h1>
                                     </div>
                                     <div>

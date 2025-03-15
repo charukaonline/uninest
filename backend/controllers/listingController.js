@@ -130,8 +130,9 @@ exports.addListing = async (req, res) => {
 exports.getListings = async (req, res) => {
   try {
     const listings = await Listing.find()
-      .populate("landlord", "firstName lastName email phoneNumber")
-      .sort({ eloRating: -1 }) // Sort by eloRating in descending order
+      .populate("landlord", "username email phoneNumber") // Update fields to match your User model
+      .populate("nearestUniversity", "name location")
+      .sort({ eloRating: -1 })
       .exec();
 
     res.status(200).json(listings);
@@ -147,7 +148,8 @@ exports.getListings = async (req, res) => {
 exports.getListingById = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id)
-      .populate("landlord", "firstName lastName email phoneNumber")
+      .populate("landlord", "username email phoneNumber") // Update fields to match your User model
+      .populate("nearestUniversity", "name location")
       .exec();
 
     if (!listing) {

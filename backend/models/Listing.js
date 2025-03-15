@@ -15,7 +15,12 @@ const listingSchema = new mongoose.Schema({
   city: { type: String, required: true },
   province: { type: String, required: true },
   postalCode: { type: String },
-  nearestUniversity: { type: String, required: true },
+  // Change from String to ObjectId reference
+  nearestUniversity: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "University", 
+    required: true 
+  },
   universityDistance: { type: Number },
   coordinates: {
     latitude: { type: Number, required: true },

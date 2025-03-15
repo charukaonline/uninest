@@ -118,8 +118,8 @@ const AddListingStep02 = ({ onFinish }) => {
     const formData = {
       ...values,
       coordinates: selectedCoordinates,
-      nearestUniversity: values["nearest-university"],
-      "university-distance": distance, // Make sure the distance is included
+      nearestUniversity: values["nearest-university"], // This sends the university ID
+      universityDistance: distance // Using camelCase for consistency
     };
     onFinish(formData);
   };
