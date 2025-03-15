@@ -196,3 +196,26 @@ exports.trackListingClick = async (req, res) => {
     });
   }
 };
+
+exports.getPopularListings = async (req, res) => {
+  try {
+    // Get the limit from query params or default to 5
+    const limit = parseInt(req.query.limit) || 5;
+    
+    // Find listings with highest eloRating (most popular)
+    const popularListings = await Listing.find()
+      .populate("landlord", "username email phoneNumber")
+      .populate("nearestUniversity", "name location")
+      .sort({ eloRating: -1 }) // Sort by ELO rating in descending order
+      .limit(limit)
+      .exec();
+
+    res.status(200).json(popularListings);
+  } catch (err) {
+    console.error("Error fetching popular listings:", err);
+    res.status(500).json({
+      message: "Error fetching popular listings",
+      error: err.message,
+    });
+  }
+};

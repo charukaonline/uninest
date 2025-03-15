@@ -104,7 +104,7 @@ export default function StudentDashboard() {
             <div className=" mb-5">
               <h1 className=" mb-3 font-semibold text-lg text-gray-600">Most Popular Boarding House</h1>
 
-              <PopularCard />
+              <PopularCard limit={1} />
             </div>
           </motion.div>
 

@@ -20,6 +20,7 @@ export const addListing = async (formData) => {
 // Separate store for fetching listings
 const useListingStore = create((set) => ({
     listings: [],
+    popularListings: [],
     loading: false,
     error: null,
     currentListing: null,
@@ -47,6 +48,22 @@ const useListingStore = create((set) => ({
             return response.data;
         } catch (error) {
             console.error('Error fetching listing:', error);
+            set({ error: error.message, loading: false });
+            throw error;
+        }
+    },
+
+    fetchPopularListings: async (limit = 5) => {
+        set({ loading: true });
+        try {
+            const response = await axios.get(`${API_URL}/popular`, {
+                params: { limit },
+                withCredentials: true,
+            });
+            set({ popularListings: response.data, loading: false, error: null });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching popular listings:', error);
             set({ error: error.message, loading: false });
             throw error;
         }

@@ -72,7 +72,7 @@ const LandlordDashboard = () => {
                         </div>
 
                         {/* <div className="flex items-center space-x-3 ml-4"> */}
-                            {/* <span className="text-base font-semibold">Map View</span>
+                        {/* <span className="text-base font-semibold">Map View</span>
                             <Switch
                                 checked={isMapView}
                                 onChange={(checked) => setIsMapView(checked)}
@@ -224,6 +224,10 @@ const LandlordDashboard = () => {
                             <Link to="/inquiries" className="text-primaryBgColor hover:underline">View all inquiries →</Link>
                         </div>
                     </div>
+                </div>
+
+                <div className=" mt-10 items-center justify-center w-full">
+                    <h1 className=" text-gray-600 font-semibold text-center">UniNest © {new Date().getFullYear()}</h1>
                 </div>
             </div>
         </div>
