@@ -220,3 +220,38 @@ exports.getPopularListings = async (req, res) => {
     });
   }
 };
+
+exports.getLandlordListings = async (req, res) => {
+  try {
+    const { landlordId } = req.params;
+
+    if (!landlordId) {
+      return res.status(400).json({ 
+        message: "Landlord ID is required" 
+      });
+    }
+
+    const query = { landlord: landlordId };
+    const limit = parseInt(req.query.limit) || 0; // 0 means no limit
+
+    let listingsQuery = Listing.find(query)
+      .populate("landlord", "username email phoneNumber")
+      .populate("nearestUniversity", "name location")
+      .sort({ createdAt: -1 }); // Sort by newest first
+
+    // Apply limit if provided
+    if (limit > 0) {
+      listingsQuery = listingsQuery.limit(limit);
+    }
+
+    const listings = await listingsQuery.exec();
+
+    res.status(200).json(listings);
+  } catch (err) {
+    console.error("Error fetching landlord listings:", err);
+    res.status(500).json({
+      message: "Error fetching landlord listings",
+      error: err.message,
+    });
+  }
+};

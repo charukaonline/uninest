@@ -36,6 +36,7 @@ import ManageListings from "./pages/(AdminDashboard)/ManageListings";
 import AddUniversity from "./pages/(AdminDashboard)/AddUniversity";
 import StdSettings from "./pages/(StdDashboard)/StdSettings";
 import StdInbox from "./pages/(StdDashboard)/StdInbox";
+import LandlordListings from "./pages/(LandlordDashboard)/LandlordListings";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -194,6 +195,15 @@ function App() {
           element={
             <LandlordProtectedRoute>
               <AddListings />
+            </LandlordProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/landlord/:landlordId/:email/my-listings"
+          element={
+            <LandlordProtectedRoute>
+              <LandlordListings />
             </LandlordProtectedRoute>
           }
         />

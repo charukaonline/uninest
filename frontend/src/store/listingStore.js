@@ -21,6 +21,7 @@ export const addListing = async (formData) => {
 const useListingStore = create((set) => ({
     listings: [],
     popularListings: [],
+    landlordListings: [],
     loading: false,
     error: null,
     currentListing: null,
@@ -65,6 +66,33 @@ const useListingStore = create((set) => ({
         } catch (error) {
             console.error('Error fetching popular listings:', error);
             set({ error: error.message, loading: false });
+            throw error;
+        }
+    },
+
+    fetchLandlordListings: async (landlordId, limit = 0, updateState = true) => {
+        if (updateState) {
+            set({ loading: true });
+        }
+        
+        try {
+            const response = await axios.get(`${API_URL}/landlord/${landlordId}`, {
+                params: { limit },
+                withCredentials: true,
+            });
+            
+            if (updateState) {
+                set({ landlordListings: response.data, loading: false, error: null });
+            }
+            
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching landlord listings:', error);
+            
+            if (updateState) {
+                set({ error: error.message, loading: false });
+            }
+            
             throw error;
         }
     },

@@ -1,23 +1,19 @@
 import { useLandlordAuthStore } from '@/store/landlordAuthStore'
+import useListingStore from '@/store/listingStore';
 import React, { useEffect, useState } from 'react'
 import LoadingSpinner from '@/components/include/LoadingSpinner';
 import Sidebar from '@/components/landlord_dashboard/Sidebar';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Switch } from 'antd';
-// Add FontAwesome icons
 import { FaHome, FaCalendarAlt, FaEnvelope, FaEye, FaHeart, FaPlus, FaMapMarkerAlt, FaBuilding, FaUserFriends } from 'react-icons/fa';
 import ListingCard from '@/components/landlord_dashboard/ListingCard';
 
 const LandlordDashboard = () => {
     const [isMapView, setIsMapView] = useState(false);
     const { landlord, isLandlordAuthenticated, checkLandlordAuth, isCheckingLandlordAuth } = useLandlordAuthStore();
-
-    // Sample data for demonstration
-    const sampleListings = [
-        { id: 1, title: "Cozy Studio Apartment", location: "Near University", price: "$450/month", image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60", views: 24, favorites: 3 },
-        { id: 2, title: "Modern 2-Bedroom Flat", location: "City Center", price: "$750/month", image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXBhcnRtZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60", views: 36, favorites: 8 },
-        { id: 3, title: "Spacious 3-Bedroom House", location: "Suburban Area", price: "$1200/month", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGhvdXNlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60", views: 18, favorites: 5 },
-    ];
+    const { fetchLandlordListings, landlordListings, loading: listingsLoading } = useListingStore();
+    const [totalListingsCount, setTotalListingsCount] = useState(0);
+    const { landlordId, email } = useParams();
 
     const scheduledVisits = [
         { id: 1, name: "John Doe", property: "Cozy Studio Apartment", date: "Nov 15, 2023", time: "10:00 AM", status: "Confirmed" },
@@ -38,12 +34,31 @@ const LandlordDashboard = () => {
     }, []);
 
     useEffect(() => {
+        if (landlord && landlord._id) {
+            // Fetch limited listings for display on dashboard
+            fetchLandlordListings(landlord._id, 3)
+                .then(() => {
+                    // After fetching the limited listings, fetch all to get the total count
+                    return fetchLandlordListings(landlord._id, 0, false);
+                })
+                .then((allListings) => {
+                    if (allListings && Array.isArray(allListings)) {
+                        setTotalListingsCount(allListings.length);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching listings:", error);
+                });
+        }
+    }, [landlord, fetchLandlordListings]);
+
+    useEffect(() => {
         if (landlord) {
             document.title = `${landlord.username}'s Dashboard`;
         }
     }, [landlord]);
 
-    if (isCheckingLandlordAuth) {
+    if (isCheckingLandlordAuth || listingsLoading) {
         return <LoadingSpinner />;
     }
 
@@ -58,8 +73,6 @@ const LandlordDashboard = () => {
             <div className="flex-1 ml-[220px] p-6">
                 <div className="flex justify-between items-center mb-6">
                     <div>
-                        {/* <h2 className="font-semibold text-2xl text-gray-800">Welcome, {landlord.username}</h2>
-                        <p className="text-gray-600">Manage your properties and tenant requests</p> */}
                     </div>
                     <div className="flex items-center space-x-4">
                         <div className="flex space-x-2">
@@ -70,18 +83,6 @@ const LandlordDashboard = () => {
                                 <FaBuilding /> All Listings
                             </Link>
                         </div>
-
-                        {/* <div className="flex items-center space-x-3 ml-4"> */}
-                        {/* <span className="text-base font-semibold">Map View</span>
-                            <Switch
-                                checked={isMapView}
-                                onChange={(checked) => setIsMapView(checked)}
-                                size="default"
-                                style={{
-                                    backgroundColor: isMapView ? '#006845' : '#adadad'
-                                }}
-                            /> */}
-                        {/* </div> */}
                     </div>
                 </div>
 
@@ -93,7 +94,7 @@ const LandlordDashboard = () => {
                         </div>
                         <div>
                             <p className="text-gray-500">Total Properties</p>
-                            <p className="text-2xl font-bold">{sampleListings.length}</p>
+                            <p className="text-2xl font-bold">{totalListingsCount}</p>
                         </div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow-sm flex items-center">
@@ -120,7 +121,7 @@ const LandlordDashboard = () => {
                 <div className="bg-white rounded-lg shadow-sm p-5 mb-6">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xl font-semibold text-gray-800 flex items-center">
-                            <FaHome className="mr-2 text-primaryBgColor" /> Your Listings
+                            <FaHome className="mr-2 text-primaryBgColor" /> My Listings
                         </h3>
                         <div className="flex items-center space-x-3">
                             <span className="text-base">Map View</span>
@@ -147,14 +148,26 @@ const LandlordDashboard = () => {
                                 </div>
                             </div>
                         ) : (
-                            sampleListings.length > 0 ? (
-                                <ListingCard listings={sampleListings} />
+                            landlordListings.length > 0 ? (
+                                <>
+                                    <ListingCard listings={landlordListings.map(listing => ({
+                                        id: listing._id,
+                                        title: listing.propertyName,
+                                        location: listing.address,
+                                        price: `LKR ${listing.monthlyRent.toLocaleString()}/month`,
+                                        image: listing.images[0] || "https://via.placeholder.com/150",
+                                        views: listing.views || 0,
+                                    }))} />
+                                    <div className="mt-4 text-right">
+                                        <Link to={`/landlord/${landlordId}/${email}/my-listings`} className="text-primaryBgColor hover:underline">View all listings →</Link>
+                                    </div>
+                                </>
                             ) : (
                                 <div className="bg-white border border-gray-200 p-6 rounded-lg h-64 flex flex-col items-center justify-center">
                                     <FaHome className="text-gray-300 text-5xl mb-3" />
                                     <p className="text-gray-500 mb-4">No listings yet</p>
-                                    <Link to="/add-listing" className="px-4 py-2 bg-primaryBgColor text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
-                                        <FaPlus /> Add Your First Listing
+                                    <Link to={`/landlord/${landlordId}/${email}/add-listings`} className="px-4 py-2 bg-primaryBgColor text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+                                        <FaPlus /> Add Your New Listing
                                     </Link>
                                 </div>
                             )

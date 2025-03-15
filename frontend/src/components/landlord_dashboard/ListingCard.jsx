@@ -19,7 +19,6 @@ const ListingCard = ({ listings }) => {
                         </p>
                         <div className="flex justify-between text-sm text-gray-500">
                             <span className="flex items-center"><FaEye className="mr-1" /> {listing.views} views</span>
-                            <span className="flex items-center"><FaHeart className="mr-1 text-red-400" /> {listing.favorites} favorites</span>
                         </div>
                     </div>
                 </div>
