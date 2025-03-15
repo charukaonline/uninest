@@ -11,6 +11,8 @@ import {
 import { FaUniversity } from "react-icons/fa";
 import { RiLogoutBoxLine } from 'react-icons/ri';
 import { notification } from "antd";
+import { IoWarning } from "react-icons/io5";
+import { MdEmail } from "react-icons/md";
 
 export default function Sidebar() {
 
@@ -77,6 +79,18 @@ export default function Sidebar() {
       path: `/admin/${adminId}/${email}/feedbacks`,
       txtColor: '#7F7F7F'
     },
+    {
+      icon: <MdEmail />,
+      label: 'Email & Notification',
+      path: `/admin/${adminId}/${email}/email-notification`,
+      txtColor: '#7F7F7F'
+    },
+    {
+      icon: <IoWarning />,
+      label: 'Security & Access',
+      path: `/admin/${adminId}/${email}/security-access`,
+      txtColor: '#7F7F7F'
+    }
   ];
 
   const lastMenuItems = [
@@ -91,7 +105,7 @@ export default function Sidebar() {
   return (
     <div className="bg-[#181818] h-screen fixed w-60 border-r border-gray-300 p-4 flex flex-col">
 
-      <div className="p-4">
+      <div className="p-2">
         <h2 className="text-2xl font-bold text-white">UniNest Admin</h2>
       </div>
 
