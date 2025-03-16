@@ -70,7 +70,7 @@ const ManageListings = () => {
     // Prevent body scroll when modal is open
     React.useEffect(() => {
         if (isModalOpen) {
-            document.body.style.overflow = 'hidden';
+            document.body.style.overflow = 'auto';
         } else {
             document.body.style.overflow = 'auto';
         }
@@ -188,7 +188,7 @@ const ManageListings = () => {
             title: 'Landlord',
             dataIndex: 'landlordName',
             key: 'landlordName',
-            render: (name) => name || "N/A",
+            render: (text, record) => record.landlordName || (record.landlord && record.landlord.username) || "N/A",
         },
         {
             title: 'Created Date',
@@ -404,12 +404,12 @@ const ManageListings = () => {
                                                 <div className="bg-gray-50 p-3 md:p-4 rounded-md">
                                                     <h3 className="text-sm font-medium text-gray-500 mb-1">Created Date</h3>
                                                     <p className="font-semibold text-gray-900">
-                                                        {selectedListing.createdAt 
+                                                        {selectedListing.createdAt
                                                             ? new Date(selectedListing.createdAt).toLocaleDateString('en-US', {
                                                                 year: 'numeric',
                                                                 month: 'long',
                                                                 day: 'numeric'
-                                                              })
+                                                            })
                                                             : "Date not available"
                                                         }
                                                     </p>
@@ -447,18 +447,6 @@ const ManageListings = () => {
                                                     )}
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        {/* Add debugging section to see all available fields */}
-                                        <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
-                                            <details>
-                                                <summary className="text-sm font-medium text-gray-500 cursor-pointer">
-                                                    Debug: Available Fields
-                                                </summary>
-                                                <pre className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-auto max-h-40">
-                                                    {JSON.stringify(selectedListing, null, 2)}
-                                                </pre>
-                                            </details>
                                         </div>
                                     </div>
                                 ) : (
