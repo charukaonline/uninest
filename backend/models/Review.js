@@ -11,17 +11,30 @@ const reviewSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  overallRating: {
+  ratings: {
     type: Number,
     required: true,
     min: 1,
     max: 5,
   },
   review: String,
+  sentiment: {
+    type: String,
+    enum: ["positive", "negative", "neutral"],
+    default: "neutral"
+  },
+  marks: {
+    type: Number,
+    default: 0
+  },
   status: {
     type: String,
-    enum: ["pending", "approved", "rejected"],
+    enum: ["pending", "approved", "rejected", "spam"],
     default: "pending",
+  },
+  spamReason: {
+    type: String,
+    default: null
   },
   createdAt: {
     type: Date,

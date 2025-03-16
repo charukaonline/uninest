@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
-import { Form, Rate, Input, Select } from 'antd'
+import { Form, Rate, Input, Select, notification } from 'antd'
 import { MdRateReview, MdReport } from "react-icons/md"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuthStore } from '@/store/authStore'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import axios from 'axios'
 
 export function ScheduleDialog() {
     return (
@@ -14,10 +15,12 @@ export function ScheduleDialog() {
 
 export function RatingDialog() {
     const [showForm, setShowForm] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
-    const { isAuthenticated } = useAuthStore();
+    const { isAuthenticated, user } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
+    const { listingId } = useParams();
 
     const handleRatingClick = () => {
         if (!isAuthenticated) {
@@ -29,13 +32,41 @@ export function RatingDialog() {
         setShowForm(true);
     };
 
-    const handleSubmit = (values) => {
+    const handleSubmit = async (values) => {
         try {
-            console.log('Rating:', values);
+            setLoading(true);
+            const reviewData = {
+                propertyId: listingId,
+                studentId: user._id,
+                ratings: values.rating,
+                review: values.review
+            };
+            
+            const response = await axios.post('http://localhost:5000/api/review/add-review', reviewData);
+            
+            if (response.data.success) {
+                notification.success({
+                    message: 'Success',
+                    description: 'Your review has been submitted successfully'
+                });
+            } else {
+                // Handle spam detection notification
+                notification.warning({
+                    message: 'Review Flagged',
+                    description: response.data.message || 'Your review has been flagged for review'
+                });
+            }
+            
             form.resetFields();
             setShowForm(false);
         } catch (error) {
-            console.error('Error submitting rating:', error);
+            console.error('Error submitting review:', error);
+            notification.error({
+                message: 'Error',
+                description: error.response?.data?.message || 'Failed to submit review'
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -93,14 +124,16 @@ export function RatingDialog() {
                                         type="button"
                                         onClick={() => setShowForm(false)}
                                         className="bg-gray-200 text-black hover:bg-gray-300"
+                                        disabled={loading}
                                     >
                                         Cancel
                                     </Button>
                                     <Button
                                         type="submit"
                                         className="bg-primaryBgColor text-white hover:bg-green-600"
+                                        disabled={loading}
                                     >
-                                        Submit Review
+                                        {loading ? 'Submitting...' : 'Submit Review'}
                                     </Button>
                                 </div>
                             </Form>

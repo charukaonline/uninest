@@ -37,6 +37,8 @@ import AddUniversity from "./pages/(AdminDashboard)/AddUniversity";
 import StdSettings from "./pages/(StdDashboard)/StdSettings";
 import StdInbox from "./pages/(StdDashboard)/StdInbox";
 import LandlordListings from "./pages/(LandlordDashboard)/LandlordListings";
+import Report from "./pages/(AdminDashboard)/Report";
+import Feedback from "./pages/(AdminDashboard)/Feedback";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -255,9 +257,25 @@ function App() {
           }
         />
 
-        {/* <Route path="/admin/analytics" element={<Analytics />} />
-        <Route path="/admin/reports" element={<Reports />} />
-        <Route path="/admin/feedbacks" element={<Feedbacks />} /> */}
+        <Route
+          path="/admin/:adminId/:email/reports"
+          element={
+            <AdminProtectedRoute>
+              <Report />
+            </AdminProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/:adminId/:email/feedbacks"
+          element={
+            <AdminProtectedRoute>
+              <Feedback />
+            </AdminProtectedRoute>
+          }
+        />
+
+        {/* <Route path="/admin/analytics" element={<Analytics />} /> */}
       </Routes>
     </>
   );
