@@ -1,7 +1,6 @@
 import React, {
   useEffect,
   useRef,
-  useState,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -19,6 +18,7 @@ const MapboxMap = forwardRef(
       onLocationSelect,
       markers = {},
       distance = null,
+      disabled = false, // Add disabled prop with default value
     },
     ref
   ) => {
@@ -30,6 +30,8 @@ const MapboxMap = forwardRef(
     });
     const routeRef = useRef(null);
     const distanceMarkerRef = useRef(null);
+    const clickHandlerRef = useRef(null);
+    const mapInitializedRef = useRef(false);
 
     // Expose map methods to parent component
     useImperativeHandle(ref, () => ({
@@ -121,14 +123,10 @@ const MapboxMap = forwardRef(
         "bottom-right"
       );
 
-      // Add click handler to select location
-      mapRef.current.on("click", (e) => {
-        if (onLocationSelect) {
-          onLocationSelect({
-            latitude: e.lngLat.lat,
-            longitude: e.lngLat.lng,
-          });
-        }
+      // Wait for the map to load before adding event listeners
+      mapRef.current.on('load', () => {
+        mapInitializedRef.current = true;
+        setupClickHandler();
       });
 
       // Clean up on unmount
@@ -139,6 +137,39 @@ const MapboxMap = forwardRef(
         }
       };
     }, []);
+
+    // Setup click handler function
+    const setupClickHandler = () => {
+      if (!mapRef.current || !mapInitializedRef.current) return;
+      
+      // Remove any existing click handler
+      if (clickHandlerRef.current) {
+        mapRef.current.off('click', clickHandlerRef.current);
+        clickHandlerRef.current = null;
+      }
+
+      // Only add click handler if not disabled and we have an onLocationSelect function
+      if (!disabled && onLocationSelect) {
+        clickHandlerRef.current = (e) => {
+          onLocationSelect({
+            latitude: e.lngLat.lat,
+            longitude: e.lngLat.lng,
+          });
+        };
+        
+        mapRef.current.on("click", clickHandlerRef.current);
+      }
+      
+      // Update cursor style
+      if (mapRef.current.getCanvas()) {
+        mapRef.current.getCanvas().style.cursor = disabled ? 'not-allowed' : 'pointer';
+      }
+    };
+
+    // Re-setup click handler when disabled state changes
+    useEffect(() => {
+      setupClickHandler();
+    }, [disabled, onLocationSelect]);
 
     // Handle university marker
     useEffect(() => {

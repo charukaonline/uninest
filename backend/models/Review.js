@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const reviewSchema = new mongoose.Schema({
   propertyId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Property",
+    ref: "Listing", // Changed from "Property" to "Listing"
     required: true,
   },
   studentId: {
@@ -11,17 +11,30 @@ const reviewSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  overallRating: {
+  ratings: {
     type: Number,
     required: true,
     min: 1,
     max: 5,
   },
   review: String,
+  sentiment: {
+    type: String,
+    enum: ["positive", "negative", "neutral"],
+    default: "neutral"
+  },
+  marks: {
+    type: Number,
+    default: 0
+  },
   status: {
     type: String,
-    enum: ["pending", "approved", "rejected"],
+    enum: ["pending", "approved", "rejected", "spam"],
     default: "pending",
+  },
+  spamReason: {
+    type: String,
+    default: null
   },
   createdAt: {
     type: Date,

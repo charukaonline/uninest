@@ -1,6 +1,7 @@
 const Listing = require("../models/Listing");
 const fs = require("fs");
 const s3 = require("../config/awsS3");
+const { calculateInitialEloRating, calculateClickEloIncrease } = require("../utils/eloCalculator");
 
 exports.addListing = async (req, res) => {
   try {
@@ -85,23 +86,8 @@ exports.addListing = async (req, res) => {
 
     // console.log('Image URLs:', imageUrls);
 
-    // Calculate initial eloRating based on filled fields
-    let initialEloRating = 1400;
-    const ratingRules = {
-      description: 80,
-      postalCode: 20,
-      size: 50,
-      bedrooms: 30,
-      bathrooms: 30,
-      garage: 20,
-      builtYear: 20,
-    };
-
-    Object.keys(ratingRules).forEach((field) => {
-      if (req.body[field] && req.body[field].toString().trim() !== "") {
-        initialEloRating += ratingRules[field];
-      }
-    });
+    // Calculate initial ELO rating using the utility function
+    const initialEloRating = calculateInitialEloRating(req.body);
 
     const newListing = new Listing({
       propertyName,
@@ -144,8 +130,9 @@ exports.addListing = async (req, res) => {
 exports.getListings = async (req, res) => {
   try {
     const listings = await Listing.find()
-      .populate("landlord", "firstName lastName email phoneNumber")
-      .sort({ eloRating: -1 }) // Sort by eloRating in descending order
+      .populate("landlord", "username email phoneNumber") // Update fields to match your User model
+      .populate("nearestUniversity", "name location")
+      .sort({ eloRating: -1 })
       .exec();
 
     res.status(200).json(listings);
@@ -161,7 +148,8 @@ exports.getListings = async (req, res) => {
 exports.getListingById = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id)
-      .populate("landlord", "firstName lastName email phoneNumber")
+      .populate("landlord", "username email phoneNumber") // Update fields to match your User model
+      .populate("nearestUniversity", "name location")
       .exec();
 
     if (!listing) {
@@ -186,17 +174,83 @@ exports.trackListingClick = async (req, res) => {
       return res.status(404).json({ message: "Listing not found" });
     }
 
-    // Increase ELO rating by 2 points per click
-    listing.eloRating += 2;
+    listing.eloRating = calculateClickEloIncrease(listing.eloRating, listing);
+    
+    // Initialize views if it doesn't exist and increment
+    if (listing.views === undefined) {
+      listing.views = 1;
+    } else {
+      listing.views += 1;
+    }
+    
     await listing.save();
 
     res.status(200).json({
       success: true,
       newRating: listing.eloRating,
+      views: listing.views
     });
   } catch (err) {
     res.status(500).json({
       message: "Error tracking click",
+      error: err.message,
+    });
+  }
+};
+
+exports.getPopularListings = async (req, res) => {
+  try {
+
+    const limit = parseInt(req.query.limit) || 5;
+    
+    // Find listings with highest eloRating (most popular)
+    const popularListings = await Listing.find()
+      .populate("landlord", "username email phoneNumber")
+      .populate("nearestUniversity", "name location")
+      .sort({ eloRating: -1 })
+      .limit(limit)
+      .exec();
+
+    res.status(200).json(popularListings);
+  } catch (err) {
+    console.error("Error fetching popular listings:", err);
+    res.status(500).json({
+      message: "Error fetching popular listings",
+      error: err.message,
+    });
+  }
+};
+
+exports.getLandlordListings = async (req, res) => {
+  try {
+    const { landlordId } = req.params;
+
+    if (!landlordId) {
+      return res.status(400).json({ 
+        message: "Landlord ID is required" 
+      });
+    }
+
+    const query = { landlord: landlordId };
+    const limit = parseInt(req.query.limit) || 0; // 0 means no limit
+
+    let listingsQuery = Listing.find(query)
+      .populate("landlord", "username email phoneNumber")
+      .populate("nearestUniversity", "name location")
+      .sort({ createdAt: -1 }); // Sort by newest first
+
+    // Apply limit if provided
+    if (limit > 0) {
+      listingsQuery = listingsQuery.limit(limit);
+    }
+
+    const listings = await listingsQuery.exec();
+
+    res.status(200).json(listings);
+  } catch (err) {
+    console.error("Error fetching landlord listings:", err);
+    res.status(500).json({
+      message: "Error fetching landlord listings",
       error: err.message,
     });
   }

@@ -83,8 +83,8 @@ const ListingInfo01 = ({ listing }) => {
                     </div>
 
                     <div className=' flex space-x-3 justify-between w-1/2 bg-primaryBgColor p-2 items-center rounded-lg'>
-                        <h2 className=' text-gray-200'>University Proximity</h2>
-                        <h2 className='font-semibold text-white'>{listing.nearestUniversity}</h2>
+                        <h2 className=' text-gray-200'>Nearest University</h2>
+                        <h2 className='font-semibold text-white'>{listing.nearestUniversity.name}</h2>
                     </div>
                 </div>
 
@@ -95,8 +95,8 @@ const ListingInfo01 = ({ listing }) => {
                     </div>
 
                     <div className=' flex space-x-3 justify-between w-1/2 bg-primaryBgColor p-2 items-center rounded-lg'>
-                        <h2 className=' text-gray-200'>Country</h2>
-                        <h2 className='font-semibold text-white'>Sri Lanka</h2>
+                        <h2 className=' text-gray-200'>Distance from University</h2>
+                        <h2 className='font-semibold text-white'>{listing.universityDistance} km</h2>
                     </div>
                 </div>
             </div>

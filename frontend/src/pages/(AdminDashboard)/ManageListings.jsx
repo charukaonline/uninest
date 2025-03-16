@@ -1,26 +1,21 @@
+import React, { useEffect, useState } from 'react'
 import Sidebar from '@/components/admin_dashboard/Sidebar'
 import useListingStore from '@/store/listingStore';
-import React, { useEffect } from 'react'
-import { Card, CardContent } from "@/components/ui/card";
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import { Button } from '@/components/ui/button';
+import { FaMapMarkerAlt, FaBuilding, FaHome, FaEye, FaFlag, FaTrash } from 'react-icons/fa';
+import { X, Building2 } from 'lucide-react';
 import Map from '@/components/include/Map';
-import { Building2, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input, Table, Tag, Modal, notification } from 'antd';
+import { SearchOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
 const ManageListings = () => {
     const { listings, loading, error, fetchAllListings } = useListingStore();
     const [selectedListing, setSelectedListing] = React.useState(null);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [showMap, setShowMap] = React.useState(false);
+    const [searchText, setSearchText] = useState('');
     const modalRef = React.useRef(null);
+    const { confirm } = Modal;
 
     // Close modal when clicking outside
     React.useEffect(() => {
@@ -62,8 +57,8 @@ const ManageListings = () => {
 
     useEffect(() => {
         fetchAllListings();
-        document.title = `${listings.length} All Listings`
-    }, [fetchAllListings, listings.length])
+        document.title = `(${listings.length}) Manage Listings`;
+    }, [fetchAllListings])
 
     const handleRowClick = (listing) => {
         setSelectedListing(listing);
@@ -75,7 +70,7 @@ const ManageListings = () => {
     // Prevent body scroll when modal is open
     React.useEffect(() => {
         if (isModalOpen) {
-            document.body.style.overflow = 'hidden';
+            document.body.style.overflow = 'auto';
         } else {
             document.body.style.overflow = 'auto';
         }
@@ -85,217 +80,378 @@ const ManageListings = () => {
         };
     }, [isModalOpen]);
 
+    const handleSearch = (value) => {
+        setSearchText(value);
+    };
+
+    const showDeleteConfirm = (record) => {
+        confirm({
+            title: 'Are you sure you want to delete this listing?',
+            icon: <ExclamationCircleOutlined />,
+            content: `You are about to delete "${record.propertyName}". This action cannot be undone.`,
+            okText: 'Yes, Delete',
+            okType: 'danger',
+            cancelText: 'No, Cancel',
+            centered: true,
+            onOk() {
+                notification.info({
+                    message: 'Delete feature coming soon',
+                    description: 'This feature will be available in the next update.'
+                });
+            },
+        });
+    };
+
+    const showFlagConfirm = (record) => {
+        confirm({
+            title: 'Flag this listing?',
+            icon: <ExclamationCircleOutlined />,
+            content: `Are you sure you want to flag "${record.propertyName}" for review?`,
+            okText: 'Yes, Flag',
+            okType: 'warning',
+            cancelText: 'Cancel',
+            centered: true,
+            onOk() {
+                notification.info({
+                    message: 'Flag feature coming soon',
+                    description: 'This feature will be available in the next update.'
+                });
+            },
+        });
+    };
+
+    const getStatusColor = (price) => {
+        if (price > 5000) return 'green';
+        if (price > 1000) return 'geekblue';
+        return 'volcano';
+    };
+
+    const columns = [
+        {
+            title: 'Property Name',
+            dataIndex: 'propertyName',
+            key: 'propertyName',
+            filteredValue: searchText ? [searchText] : null,
+            onFilter: (value, record) => {
+                return (
+                    record.propertyName?.toLowerCase().includes(value.toLowerCase()) ||
+                    record.address?.toLowerCase().includes(value.toLowerCase()) ||
+                    record.city?.toLowerCase().includes(value.toLowerCase()) ||
+                    record.propertyType?.toLowerCase().includes(value.toLowerCase()) ||
+                    record.landlordName?.toLowerCase().includes(value.toLowerCase())
+                );
+            },
+            render: (text, record) => (
+                <div className="flex items-center space-x-3">
+                    <img
+                        src={(record.images && record.images[0]) ||
+                            record.image ||
+                            ""}
+                        alt={text}
+                        className="w-10 h-10 rounded-md object-cover"
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "";
+                        }}
+                    />
+                    <span className="font-medium">{text}</span>
+                </div>
+            ),
+        },
+        {
+            title: 'Address',
+            dataIndex: 'address',
+            key: 'address',
+            render: (text, record) => (
+                <span>
+                    {text} {record.city && `, ${record.city}`}
+                </span>
+            ),
+        },
+        {
+            title: 'Property Type',
+            dataIndex: 'propertyType',
+            key: 'propertyType',
+        },
+        {
+            title: 'Monthly Rent',
+            dataIndex: 'monthlyRent',
+            key: 'monthlyRent',
+            sorter: (a, b) => a.monthlyRent - b.monthlyRent,
+            render: (price) => (
+                <Tag color={getStatusColor(price)}>
+                    LKR {price?.toLocaleString() || "N/A"}
+                </Tag>
+            ),
+        },
+        {
+            title: 'Landlord',
+            dataIndex: 'landlordName',
+            key: 'landlordName',
+            render: (text, record) => record.landlordName || (record.landlord && record.landlord.username) || "N/A",
+        },
+        {
+            title: 'Created Date',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (date) => new Date(date).toLocaleDateString(),
+            sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            render: (_, record) => (
+                <div className="flex space-x-2">
+                    <button
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs flex items-center"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(`/listing/${record._id}`, '_blank');
+                        }}
+                    >
+                        <FaEye className="mr-1" /> View
+                    </button>
+                    <button
+                        className="bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded text-xs flex items-center"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            showFlagConfirm(record);
+                        }}
+                    >
+                        <FaFlag className="mr-1" /> Flag
+                    </button>
+                    <button
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs flex items-center"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            showDeleteConfirm(record);
+                        }}
+                    >
+                        <FaTrash className="mr-1" /> Delete
+                    </button>
+                </div>
+            ),
+        },
+    ];
+
     return (
-        <div className="flex">
+        <div className="flex h-full bg-gray-100 min-h-screen">
             <div><Sidebar /></div>
 
-            <div style={{ marginLeft: '230px' }} className=" w-full">
-                <div className="flex-1 p-8 overflow-hidden flex flex-col">
-                    <h1 className="text-3xl font-bold mb-6 text-gray-800 flex items-center">
-                        <Building2 className="text-primaryBgColor mr-3 text-2xl" />
-                        Manage Listings
-                    </h1>
+            <div style={{ marginLeft: '230px' }} className="flex-1 p-6">
+                <div className="mb-6 flex justify-between items-center">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+                            <Building2 className="text-primaryBgColor mr-3" />
+                            Manage Listings
+                        </h1>
+                        <p className="text-gray-600">Monitor and manage all property listings</p>
+                    </div>
+                </div>
 
-                    <Card>
-                        <CardContent className="p-4">
-                            <Table>
-                                <TableCaption className="text-center">A list of all properties</TableCaption>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>House Name</TableHead>
-                                        <TableHead>House Type</TableHead>
-                                        <TableHead>Create Date</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {listings.map((listing) => (
-                                        <TableRow
-                                            key={listing._id}
-                                            className="cursor-pointer hover:bg-gray-100"
-                                            onClick={() => handleRowClick(listing)}
-                                        >
-                                            <TableCell className="font-medium">
-                                                {listing.propertyName}
-                                            </TableCell>
-                                            <TableCell>{listing.propertyType}</TableCell>
-                                            <TableCell>
-                                                {new Date(listing.createdAt).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button
-                                                    variant="default"
-                                                    size="sm"
-                                                    className="bg-orange-500 mr-2"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    Flag
-                                                </Button>
-                                                <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    Delete
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                    <div className="mb-4">
+                        <Input
+                            placeholder="Search by property name, address, landlord or type..."
+                            prefix={<SearchOutlined />}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            style={{ width: 350 }}
+                        />
+                    </div>
 
-                    {/* Custom Modal using divs instead of Dialog */}
-                    {isModalOpen && selectedListing && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                            <div
-                                ref={modalRef}
-                                className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col shadow-xl"
-                            >
-                                {/* Modal Header */}
-                                <div className="p-4 md:p-6 border-b flex items-center justify-between">
-                                    <h2 className="text-xl md:text-2xl font-bold text-primaryBgColor">
-                                        {selectedListing.propertyName}
-                                    </h2>
-                                    <div className="flex items-center space-x-2">
-                                        <Button
-                                            onClick={() => setShowMap(!showMap)}
-                                            variant="outline"
-                                            size="sm"
-                                            className="flex items-center gap-1.5"
-                                        >
-                                            {showMap ? "View Details" : "View Map"}
-                                        </Button>
-                                        <button
-                                            onClick={() => setIsModalOpen(false)}
-                                            className="text-gray-500 hover:text-gray-800 transition-colors"
-                                        >
-                                            <X size={20} />
-                                        </button>
-                                    </div>
+                    <Table
+                        dataSource={listings}
+                        columns={columns}
+                        rowKey="_id"
+                        loading={loading}
+                        onRow={(record) => ({
+                            onClick: () => handleRowClick(record),
+                            style: { cursor: 'pointer' }
+                        })}
+                        pagination={{
+                            pageSize: 10,
+                            showTotal: (total) => `Total ${total} listings`,
+                        }}
+                        locale={{
+                            emptyText: (
+                                <div className="py-8 text-center">
+                                    <FaBuilding className="text-gray-300 text-4xl mx-auto mb-4" />
+                                    <p className="text-gray-500 mb-4">No listings found</p>
                                 </div>
+                            ),
+                        }}
+                    />
+                </div>
 
-                                {/* Modal Content */}
-                                <div className="overflow-y-auto flex-1">
-                                    {!showMap ? (
-                                        <div className="p-4 md:p-6">
-                                            {/* Display property images if available */}
-                                            {(selectedListing.images && selectedListing.images.length > 0) ? (
-                                                <div className="mb-6">
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                                                        {selectedListing.images.slice(0, 3).map((image, index) => (
-                                                            <img
-                                                                key={index}
-                                                                src={typeof image === 'string' ? image : image.url || image.src || ''}
-                                                                alt={`Property ${index + 1}`}
-                                                                className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-md"
-                                                                onError={(e) => {
-                                                                    e.target.onerror = null;
-                                                                    e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
-                                                                }}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ) : selectedListing.image ? (
-                                                <div className="mb-6">
-                                                    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-2">
+                {/* Custom Modal using divs instead of Dialog */}
+                {isModalOpen && selectedListing && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                        <div
+                            ref={modalRef}
+                            className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col shadow-xl"
+                        >
+                            {/* Modal Header */}
+                            <div className="p-4 md:p-6 border-b flex items-center justify-between">
+                                <h2 className="text-xl md:text-2xl font-bold text-primaryBgColor">
+                                    {selectedListing.propertyName}
+                                </h2>
+                                <div className="flex items-center space-x-2">
+                                    <Button
+                                        onClick={() => setShowMap(!showMap)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex items-center gap-1.5"
+                                    >
+                                        {showMap ? "View Details" : "View Map"}
+                                    </Button>
+                                    <button
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="text-gray-500 hover:text-gray-800 transition-colors"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Modal Content */}
+                            <div className="overflow-y-auto flex-1">
+                                {!showMap ? (
+                                    <div className="p-4 md:p-6">
+                                        {/* Display property images if available */}
+                                        {(selectedListing.images && selectedListing.images.length > 0) ? (
+                                            <div className="mb-6">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                                    {selectedListing.images.slice(0, 3).map((image, index) => (
                                                         <img
-                                                            src={typeof selectedListing.image === 'string' ?
-                                                                selectedListing.image :
-                                                                selectedListing.image.url || selectedListing.image.src || ''}
-                                                            alt="Property"
+                                                            key={index}
+                                                            src={typeof image === 'string' ? image : image.url || image.src || ''}
+                                                            alt={`Property ${index + 1}`}
                                                             className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-md"
                                                             onError={(e) => {
                                                                 e.target.onerror = null;
-                                                                e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                                                                e.target.src = '';
                                                             }}
                                                         />
-                                                    </div>
+                                                    ))}
                                                 </div>
-                                            ) : selectedListing.imageUrls && selectedListing.imageUrls.length > 0 ? (
-                                                // Alternative image array field that might be used
-                                                <div className="mb-6">
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                                                        {selectedListing.imageUrls.slice(0, 3).map((image, index) => (
-                                                            <img
-                                                                key={index}
-                                                                src={typeof image === 'string' ? image : image.url || image.src || ''}
-                                                                alt={`Property ${index + 1}`}
-                                                                className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-md"
-                                                                onError={(e) => {
-                                                                    e.target.onerror = null;
-                                                                    e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
-                                                                }}
-                                                            />
-                                                        ))}
-                                                    </div>
+                                            </div>
+                                        ) : selectedListing.image ? (
+                                            <div className="mb-6">
+                                                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-2">
+                                                    <img
+                                                        src={typeof selectedListing.image === 'string' ?
+                                                            selectedListing.image :
+                                                            selectedListing.image.url || selectedListing.image.src || ''}
+                                                        alt="Property"
+                                                        className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-md"
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = '';
+                                                        }}
+                                                    />
                                                 </div>
-                                            ) : (
-                                                // Fallback for listings without images
-                                                <div className="mb-6">
-                                                    <div className="grid grid-cols-1 gap-2">
-                                                        <div className="w-full h-32 sm:h-40 md:h-48 bg-gray-100 rounded-md flex items-center justify-center">
-                                                            <p className="text-gray-500">No images available</p>
-                                                        </div>
-                                                    </div>
+                                            </div>
+                                        ) : selectedListing.imageUrls && selectedListing.imageUrls.length > 0 ? (
+                                            // Alternative image array field that might be used
+                                            <div className="mb-6">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                                    {selectedListing.imageUrls.slice(0, 3).map((image, index) => (
+                                                        <img
+                                                            key={index}
+                                                            src={typeof image === 'string' ? image : image.url || image.src || ''}
+                                                            alt={`Property ${index + 1}`}
+                                                            className="w-full h-32 sm:h-40 md:h-48 object-cover rounded-md"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = '';
+                                                            }}
+                                                        />
+                                                    ))}
                                                 </div>
-                                            )}
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                                <div className="space-y-3 md:space-y-4">
-                                                    <div className="bg-gray-50 p-3 md:p-4 rounded-md">
-                                                        <h3 className="text-sm font-medium text-gray-500 mb-1">Property Type</h3>
-                                                        <p className="font-semibold text-gray-900">{selectedListing.propertyType}</p>
-                                                    </div>
-
-                                                    <div className="bg-gray-50 p-3 md:p-4 rounded-md">
-                                                        <h3 className="text-sm font-medium text-gray-500 mb-1">Monthly Rent</h3>
-                                                        <p className="font-bold text-lg text-primaryBgColor">Rs. {selectedListing.monthlyRent?.toLocaleString() || "N/A"}</p>
-                                                    </div>
-
-                                                    <div className="bg-gray-50 p-3 md:p-4 rounded-md">
-                                                        <h3 className="text-sm font-medium text-gray-500 mb-1">Nearest University</h3>
-                                                        <p className="font-semibold text-gray-900">{selectedListing.nearestUniversity}</p>
-                                                    </div>
-
-                                                    <div className="bg-gray-50 p-3 md:p-4 rounded-md">
-                                                        <h3 className="text-sm font-medium text-gray-500 mb-1">Created Date</h3>
-                                                        <p className="font-semibold text-gray-900">{new Date(selectedListing.createdAt).toLocaleDateString('en-US', {
-                                                            year: 'numeric',
-                                                            month: 'long',
-                                                            day: 'numeric'
-                                                        })}</p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-3 md:space-y-4">
-                                                    <div className="bg-gray-50 p-3 md:p-4 rounded-md">
-                                                        <h3 className="text-sm font-medium text-gray-500 mb-1">Address</h3>
-                                                        <p className="font-semibold text-gray-900">{selectedListing.address}</p>
-                                                    </div>
-
-                                                    <div className="bg-gray-50 p-3 md:p-4 rounded-md">
-                                                        <h3 className="text-sm font-medium text-gray-500 mb-1">Description</h3>
-                                                        <p className="text-gray-700 max-h-24 md:max-h-36 overflow-y-auto text-sm md:text-base">{selectedListing.description}</p>
-                                                    </div>
-
-                                                    <div className="bg-gray-50 p-3 md:p-4 rounded-md">
-                                                        <h3 className="text-sm font-medium text-gray-500 mb-1">Owner Details</h3>
-                                                        <p className="font-semibold text-gray-900">
-                                                            {selectedListing.landlordName || 'Name not provided'}
-                                                        </p>
-                                                        <p className="text-sm text-gray-600">
-                                                            {selectedListing.landlordContact || 'Contact not provided'}
-                                                        </p>
+                                            </div>
+                                        ) : (
+                                            // Fallback for listings without images
+                                            <div className="mb-6">
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    <div className="w-full h-32 sm:h-40 md:h-48 bg-gray-100 rounded-md flex items-center justify-center">
+                                                        <p className="text-gray-500">No images available</p>
                                                     </div>
                                                 </div>
                                             </div>
+                                        )}
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                                            <div className="space-y-3 md:space-y-4">
+                                                <div className="bg-gray-50 p-3 md:p-4 rounded-md">
+                                                    <h3 className="text-sm font-medium text-gray-500 mb-1">Property Type</h3>
+                                                    <p className="font-semibold text-gray-900">{selectedListing.propertyType || "Not specified"}</p>
+                                                </div>
+
+                                                <div className="bg-gray-50 p-3 md:p-4 rounded-md">
+                                                    <h3 className="text-sm font-medium text-gray-500 mb-1">Monthly Rent</h3>
+                                                    <p className="font-bold text-lg text-primaryBgColor">
+                                                        {selectedListing.monthlyRent ? `Rs. ${selectedListing.monthlyRent.toLocaleString()}` : "Price not specified"}
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-gray-50 p-3 md:p-4 rounded-md">
+                                                    <h3 className="text-sm font-medium text-gray-500 mb-1">Nearest University</h3>
+                                                    <p className="font-semibold text-gray-900">
+                                                        {selectedListing.nearestUniversity.name || "Not specified"}
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-gray-50 p-3 md:p-4 rounded-md">
+                                                    <h3 className="text-sm font-medium text-gray-500 mb-1">Created Date</h3>
+                                                    <p className="font-semibold text-gray-900">
+                                                        {selectedListing.createdAt
+                                                            ? new Date(selectedListing.createdAt).toLocaleDateString('en-US', {
+                                                                year: 'numeric',
+                                                                month: 'long',
+                                                                day: 'numeric'
+                                                            })
+                                                            : "Date not available"
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3 md:space-y-4">
+                                                <div className="bg-gray-50 p-3 md:p-4 rounded-md">
+                                                    <h3 className="text-sm font-medium text-gray-500 mb-1">Address</h3>
+                                                    <p className="font-semibold text-gray-900">
+                                                        {selectedListing.address || "Address not provided"}
+                                                        {selectedListing.city && `, ${selectedListing.city}`}
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-gray-50 p-3 md:p-4 rounded-md">
+                                                    <h3 className="text-sm font-medium text-gray-500 mb-1">Description</h3>
+                                                    <p className="text-gray-700 max-h-24 md:max-h-36 overflow-y-auto text-sm md:text-base">
+                                                        {selectedListing.description || "No description available"}
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-gray-50 p-3 md:p-4 rounded-md">
+                                                    <h3 className="text-sm font-medium text-gray-500 mb-1">Owner Details</h3>
+                                                    <p className="font-semibold text-gray-900">
+                                                        {selectedListing.landlordName || selectedListing.landlord?.username || 'Name not provided'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        {selectedListing.landlord?.phoneNumber || 'Contact not provided'}
+                                                    </p>
+                                                    {(selectedListing.landlordEmail || selectedListing.landlord?.email) && (
+                                                        <p className="text-sm text-gray-600 mt-1">
+                                                            {selectedListing.landlordEmail || selectedListing.landlord?.email}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <div className="h-[400px] w-full items-center justify-center">
-                                            {console.log("Map coordinates:", selectedListing)}
+                                    </div>
+                                ) : (
+                                    <div className="h-[400px] w-full items-center justify-center">
+                                        {selectedListing.coordinates && (
                                             <Map
                                                 selectedLocations={[selectedListing.coordinates]}
                                                 initialCenter={[
@@ -305,38 +461,46 @@ const ManageListings = () => {
                                                 initialZoom={16}
                                                 pinColor="red"
                                             />
-                                        </div>
-                                    )}
-                                </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
 
-                                {/* Modal Footer */}
-                                <div className="p-4 md:p-6 border-t flex flex-wrap items-center justify-end gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setIsModalOpen(false)}
-                                        className="mr-2"
-                                    >
-                                        Close
-                                    </Button>
-                                    <Button
-                                        variant="default"
-                                        size="sm"
-                                        className="bg-orange-500 mr-2"
-                                    >
-                                        Flag Listing
-                                    </Button>
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                    >
-                                        Delete Listing
-                                    </Button>
-                                </div>
+                            {/* Modal Footer */}
+                            <div className="p-4 md:p-6 border-t flex flex-wrap items-center justify-end gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="mr-2"
+                                >
+                                    Close
+                                </Button>
+                                <Button
+                                    variant="default"
+                                    size="sm"
+                                    className="bg-orange-500 mr-2"
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        showFlagConfirm(selectedListing);
+                                    }}
+                                >
+                                    Flag Listing
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        showDeleteConfirm(selectedListing);
+                                    }}
+                                >
+                                    Delete Listing
+                                </Button>
                             </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     )
