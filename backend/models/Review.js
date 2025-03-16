@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const reviewSchema = new mongoose.Schema({
   propertyId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Property",
+    ref: "Listing", // Changed from "Property" to "Listing"
     required: true,
   },
   studentId: {

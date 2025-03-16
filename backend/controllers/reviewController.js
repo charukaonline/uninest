@@ -65,7 +65,7 @@ exports.getSpamReviews = async (req, res) => {
     try {
         const spamReviews = await Review.find({ status: 'spam' })
             .populate('studentId', 'username')
-            .populate('propertyId', 'propertyName')
+            .populate('propertyId', 'propertyName') // Directly populate propertyName from Listing
             .sort({ createdAt: -1 });
 
         // Format the data for frontend display with error handling

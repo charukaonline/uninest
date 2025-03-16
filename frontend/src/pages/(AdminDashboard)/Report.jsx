@@ -25,6 +25,7 @@ const Report = () => {
             })
 
             if (response.data.success) {
+                console.log('Spam reviews data:', response.data.reviews);
                 setSpamReviews(response.data.reviews)
             }
         } catch (error) {
