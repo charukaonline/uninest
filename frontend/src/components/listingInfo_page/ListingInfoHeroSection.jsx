@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-
+import axios from 'axios'
 import { IoMdPin } from "react-icons/io";
 import { BiSolidConversation } from "react-icons/bi";
 import { FaBookmark, FaChevronLeft, FaChevronRight } from "react-icons/fa6";
@@ -13,8 +13,35 @@ import { Button } from '../ui/button';
 import { RatingDialog, ReportDialog } from './ListingActions';
 
 const ListingInfoHeroSection = ({ listing }) => {
+    const [reviews, setReviews] = useState([]);
+    const [averageRating, setAverageRating] = useState(0);
+    const [reviewCount, setReviewCount] = useState(0);
 
-    const averageRating = 4.5;
+    // Fetch reviews for this listing
+    useEffect(() => {
+        if (listing && listing._id) {
+            fetchReviews();
+        }
+    }, [listing]);
+
+    const fetchReviews = async () => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/review/listing-reviews/${listing._id}`);
+            if (response.data.success) {
+                const approvedReviews = response.data.reviews.filter(review => review.status === 'approved');
+                setReviews(approvedReviews);
+                
+                // Calculate average rating
+                if (approvedReviews.length > 0) {
+                    const totalRating = approvedReviews.reduce((sum, review) => sum + review.ratings, 0);
+                    setAverageRating(parseFloat((totalRating / approvedReviews.length).toFixed(1)));
+                    setReviewCount(approvedReviews.length);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        }
+    };
 
     // Sample images array - replace with actual listing images when available
     const images = Array.isArray(listing.images) ? listing.images :
@@ -153,7 +180,7 @@ const ListingInfoHeroSection = ({ listing }) => {
                         </div>
 
                         <div className=' mt-6 flex items-center space-y-0 space-x-2'>
-                            <StarRating rating={averageRating} /><h2 className=' text-white'>({averageRating})</h2>
+                            <StarRating rating={averageRating} /><h2 className=' text-white'>({averageRating}) {reviewCount > 0 ? `${reviewCount} reviews` : 'No reviews yet'}</h2>
                         </div>
 
                         <div className=' flex flex-col  h-fit rounded-lg p-2'>

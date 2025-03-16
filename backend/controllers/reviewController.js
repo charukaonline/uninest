@@ -1,6 +1,7 @@
 const Review = require('../models/Review');
 const User = require('../models/User');
 const Property = require('../models/Property');
+const Listing = require('../models/Listing'); // Add this import
 const { getSentiment } = require('../utils/reviewDetector');
 
 exports.addReview = async (req, res) => {
@@ -14,9 +15,9 @@ exports.addReview = async (req, res) => {
         if (isSpam) {
             marks = -50;
         } else if (sentiment === "positive") {
-            marks = 5; // Updated to 5 marks for positive reviews
+            marks = 5;
         } else if (sentiment === "negative") {
-            marks = -5; // Keep -5 for negative reviews
+            marks = -5;
         }
 
         const reviewData = {
@@ -27,12 +28,21 @@ exports.addReview = async (req, res) => {
             sentiment,
             marks,
             status: isSpam ? 'spam' : 'approved',
-            spamReason: spamReason // Store the reason for spam classification
+            spamReason: spamReason
         };
 
-        // Save the review to the database
         const newReview = new Review(reviewData);
         await newReview.save();
+
+        // Update the listing's eloRating if review is approved (not spam)
+        if (!isSpam) {
+            const listing = await Listing.findById(propertyId);
+            if (listing) {
+                listing.eloRating = listing.eloRating + marks;
+                await listing.save();
+                console.log(`Updated listing ${propertyId} eloRating to ${listing.eloRating}`);
+            }
+        }
 
         let response = {
             success: true,
@@ -65,10 +75,9 @@ exports.getSpamReviews = async (req, res) => {
     try {
         const spamReviews = await Review.find({ status: 'spam' })
             .populate('studentId', 'username')
-            .populate('propertyId', 'propertyName') // Directly populate propertyName from Listing
+            .populate('propertyId', 'propertyName')
             .sort({ createdAt: -1 });
 
-        // Format the data for frontend display with error handling
         const formattedReviews = spamReviews.map(review => {
             // Ensure both studentId and propertyId exist before accessing their properties
             const studentName = review.studentId ? review.studentId.username : 'Unknown User';
@@ -122,6 +131,14 @@ exports.approveReview = async (req, res) => {
         review.status = 'approved';
         await review.save();
         
+        // Update the listing's eloRating when approving a previously spam review
+        const listing = await Listing.findById(review.propertyId);
+        if (listing) {
+            listing.eloRating = listing.eloRating + review.marks;
+            await listing.save();
+            console.log(`Updated listing ${review.propertyId} eloRating to ${listing.eloRating}`);
+        }
+        
         res.status(200).json({
             success: true,
             message: 'Review approved successfully'
@@ -136,17 +153,31 @@ exports.approveReview = async (req, res) => {
     }
 };
 
+// Also need to handle removing the marks if a review is deleted
 exports.deleteReview = async (req, res) => {
     try {
         const { id } = req.params;
         
-        const review = await Review.findByIdAndDelete(id);
+        const review = await Review.findById(id);
         if (!review) {
             return res.status(404).json({
                 success: false,
                 message: 'Review not found'
             });
         }
+        
+        // If the review was approved, remove its marks from the listing's eloRating
+        if (review.status === 'approved') {
+            const listing = await Listing.findById(review.propertyId);
+            if (listing) {
+                listing.eloRating = listing.eloRating - review.marks;
+                await listing.save();
+                console.log(`Updated listing ${review.propertyId} eloRating to ${listing.eloRating} after review deletion`);
+            }
+        }
+        
+        // Delete the review
+        await Review.findByIdAndDelete(id);
         
         res.status(200).json({
             success: true,
@@ -157,6 +188,30 @@ exports.deleteReview = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to delete review',
+            error: error.message
+        });
+    }
+};
+
+exports.getListingReviews = async (req, res) => {
+    try {
+        const { listingId } = req.params;
+        
+        const reviews = await Review.find({ 
+            propertyId: listingId 
+        })
+        .populate('studentId', 'username profilePicture')
+        .sort({ createdAt: -1 });
+        
+        res.status(200).json({
+            success: true,
+            reviews
+        });
+    } catch (error) {
+        console.error('Error fetching listing reviews:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch reviews for this listing',
             error: error.message
         });
     }
