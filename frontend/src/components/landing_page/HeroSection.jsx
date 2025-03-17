@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
 
+  const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
-  const searchUniversity = () => {
-    console.log('Search University');
+  const searchUniversity = (e) => {
+    e.preventDefault();
+    if (query.trim()) {
+      navigate(`/search?q=${query}`);
+    }
   }
 
   return (
@@ -23,20 +27,26 @@ const HeroSection = () => {
           </p>
 
           {/* Search Bar */}
-          <div className="mt-6 flex items-center space-x-3 bg-white shadow-md rounded-md p-2">
+          <form
+            className="mt-6 flex items-center space-x-3 bg-white shadow-md rounded-md p-2"
+            onSubmit={searchUniversity}
+          >
             <input
               type="text"
-              placeholder="What University are you belongs to?"
+              placeholder="Which university are you looking for?"
               className="flex-1 px-4 py-2 border-none focus:outline-none text-black bg-[#D9D9D9] rounded-md"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              required
             />
             <div className="lg:h-6 w-px bg-gray-500 mx-4"></div>
             <button
-              onClick={searchUniversity}
+              type='submit'
               className="px-6 py-2 bg-primaryBgColor text-white rounded-md hover:bg-green-700"
             >
               Proceed
             </button>
-          </div>
+          </form>
 
           <p className="mt-8 text-gray-800 font-semibold">
             Are you a boarding house owner looking to list your housing options?
