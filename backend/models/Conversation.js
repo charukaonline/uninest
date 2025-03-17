@@ -9,11 +9,21 @@ const conversationSchema = new mongoose.Schema({
   ],
   propertyId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Property",
+    ref: "Listing",
+    required: false,
   },
   lastMessage: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Message",
+  },
+  unreadCount: {
+    type: Map,
+    of: Number,
+    default: {},
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   },
   createdAt: {
     type: Date,

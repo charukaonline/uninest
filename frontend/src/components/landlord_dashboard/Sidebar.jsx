@@ -35,7 +35,7 @@ const Sidebar = () => {
         { name: 'Dashboard', path: `/landlord/${landlordId}/${email}`, icon: <MdDashboard />, txtColor: '#7F7F7F' },
         { name: 'Add Listing', path: `/landlord/${landlordId}/${email}/add-listings`, icon: <MdAddLocationAlt />, txtColor: '#7F7F7F' },
         { name: 'My Listings', path: `/landlord/${landlordId}/${email}/my-listings`, icon: <FaHouseChimney />, txtColor: '#7F7F7F' },
-        { name: 'Inbox', path: '/house-owner/inbox', icon: <FaInbox />, txtColor: '#7F7F7F' },
+        { name: 'Inbox', path: `/landlord/${landlordId}/${email}/inbox`, icon: <FaInbox />, txtColor: '#7F7F7F' },
         { name: 'Settings', path: '/house-owner/settings', icon: <IoSettings />, txtColor: '#7F7F7F' },
     ];
 

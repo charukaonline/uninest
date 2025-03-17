@@ -11,16 +11,15 @@ const messageSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  content: {
+  text: {
     type: String,
     required: true,
   },
-  readBy: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
+  status: {
+    type: String,
+    enum: ["sent", "delivered", "read"],
+    default: "sent",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

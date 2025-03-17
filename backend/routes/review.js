@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {addReview, getSpamReviews, approveReview, deleteReview} = require('../controllers/reviewController');
+const {addReview, getSpamReviews, approveReview, deleteReview, getListingReviews} = require('../controllers/reviewController');
 const {verifyToken} = require('../middleware/verifyToken');
 const Admin = require("../models/Admin");
 
@@ -26,8 +26,9 @@ const isAdmin = async (req, res, next) => {
     }
 };
 
-// Public route
+// Public routes
 router.post('/add-review', addReview);
+router.get('/listing-reviews/:listingId', getListingReviews);
 
 // Admin routes
 router.get('/spam-reviews', verifyToken, isAdmin, getSpamReviews);
