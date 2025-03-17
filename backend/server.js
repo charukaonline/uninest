@@ -94,3 +94,4 @@ app.use("/api/send-email", require("./routes/inquiry"));
 app.use("/api/listings", listingRoutes);
 app.use("/api/university", require("./routes/university"));
 app.use("/api/review", reviewRoutes);
+app.use("/api/search", require("./routes/search")); 
