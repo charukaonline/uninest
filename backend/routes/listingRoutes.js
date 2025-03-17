@@ -14,6 +14,10 @@ router.post(
 
 router.get('/', listingController.getListings);
 
+router.get('/popular', listingController.getPopularListings);
+
+router.get('/landlord/:landlordId', listingController.getLandlordListings);
+
 router.get('/:id', listingController.getListingById);
 
 router.post('/:id/track-click', listingController.trackListingClick);

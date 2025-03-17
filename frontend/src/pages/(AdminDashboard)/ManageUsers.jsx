@@ -224,10 +224,15 @@ export default function ManageUsers() {
       <div style={{ marginLeft: '230px' }} className=" w-full">
         <div className="flex-1 p-8 overflow-hidden flex flex-col">
 
-          <h1 className="text-3xl font-bold mb-6 text-gray-800 flex items-center">
-            <Users className="text-primaryBgColor mr-3 text-2xl" />
-            Manage Users
-          </h1>
+          <div className="mb-6 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+                <Users className="text-primaryBgColor mr-3" />
+                Manage Users
+              </h1>
+              <p className="text-gray-600">Monitor and manage all users</p>
+            </div>
+          </div>
 
           <Tabs defaultValue="pending-landlords" onValueChange={setCurrentTab}>
             <TabsList>

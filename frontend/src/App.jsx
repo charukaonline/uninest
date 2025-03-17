@@ -36,6 +36,10 @@ import ManageListings from "./pages/(AdminDashboard)/ManageListings";
 import AddUniversity from "./pages/(AdminDashboard)/AddUniversity";
 import StdSettings from "./pages/(StdDashboard)/StdSettings";
 import StdInbox from "./pages/(StdDashboard)/StdInbox";
+import LandlordListings from "./pages/(LandlordDashboard)/LandlordListings";
+import Report from "./pages/(AdminDashboard)/Report";
+import Feedback from "./pages/(AdminDashboard)/Feedback";
+import LandlordInbox from "./pages/(LandlordDashboard)/LandlordInbox";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -198,6 +202,24 @@ function App() {
           }
         />
 
+        <Route
+          path="/landlord/:landlordId/:email/my-listings"
+          element={
+            <LandlordProtectedRoute>
+              <LandlordListings />
+            </LandlordProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/landlord/:landlordId/:email/inbox"
+          element={
+            <LandlordProtectedRoute>
+              <LandlordInbox />
+            </LandlordProtectedRoute>
+          }
+        />
+
         {/* Admin Login */}
         <Route
           path="/auth/uninest-admin"
@@ -245,9 +267,25 @@ function App() {
           }
         />
 
-        {/* <Route path="/admin/analytics" element={<Analytics />} />
-        <Route path="/admin/reports" element={<Reports />} />
-        <Route path="/admin/feedbacks" element={<Feedbacks />} /> */}
+        <Route
+          path="/admin/:adminId/:email/reports"
+          element={
+            <AdminProtectedRoute>
+              <Report />
+            </AdminProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/:adminId/:email/feedbacks"
+          element={
+            <AdminProtectedRoute>
+              <Feedback />
+            </AdminProtectedRoute>
+          }
+        />
+
+        {/* <Route path="/admin/analytics" element={<Analytics />} /> */}
       </Routes>
     </>
   );

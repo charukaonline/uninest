@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Form, Input, Select, notification } from "antd";
+import { Form, Input, Select, notification, Alert } from "antd";
 import MapboxMap from "../include/MapboxMap"; // Import the new MapboxMap component
 
 const AddListingStep02 = ({ onFinish }) => {
@@ -9,12 +9,18 @@ const AddListingStep02 = ({ onFinish }) => {
   const [selectedUniversity, setSelectedUniversity] = useState(null);
   const [universityCoordinates, setUniversityCoordinates] = useState(null);
   const [distance, setDistance] = useState(null);
+  const [mapInteractionDisabled, setMapInteractionDisabled] = useState(true);
   const mapRef = useRef(null);
 
   // Handle university selection
   const handleUniversityChange = (value) => {
     const selected = universities.find((uni) => uni._id === value);
     setSelectedUniversity(selected);
+
+    // Reset previously selected coordinates when changing university
+    setSelectedCoordinates(null);
+    form.setFieldsValue({ coordinates: null });
+    setDistance(null);
 
     if (selected && selected.location && selected.location.coordinates) {
       const uniCoords = {
@@ -23,21 +29,21 @@ const AddListingStep02 = ({ onFinish }) => {
       };
 
       setUniversityCoordinates(uniCoords);
-
+      
+      // Enable map interaction once university is selected
+      setMapInteractionDisabled(false);
+      
       // Pan map to university location
       if (mapRef.current) {
         mapRef.current.panTo(uniCoords);
-      }
-
-      // If property location is already selected, calculate distance
-      if (selectedCoordinates) {
-        calculateDistance(uniCoords, selectedCoordinates);
       }
     }
   };
 
   // Update handleLocationSelect to calculate distance when property location is selected
   const handleLocationSelect = (coords) => {
+    // No need to check for universityCoordinates here as the overlay will prevent clicks
+    // if a university isn't selected first
     setSelectedCoordinates(coords);
     form.setFieldsValue({ coordinates: coords });
 
@@ -112,8 +118,8 @@ const AddListingStep02 = ({ onFinish }) => {
     const formData = {
       ...values,
       coordinates: selectedCoordinates,
-      nearestUniversity: values["nearest-university"],
-      "university-distance": distance, // Make sure the distance is included
+      nearestUniversity: values["nearest-university"], // This sends the university ID
+      universityDistance: distance // Using camelCase for consistency
     };
     onFinish(formData);
   };
@@ -258,7 +264,27 @@ const AddListingStep02 = ({ onFinish }) => {
               </div>
 
               {/* Second Column */}
-              <div className="space-y-4 w-full">
+              <div className="space-y-4 w-full lg:col-span-2">
+                {mapInteractionDisabled && (
+                  <Alert
+                    message="Please select a university first"
+                    description="You need to select a university from the dropdown before selecting your property location on the map."
+                    type="info"
+                    showIcon
+                    className="mb-4"
+                  />
+                )}
+                
+                {universityCoordinates && !selectedCoordinates && (
+                  <Alert
+                    message="Now select your property location"
+                    description="Click on the map to set your property location. The distance to the university will be calculated automatically."
+                    type="success"
+                    showIcon
+                    className="mb-4"
+                  />
+                )}
+                
                 <Form.Item
                   label={
                     <span className="text-base font-medium">
@@ -280,7 +306,23 @@ const AddListingStep02 = ({ onFinish }) => {
                     },
                   ]}
                 >
-                  <div className="h-[420px] w-full">
+                  <div className="h-[420px] w-full relative">
+                    {mapInteractionDisabled && (
+                      <div 
+                        className="absolute inset-0 bg-gray-200 bg-opacity-50 z-10 flex items-center justify-center"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          notification.info({
+                            message: "Select University First",
+                            description: "Please select a university from the dropdown above before selecting a location on the map."
+                          });
+                        }}
+                      >
+                        <div className="bg-white p-4 rounded-lg shadow-md">
+                          <p className="text-gray-800 font-medium">Select a university first</p>
+                        </div>
+                      </div>
+                    )}
                     <MapboxMap
                       onLocationSelect={handleLocationSelect}
                       initialCenter={
@@ -298,6 +340,7 @@ const AddListingStep02 = ({ onFinish }) => {
                       }}
                       distance={distance} // Pass the calculated distance
                       ref={mapRef} // Add ref to control map from outside
+                      disabled={mapInteractionDisabled} // Pass disabled state to MapboxMap
                     />
                     {selectedCoordinates && (
                       <div className="mt-2 p-2 bg-gray-50 rounded">

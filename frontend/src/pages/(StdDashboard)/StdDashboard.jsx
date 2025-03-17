@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import PopularCard from "@/components/student_dashboard/PopularCard";
 import RecommendationCard from "@/components/student_dashboard/RecommendationCard";
 import { Link } from "react-router-dom";
+import { FaBuilding, FaHome } from "react-icons/fa";
 
 export default function StudentDashboard() {
   const [isMapView, setIsMapView] = useState(false);
@@ -63,13 +64,19 @@ export default function StudentDashboard() {
               </div>
               <div className="flex items-center space-x-4">
 
-                <div className=" space-x-4">
-                  <span className=" p-2 bg-primaryBgColor text-white rounded-lg">
-                    <Link to="/">Home</Link>
-                  </span>
-                  <span className=" p-2 bg-primaryBgColor text-white rounded-lg">
-                    <Link to="/all-listings">All Listings</Link>
-                  </span>
+                <div className="flex items-center space-x-4">
+                  <Link
+                    to="/"
+                    className="px-4 py-2 bg-primaryBgColor text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+                  >
+                    <FaHome />Home
+                  </Link>
+                  <Link
+                    to="/all-listings"
+                    className="px-4 py-2 bg-primaryBgColor text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+                  >
+                    <FaBuilding />All Listings
+                  </Link>
                 </div>
 
                 <div className="flex items-center space-x-3">
@@ -104,7 +111,7 @@ export default function StudentDashboard() {
             <div className=" mb-5">
               <h1 className=" mb-3 font-semibold text-lg text-gray-600">Most Popular Boarding House</h1>
 
-              <PopularCard />
+              <PopularCard limit={1} />
             </div>
           </motion.div>
 

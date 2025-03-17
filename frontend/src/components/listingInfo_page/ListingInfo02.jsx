@@ -1,8 +1,85 @@
-import React from 'react'
-
+import React, { useState, useEffect } from 'react'
+import axios from 'axios';
 import { GoCheckCircleFill } from "react-icons/go";
+import StarRating from '../include/StarRating';
 
 const ListingInfo02 = ({ listing }) => {
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [debugData, setDebugData] = useState(null);
+
+    useEffect(() => {
+        const fetchReviews = async () => {
+            if (listing && listing._id) {
+                try {
+                    setLoading(true);
+                    const response = await axios.get(`http://localhost:5000/api/review/listing-reviews/${listing._id}`);
+                    
+                    if (response.data.success) {
+                        // Only show approved reviews
+                        const approvedReviews = response.data.reviews.filter(review => review.status === 'approved');
+                        setReviews(approvedReviews);
+                        
+                        // Debug logging of first review
+                        if (approvedReviews.length > 0) {
+                            console.log('First review data:', approvedReviews[0]);
+                            console.log('Student ID object:', approvedReviews[0].studentId);
+                            console.log('Student email:', approvedReviews[0].studentId?.email);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching reviews:', error);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchReviews();
+    }, [listing]);
+
+    // Get first letter of email as profile placeholder
+    const getEmailInitial = (email) => {
+        if (!email) return 'U'; // Default for unknown
+        return email.charAt(0).toUpperCase();
+    };
+
+    // Try to get username first letter if email is not available
+    const getInitial = (review) => {
+        // Try email first
+        if (review.studentId?.email) {
+            return review.studentId.email.charAt(0).toUpperCase();
+        }
+        // Try username next
+        else if (review.studentId?.username) {
+            return review.studentId.username.charAt(0).toUpperCase();
+        }
+        // If all fails, try the user ID object directly
+        else if (review.userId?.email) {
+            return review.userId.email.charAt(0).toUpperCase();
+        }
+        // Default
+        return 'U';
+    };
+
+    // Format date to relative time
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInMilliseconds = now - date;
+        const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60));
+        const diffInHours = Math.floor(diffInMilliseconds / (1000 * 60 * 60));
+        const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
+
+        if (diffInMinutes < 60) {
+            return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
+        } else if (diffInHours < 24) {
+            return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+        } else {
+            return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+        }
+    };
+
     return (
         <div className=' overflow-x-hidden px-12 w-full'>
 
@@ -48,64 +125,33 @@ const ListingInfo02 = ({ listing }) => {
                 <h2 className="font-semibold text-lg">Reviews</h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                    {/* Feedback 1 */}
-                    <div className="p-5 bg-primaryBgColor rounded-xl shadow-lg flex flex-col gap-4">
-                        {/* User Info */}
-                        <div className="flex items-center gap-4">
-                            <img
-                                src="https://randomuser.me/api/portraits/men/10.jpg"
-                                alt="User"
-                                className="w-14 h-14 rounded-full border-2 border-purple-500 shadow-sm"
-                            />
-                            <div className="-space-y-1">
-                                <h2 className="text-lg font-semibold text-white">John Doe</h2>
-                                <p className="text-sm text-gray-200">3 hours ago</p>
+                    {loading ? (
+                        <div className="col-span-3 text-center py-8">Loading reviews...</div>
+                    ) : reviews.length > 0 ? (
+                        reviews.map((review) => (
+                            <div key={review._id} className="p-5 bg-primaryBgColor rounded-xl shadow-lg flex flex-col gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-full bg-purple-600 flex items-center justify-center text-white text-2xl font-bold border-2 border-purple-500 shadow-sm">
+                                        {getInitial(review)}
+                                    </div>
+                                    <div className="-space-y-1">
+                                        <h2 className="text-lg font-semibold text-white">{review.studentId?.username || 'Anonymous'}</h2>
+                                        <p className="text-sm text-gray-200">{formatDate(review.createdAt)}</p>
+                                    </div>
+                                </div>
+                                <p className="text-base text-white leading-relaxed">
+                                    {review.review}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <StarRating rating={review.ratings} />
+                                </div>
                             </div>
-                        </div>
-                        {/* Review Text */}
-                        <p className="text-base text-white leading-relaxed">
-                            Great place to stay! The environment was clean and peaceful.
-                        </p>
-                    </div>
-
-                    {/* Feedback 2 */}
-                    <div className="p-5 bg-primaryBgColor rounded-xl shadow-lg flex flex-col gap-4">
-                        <div className="flex items-center gap-4">
-                            <img
-                                src="https://randomuser.me/api/portraits/women/12.jpg"
-                                alt="User"
-                                className="w-14 h-14 rounded-full border-2 border-purple-500 shadow-sm"
-                            />
-                            <div className="-space-y-1">
-                                <h2 className="text-lg font-semibold text-white">Jane Smith</h2>
-                                <p className="text-sm text-gray-200">5 hours ago</p>
-                            </div>
-                        </div>
-                        <p className="text-base text-white leading-relaxed">
-                            Loved the atmosphere! Definitely recommend.
-                        </p>
-                    </div>
-
-                    {/* Feedback 3 */}
-                    <div className="p-5 bg-primaryBgColor rounded-xl shadow-lg flex flex-col gap-4">
-                        <div className="flex items-center gap-4">
-                            <img
-                                src="https://randomuser.me/api/portraits/men/15.jpg"
-                                alt="User"
-                                className="w-14 h-14 rounded-full border-2 border-purple-500 shadow-sm"
-                            />
-                            <div className="-space-y-1">
-                                <h2 className="text-lg font-semibold text-white">Mark Wilson</h2>
-                                <p className="text-sm text-gray-200">1 day ago</p>
-                            </div>
-                        </div>
-                        <p className="text-base text-white leading-relaxed">
-                            The place was neat and well-maintained. Would visit again.
-                        </p>
-                    </div>
+                        ))
+                    ) : (
+                        <div className="col-span-3 text-center py-8 text-gray-500">No reviews available for this listing.</div>
+                    )}
                 </div>
             </div>
-
         </div>
     )
 }
