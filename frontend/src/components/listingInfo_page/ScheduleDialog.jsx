@@ -13,7 +13,7 @@ import { Input, Select, notification, TimePicker } from "antd";
 import { RiCalendarScheduleFill } from "react-icons/ri";
 import { useAuthStore } from "@/store/authStore";
 import dayjs from "dayjs";
-import { axios } from "@/lib/axios";
+import axios from "axios";
 
 const { Option } = Select;
 
