@@ -1,46 +1,25 @@
 import Sidebar from "@/components/landlord_dashboard/Sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, CheckCheck } from "lucide-react";
-import { Bs1CircleFill } from "react-icons/bs";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useChat } from "@/contexts/ChatContext";
+import MessageStatus from "@/components/chat/MessageStatus";
+import ConversationItem from "@/components/chat/ConversationItem";
+import { Spinner } from "@/components/ui/spinner";
+import { useParams } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
+import { Empty } from "antd";
 
-const MessageStatus = ({ status }) => {
-  switch (status) {
-    case "sent":
-      return <Check className="size-4 text-gray-500" />;
-    case "delivered":
-      return <CheckCheck className="size-4 text-gray-500" />;
-    case "read":
-      return <CheckCheck className="size-4 text-blue-500" />;
-    case "unread":
-      return (
-        <Bs1CircleFill className="size-4 text-primaryBgColor fill-primaryBgColor" />
-      );
-    default:
-      return null;
-  }
-};
-
-const ChatInterface = ({ user }) => {
-  const [messages, setMessages] = useState([
-    { id: 1, text: "Hey there!", time: "11:50", sender: "other" },
-    { id: 2, text: "Hi! How are you?", time: "11:51", sender: "me" },
-    {
-      id: 3,
-      text: "I'm good, thanks for asking!",
-      time: "11:52",
-      sender: "other",
-    },
-    {
-      id: 4,
-      text: "Can you help me with something?",
-      time: "11:53",
-      sender: "other",
-    },
-    { id: 5, text: "Sure, what do you need?", time: "11:54", sender: "me" },
-  ]);
+const ChatInterface = () => {
+  const {
+    messages,
+    activeConversation,
+    sendNewMessage,
+    loading,
+    formatMessageTime,
+  } = useChat();
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
+  const { user } = useAuthStore();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -50,37 +29,44 @@ const ChatInterface = ({ user }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (newMessage.trim()) {
-      setMessages([
-        ...messages,
-        {
-          id: messages.length + 1,
-          text: newMessage,
-          time: new Date().toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          }),
-          sender: "me",
-        },
-      ]);
+      await sendNewMessage(newMessage);
       setNewMessage("");
     }
   };
+
+  if (!activeConversation) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <h1
+          className="bg-white text-primaryBgColor rounded-lg p-2"
+          style={{ userSelect: "none" }}
+        >
+          Select a chat to start messaging
+        </h1>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full flex flex-col">
       {/* Chat Header */}
       <div className="p-4 rounded-lg flex items-center space-x-3 bg-[#181818]">
-        <img
-          src={user.avatar || "https://via.placeholder.com/150"}
-          alt="Profile"
-          className="w-12 h-12 rounded-full bg-purple-400"
-        />
+        <div className="w-12 h-12 rounded-full bg-purple-400 flex items-center justify-center text-white text-xl font-bold">
+          {activeConversation.recipient.username
+            ? activeConversation.recipient.username.charAt(0).toUpperCase()
+            : "U"}
+        </div>
         <div className="items-center space-y-0">
-          <h2 className="font-semibold text-white">{user.name}</h2>
-          <p className="text-gray-400">Active 2m ago</p>
+          <h2 className="font-semibold text-white">
+            {activeConversation.recipient.username}
+          </h2>
+          <p className="text-gray-400">
+            {activeConversation.property
+              ? `Regarding: ${activeConversation.property.propertyName}`
+              : "General conversation"}
+          </p>
         </div>
       </div>
 
@@ -94,36 +80,46 @@ const ChatInterface = ({ user }) => {
             backgroundPosition: "center",
           }}
         >
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.sender === "me" ? "justify-end" : "justify-start"
-              }`}
-            >
+          {loading ? (
+            <div className="flex justify-center items-center h-40">
+              <Spinner />
+            </div>
+          ) : (
+            messages.map((message) => (
               <div
-                className={`max-w-[70%] ${
-                  message.sender === "me"
-                    ? "bg-[#181818] text-white"
-                    : "bg-white text-[#181818]"
-                } p-3 rounded-lg shadow`}
+                key={message._id}
+                className={`flex ${
+                  message.sender._id === user._id
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
               >
-                <p className="text-base">{message.text}</p>
-                <div className=" flex items-center justify-between">
-                  <p
-                    className={`text-xs ${
-                      message.sender === "me"
-                        ? "text-gray-400"
-                        : "text-gray-500"
-                    } text-right mt-1`}
-                  >
-                    {message.time}
-                  </p>
-                  {message.sender === "me" && <MessageStatus status="read" />}
+                <div
+                  className={`max-w-[70%] ${
+                    message.sender._id === user._id
+                      ? "bg-[#181818] text-white"
+                      : "bg-white text-[#181818]"
+                  } p-3 rounded-lg shadow`}
+                >
+                  <p className="text-base">{message.text}</p>
+                  <div className="flex items-center justify-between">
+                    <p
+                      className={`text-xs ${
+                        message.sender._id === user._id
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      } text-right mt-1`}
+                    >
+                      {formatMessageTime(message.createdAt)}
+                    </p>
+                    {message.sender._id === user._id && (
+                      <MessageStatus status={message.status} />
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
           <div ref={messagesEndRef} /> {/* Scroll anchor */}
         </div>
       </ScrollArea>
@@ -152,21 +148,18 @@ const ChatInterface = ({ user }) => {
 };
 
 const LandlordInbox = () => {
-  const [selectedChat, setSelectedChat] = useState(null);
-
-  const truncateText = (text, maxLength = 16) => {
-    return text.length > maxLength
-      ? `${text.substring(0, maxLength)}...`
-      : text;
-  };
+  const {
+    conversations,
+    loading,
+    selectConversation,
+    activeConversation,
+    unreadCount,
+  } = useChat();
+  const { email } = useParams();
 
   useEffect(() => {
-    document.title = "(5) Active Chats";
-  });
-
-  const handleChatSelect = (user) => {
-    setSelectedChat(user);
-  };
+    document.title = unreadCount > 0 ? `(${unreadCount}) Messages` : "Messages";
+  }, [unreadCount]);
 
   return (
     <div className="flex h-screen bg-white">
@@ -185,83 +178,46 @@ const LandlordInbox = () => {
               backgroundPosition: "center",
             }}
           >
-            {selectedChat ? (
-              <ChatInterface user={selectedChat} />
-            ) : (
-              <div className="flex justify-center items-center h-full">
-                <h1
-                  className="bg-white text-primaryBgColor rounded-lg p-2"
-                  style={{ userSelect: "none" }}
-                >
-                  Select a chat to start messaging
-                </h1>
-              </div>
-            )}
+            <ChatInterface />
           </div>
 
           {/* All Message Section */}
           <div className="w-1/4 bg-white rounded-lg shadow-md p-4 px-2 overflow-hidden">
-            <h1 className="font-semibold text-xl text-primaryBgColor">
-              All Messages
-            </h1>
+            <div className="flex justify-between items-center">
+              <h1 className="font-semibold text-xl text-primaryBgColor">
+                All Messages
+              </h1>
+              {unreadCount > 0 && (
+                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
 
             <ScrollArea className="h-[calc(100vh-100px)]">
               <div className="mt-5">
-                <div
-                  className="flex items-center space-x-3 mb-4 hover:bg-gray-100 rounded-md w-full p-1 py-2 px-2 cursor-pointer"
-                  onClick={() =>
-                    handleChatSelect({
-                      name: "John Doe",
-                      avatar: "https://via.placeholder.com/150",
-                    })
-                  }
-                >
-                  <img
-                    src="https://via.placeholder.com/150"
-                    alt="Profile"
-                    className="w-12 h-12 rounded-full bg-purple-400 flex-shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <h1 className="font-semibold truncate text-primaryBgColor">
-                      John Doe
-                    </h1>
-                    <div className="flex items-center space-y-0 space-x-1">
-                      <MessageStatus status="read" />
-                      <p className="text-gray-600">
-                        {truncateText(
-                          "Hello, how are you? ugygyugygygugygyugygyg"
-                        )}
-                      </p>
-                    </div>
+                {loading ? (
+                  <div className="flex justify-center items-center h-40">
+                    <Spinner />
                   </div>
-                </div>
-
-                <div
-                  className="flex items-center space-x-3 mb-4 hover:bg-gray-100 rounded-md w-full p-1 py-2 px-2 cursor-pointer"
-                  onClick={() =>
-                    handleChatSelect({
-                      name: "Alice Smith",
-                      avatar: "https://via.placeholder.com/150",
-                    })
-                  }
-                >
-                  <img
-                    src="https://via.placeholder.com/150"
-                    alt="Profile"
-                    className="w-12 h-12 rounded-full bg-purple-400 flex-shrink-0"
+                ) : conversations.length > 0 ? (
+                  conversations.map((conversation) => (
+                    <ConversationItem
+                      key={conversation._id}
+                      conversation={conversation}
+                      isActive={
+                        activeConversation &&
+                        activeConversation._id === conversation._id
+                      }
+                      onClick={selectConversation}
+                    />
+                  ))
+                ) : (
+                  <Empty
+                    description="No conversations yet"
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
                   />
-                  <div className="min-w-0">
-                    <h1 className="font-semibold truncate text-primaryBgColor">
-                      Alice Smith
-                    </h1>
-                    <div className="flex items-center space-y-0 space-x-1">
-                      <MessageStatus status="unread" />
-                      <p className="text-gray-600">
-                        {truncateText("Hey, I have a question about...")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </ScrollArea>
           </div>
