@@ -5,6 +5,7 @@ import { useChat } from "@/contexts/ChatContext";
 import MessageStatus from "@/components/chat/MessageStatus";
 import ConversationItem from "@/components/chat/ConversationItem";
 import { Spinner } from "@/components/ui/spinner";
+import { TypingIndicator } from "@/components/ui/typing-indicator";
 import { useAuthStore } from "@/store/authStore";
 import { Empty } from "antd";
 
@@ -15,6 +16,8 @@ const ChatInterface = () => {
     sendNewMessage,
     loading,
     formatMessageTime,
+    typingUsers,
+    handleTyping,
   } = useChat();
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
@@ -26,13 +29,19 @@ const ChatInterface = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, typingUsers]);
 
   const handleSend = async () => {
     if (newMessage.trim()) {
       await sendNewMessage(newMessage);
       setNewMessage("");
     }
+  };
+
+  const handleMessageChange = (e) => {
+    const text = e.target.value;
+    setNewMessage(text);
+    handleTyping(text);
   };
 
   if (!activeConversation) {
@@ -47,6 +56,10 @@ const ChatInterface = () => {
       </div>
     );
   }
+
+  // Find if anyone is typing in this conversation
+  const typingUserIds = Object.keys(typingUsers);
+  const typingUsernames = typingUserIds.map((id) => typingUsers[id].username);
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -119,6 +132,14 @@ const ChatInterface = () => {
               </div>
             ))
           )}
+          {/* Typing indicator */}
+          {typingUserIds.length > 0 && (
+            <div className="flex justify-start">
+              <div className="bg-gray-100 rounded-lg p-2 shadow-sm">
+                <TypingIndicator username={typingUsernames[0]} />
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} /> {/* Scroll anchor */}
         </div>
       </ScrollArea>
@@ -129,7 +150,7 @@ const ChatInterface = () => {
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleMessageChange}
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
             placeholder="Type a message..."
             className="flex-1 p-2 border rounded-lg focus:outline-none focus:border-primaryBgColor"

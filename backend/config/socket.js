@@ -1,5 +1,4 @@
 const socketIO = require("socket.io");
-const redisClient = require("./redis");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
@@ -8,7 +7,7 @@ let io;
 function initializeSocket(server) {
   io = socketIO(server, {
     cors: {
-      origin: process.env.FRONTEND_URL,
+      origin: process.env.FRONTEND_URL || "http://localhost:5173",
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -18,6 +17,8 @@ function initializeSocket(server) {
   io.use(async (socket, next) => {
     try {
       const token = socket.handshake.auth.token;
+      const userType = socket.handshake.auth.userType;
+      
       if (!token) {
         return next(new Error("Authentication error: Token not provided"));
       }
@@ -30,6 +31,8 @@ function initializeSocket(server) {
       }
 
       socket.user = user;
+      socket.userType = userType;
+      socket.join(user._id.toString());
       next();
     } catch (error) {
       next(new Error("Authentication error: " + error.message));
@@ -41,6 +44,51 @@ function initializeSocket(server) {
 
     // Join user's personal room
     socket.join(socket.user._id.toString());
+
+    socket.on('typing', async ({ conversationId }) => {
+      try {
+        // Find the conversation to get other participants
+        const Conversation = require('../models/Conversation');
+        const conversation = await Conversation.findById(conversationId);
+        
+        if (!conversation) return;
+
+        // Notify other participants that this user is typing
+        conversation.participants.forEach(participantId => {
+          if (participantId.toString() !== socket.user._id.toString()) {
+            io.to(participantId.toString()).emit('user_typing', {
+              conversationId,
+              userId: socket.user._id,
+              username: socket.user.username
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Error handling typing event:', error);
+      }
+    });
+
+    socket.on('stop_typing', async ({ conversationId }) => {
+      try {
+        // Find the conversation to get other participants
+        const Conversation = require('../models/Conversation');
+        const conversation = await Conversation.findById(conversationId);
+        
+        if (!conversation) return;
+
+        // Notify other participants that this user stopped typing
+        conversation.participants.forEach(participantId => {
+          if (participantId.toString() !== socket.user._id.toString()) {
+            io.to(participantId.toString()).emit('user_stopped_typing', {
+              conversationId,
+              userId: socket.user._id
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Error handling stop typing event:', error);
+      }
+    });
 
     // Handle disconnect
     socket.on("disconnect", () => {

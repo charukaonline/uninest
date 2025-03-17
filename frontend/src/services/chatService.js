@@ -4,17 +4,26 @@ import io from "socket.io-client";
 const API_URL = "http://localhost:5000/api";
 let socket = null;
 
-// Initialize socket connection
-export const initializeSocket = (token) => {
+// Initialize socket connection with proper user type detection
+export const initializeSocket = (userType = "user") => {
   if (socket) return socket;
 
+  const token = localStorage.getItem(
+    userType === "landlord" ? "landlordToken" : "token"
+  );
+
+  if (!token) {
+    console.error("No token found for socket connection");
+    return null;
+  }
+
   socket = io("http://localhost:5000", {
-    auth: { token },
+    auth: { token, userType },
     withCredentials: true,
   });
 
   socket.on("connect", () => {
-    console.log("Socket connected");
+    console.log("Socket connected for", userType);
   });
 
   socket.on("connect_error", (err) => {
@@ -33,9 +42,11 @@ export const disconnectSocket = () => {
 };
 
 // Get all conversations for current user
-export const getConversations = async () => {
+export const getConversations = async (userType = "user") => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(
+      userType === "landlord" ? "landlordToken" : "token"
+    );
     const response = await axios.get(`${API_URL}/chat/conversations`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -47,9 +58,11 @@ export const getConversations = async () => {
 };
 
 // Get messages for a specific conversation
-export const getMessages = async (conversationId) => {
+export const getMessages = async (conversationId, userType = "user") => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(
+      userType === "landlord" ? "landlordToken" : "token"
+    );
     const response = await axios.get(
       `${API_URL}/chat/conversations/${conversationId}/messages`,
       {
@@ -64,9 +77,11 @@ export const getMessages = async (conversationId) => {
 };
 
 // Send a message
-export const sendMessage = async (conversationId, text) => {
+export const sendMessage = async (conversationId, text, userType = "user") => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(
+      userType === "landlord" ? "landlordToken" : "token"
+    );
     const response = await axios.post(
       `${API_URL}/chat/messages`,
       { conversationId, text },
@@ -85,10 +100,13 @@ export const sendMessage = async (conversationId, text) => {
 export const createConversation = async (
   recipientId,
   propertyId,
-  initialMessage
+  initialMessage,
+  userType = "user"
 ) => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(
+      userType === "landlord" ? "landlordToken" : "token"
+    );
     const response = await axios.post(
       `${API_URL}/chat/conversations`,
       { recipientId, propertyId, initialMessage },
@@ -104,9 +122,11 @@ export const createConversation = async (
 };
 
 // Mark messages as read
-export const markAsRead = async (conversationId) => {
+export const markAsRead = async (conversationId, userType = "user") => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(
+      userType === "landlord" ? "landlordToken" : "token"
+    );
     const response = await axios.put(
       `${API_URL}/chat/conversations/${conversationId}/read`,
       {},
