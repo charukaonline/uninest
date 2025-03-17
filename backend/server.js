@@ -10,6 +10,8 @@ const session = require("express-session"); // Added session import
 const adminRoutes = require("./routes/admin");
 const listingRoutes = require("./routes/listingRoutes");
 const reviewRoutes = require("./routes/review");
+const http = require("http");
+const { initializeSocket } = require("./config/socket");
 
 dotenv.config();
 
@@ -46,21 +48,27 @@ app.use(passport.initialize());
 // Ensure uploads directory exists
 ensureUploadsDirectory();
 
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.IO
+initializeSocket(server);
+
 // MongoDB Connection and Server Start
 const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB");
 
-    app
+    server
       .listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
+        console.log(`Server is running on port ${PORT}`);
       })
       .on("error", (err) => {
         if (err.code === "EADDRINUSE") {
           console.log(`Port ${PORT} is busy. Trying port ${PORT + 1}`);
-          app.listen(PORT + 1, () => {
-            console.log(`Server is running on http://localhost:${PORT + 1}`);
+          server.listen(PORT + 1, () => {
+            console.log(`Server is running on port ${PORT + 1}`);
           });
         } else {
           console.error("Server error:", err);
