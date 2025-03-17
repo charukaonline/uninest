@@ -30,6 +30,12 @@ export const initializeSocket = (userType = "user") => {
     console.error("Socket connection error:", err);
   });
 
+  // Add handler for message receipt to mark messages as delivered
+  socket.on("new_message", ({ message }) => {
+    // Acknowledge receipt by emitting delivery status
+    socket.emit("message_delivered", { messageId: message._id });
+  });
+
   return socket;
 };
 
@@ -97,8 +103,8 @@ export const sendMessage = async (conversationId, text, userType = "user") => {
 };
 
 // Create a new conversation
-export const createConversation = async (
-  recipientId,
+export const startNewConversation = async (
+  landlordId,
   propertyId,
   initialMessage,
   userType = "user"
@@ -109,7 +115,7 @@ export const createConversation = async (
     );
     const response = await axios.post(
       `${API_URL}/chat/conversations`,
-      { recipientId, propertyId, initialMessage },
+      { recipientId: landlordId, propertyId, initialMessage },
       {
         headers: { Authorization: `Bearer ${token}` },
       }

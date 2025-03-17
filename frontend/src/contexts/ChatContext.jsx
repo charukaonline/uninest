@@ -1,9 +1,15 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+} from "react";
 import {
   getConversations,
   getMessages,
   sendMessage,
-  createConversation,
+  startNewConversation as createConversation,
   markAsRead,
   initializeSocket,
   disconnectSocket,
@@ -26,6 +32,8 @@ export function ChatProvider({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [typingUsers, setTypingUsers] = useState({});
   const [currentUserType, setCurrentUserType] = useState(null);
+  const [messageStatusMap, setMessageStatusMap] = useState({});
+  const [typingTimeout, setTypingTimeout] = useState(null);
 
   // Determine the current active user
   useEffect(() => {
@@ -52,6 +60,7 @@ export function ChatProvider({ children }) {
       socketInstance.on("messages_read", handleMessagesRead);
       socketInstance.on("user_typing", handleUserTyping);
       socketInstance.on("user_stopped_typing", handleUserStoppedTyping);
+      socketInstance.on("message_status_update", handleMessageStatusUpdate);
 
       // Load conversations
       fetchConversations();
@@ -62,69 +71,66 @@ export function ChatProvider({ children }) {
         socketInstance.off("messages_read", handleMessagesRead);
         socketInstance.off("user_typing", handleUserTyping);
         socketInstance.off("user_stopped_typing", handleUserStoppedTyping);
+        socketInstance.off("message_status_update", handleMessageStatusUpdate);
+
+        // Clean up typing timeout
+        if (typingTimeout) {
+          clearTimeout(typingTimeout);
+        }
+
         disconnectSocket();
       };
     }
   }, [currentUserType]);
 
-  // Calculate total unread messages
+  // Cleanup timeout on unmount
   useEffect(() => {
-    const totalUnread = conversations.reduce(
-      (total, conv) => total + conv.unreadCount,
-      0
-    );
-    setUnreadCount(totalUnread);
+    return () => {
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+      }
+    };
+  }, [typingTimeout]);
+
+  // Calculate total unread count from conversations
+  useEffect(() => {
+    if (conversations.length > 0) {
+      const total = conversations.reduce(
+        (sum, conv) => sum + (conv.unreadCount || 0),
+        0
+      );
+      setUnreadCount(total);
+    } else {
+      setUnreadCount(0);
+    }
   }, [conversations]);
 
-  // Socket event handlers
+  // Handle message status updates
+  const handleMessageStatusUpdate = ({ messageId, status }) => {
+    setMessageStatusMap((prev) => ({
+      ...prev,
+      [messageId]: status,
+    }));
+
+    // Also update in messages array if present
+    setMessages((prev) =>
+      prev.map((msg) => (msg._id === messageId ? { ...msg, status } : msg))
+    );
+  };
+
+  // Handle new message reception
   const handleNewMessage = ({ message, conversationId }) => {
-    // Update messages if the message belongs to active conversation
+    // Update messages if in the same conversation
     if (activeConversation && activeConversation._id === conversationId) {
       setMessages((prev) => [...prev, message]);
-      // Mark as read since we're viewing this conversation
+      // Immediately mark as read since user is viewing this conversation
       markAsRead(conversationId, currentUserType);
-
-      // Clear typing indicator when message is received
-      setTypingUsers((prev) => {
-        const newState = { ...prev };
-        delete newState[message.sender._id];
-        return newState;
-      });
     }
 
     // Update conversation list
-    setConversations((prev) => {
-      // If conversation exists, update it
-      const existingConvIndex = prev.findIndex((c) => c._id === conversationId);
+    updateConversationWithNewMessage(conversationId, message);
 
-      if (existingConvIndex !== -1) {
-        const updatedConversations = [...prev];
-        const conv = updatedConversations[existingConvIndex];
-
-        updatedConversations[existingConvIndex] = {
-          ...conv,
-          lastMessage: message,
-          unreadCount:
-            activeConversation && activeConversation._id === conversationId
-              ? 0
-              : conv.unreadCount + 1,
-          updatedAt: new Date().toISOString(),
-        };
-
-        // Sort to bring the updated conversation to the top
-        updatedConversations.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        );
-
-        return updatedConversations;
-      }
-
-      // If conversation doesn't exist (rare but possible), fetch all conversations
-      fetchConversations();
-      return prev;
-    });
-
-    // If not in active conversation, show notification
+    // Show notification if not in the active conversation
     if (!activeConversation || activeConversation._id !== conversationId) {
       const conversation = conversations.find((c) => c._id === conversationId);
       if (conversation) {
@@ -135,6 +141,40 @@ export function ChatProvider({ children }) {
         });
       }
     }
+  };
+
+  const updateConversationWithNewMessage = (conversationId, message) => {
+    setConversations((prevConversations) => {
+      const conversationIndex = prevConversations.findIndex(
+        (c) => c._id === conversationId
+      );
+
+      if (conversationIndex === -1) {
+        // Conversation not found, may need to fetch all conversations
+        fetchConversations();
+        return prevConversations;
+      }
+
+      const updatedConversations = [...prevConversations];
+      const conversation = { ...updatedConversations[conversationIndex] };
+
+      // Update last message
+      conversation.lastMessage = message;
+
+      // Increment unread count if not the active conversation
+      if (!activeConversation || activeConversation._id !== conversationId) {
+        conversation.unreadCount = (conversation.unreadCount || 0) + 1;
+      }
+
+      // Replace the conversation in the array
+      updatedConversations[conversationIndex] = conversation;
+
+      // Move this conversation to the top (most recent)
+      updatedConversations.splice(conversationIndex, 1);
+      updatedConversations.unshift(conversation);
+
+      return updatedConversations;
+    });
   };
 
   const handleNewConversation = async ({ conversationId, sender }) => {
@@ -186,6 +226,16 @@ export function ChatProvider({ children }) {
         socket.emit("stop_typing", { conversationId: activeConversation._id });
       }
     }
+  };
+
+  // Format message time for display
+  const formatMessageTime = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
   };
 
   // Fetch all conversations
@@ -332,19 +382,7 @@ export function ChatProvider({ children }) {
     }
   };
 
-  // Format timestamp
-  const formatMessageTime = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
-
   // Handle typing events with debounce
-  const [typingTimeout, setTypingTimeout] = useState(null);
-
   const handleTyping = (text) => {
     if (!socket || !activeConversation) return;
 

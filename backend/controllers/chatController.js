@@ -3,6 +3,13 @@ const Message = require("../models/Message");
 const User = require("../models/User");
 const { getIO } = require("../config/socket");
 const mongoose = require("mongoose");
+const {
+  cacheMessage,
+  getCachedMessage,
+  updateCachedMessageStatus,
+  getCachedConversationMessages,
+  removeCachedMessage,
+} = require("../config/redis");
 
 // Get all conversations for a user
 exports.getConversations = async (req, res) => {
@@ -50,7 +57,7 @@ exports.getConversations = async (req, res) => {
   }
 };
 
-// Get messages for a specific conversation
+// Modified to fetch from both Redis and MongoDB
 exports.getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -68,35 +75,62 @@ exports.getMessages = async (req, res) => {
         .json({ message: "Unauthorized access to this conversation" });
     }
 
-    const messages = await Message.find({ conversationId })
+    // Get cached messages from Redis first (unread messages)
+    const cachedMessages = await getCachedConversationMessages(conversationId);
+
+    // Get persisted messages from MongoDB (read messages)
+    const dbMessages = await Message.find({
+      conversationId,
+      status: "read", // Only fetch read messages from DB
+    })
       .populate({
         path: "sender",
         select: "username email role",
       })
       .sort({ createdAt: 1 });
 
-    // Mark messages as read
-    await Message.updateMany(
-      {
-        conversationId,
-        sender: { $ne: userId },
-        status: { $ne: "read" },
-      },
-      { status: "read" }
-    );
+    // Merge and sort messages
+    let allMessages = [...dbMessages];
 
-    // Reset unread count for this user
-    conversation.unreadCount.set(userId.toString(), 0);
-    await conversation.save();
+    // Transform cached messages to match DB structure
+    for (const cachedMsg of cachedMessages) {
+      // Skip if already in DB results
+      if (dbMessages.some((m) => m._id.toString() === cachedMsg._id)) continue;
 
-    res.status(200).json(messages);
+      const sender = await User.findById(cachedMsg.sender).select(
+        "username email role"
+      );
+
+      allMessages.push({
+        _id: cachedMsg._id,
+        conversationId: cachedMsg.conversationId,
+        text: cachedMsg.text,
+        status: cachedMsg.status,
+        sender: sender,
+        createdAt: new Date(cachedMsg.createdAt),
+      });
+    }
+
+    // Sort by creation time
+    allMessages.sort((a, b) => a.createdAt - b.createdAt);
+
+    // Mark messages as read (only for the requesting user)
+    if (
+      allMessages.some(
+        (msg) => msg.status !== "read" && msg.sender._id.toString() !== userId
+      )
+    ) {
+      await markMessagesAsRead(conversationId, userId);
+    }
+
+    res.status(200).json(allMessages);
   } catch (error) {
     console.error("Error getting messages:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// Send a new message
+// Modified to use Redis for caching sent/delivered messages
 exports.sendMessage = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -125,6 +159,7 @@ exports.sendMessage = async (req, res) => {
       status: "sent",
     });
 
+    // Save to MongoDB initially
     await newMessage.save({ session });
 
     // Update conversation's last message and timestamp
@@ -154,6 +189,9 @@ exports.sendMessage = async (req, res) => {
       path: "sender",
       select: "username email role",
     });
+
+    // Cache the message in Redis for faster access
+    await cacheMessage(populatedMessage);
 
     // Notify other participants via Socket.IO
     const io = getIO();
@@ -271,7 +309,80 @@ exports.createConversation = async (req, res) => {
   }
 };
 
-// Mark messages as read
+// Modified mark as read to move messages from Redis to MongoDB
+const markMessagesAsRead = async (conversationId, userId) => {
+  try {
+    // Get the conversation to find the other participants
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) return;
+
+    // First update messages in MongoDB
+    await Message.updateMany(
+      {
+        conversationId,
+        sender: { $ne: userId },
+        status: { $ne: "read" },
+      },
+      { status: "read" }
+    );
+
+    // Get cached messages for this conversation
+    const cachedMessages = await getCachedConversationMessages(conversationId);
+
+    // Process each cached message
+    for (const msg of cachedMessages) {
+      // Only process messages that are not from current user and not already read
+      if (msg.sender !== userId && msg.status !== "read") {
+        // Update status in Redis
+        await updateCachedMessageStatus(msg._id, "read");
+
+        // Check if this message exists in MongoDB
+        const existingMsg = await Message.findById(msg._id);
+
+        if (existingMsg) {
+          // Update existing message
+          existingMsg.status = "read";
+          await existingMsg.save();
+        } else {
+          // Create new MongoDB document for this message
+          const newPersistedMsg = new Message({
+            _id: msg._id,
+            conversationId: msg.conversationId,
+            sender: msg.sender,
+            text: msg.text,
+            status: "read",
+            createdAt: new Date(msg.createdAt),
+          });
+          await newPersistedMsg.save();
+        }
+
+        // Remove from Redis since it's now persisted in MongoDB
+        await removeCachedMessage(msg._id);
+      }
+    }
+
+    // Reset unread count for this user
+    conversation.unreadCount.set(userId.toString(), 0);
+    await conversation.save();
+
+    // Notify the other participants that messages were read
+    const otherParticipantId = conversation.participants.find(
+      (p) => p.toString() !== userId.toString()
+    );
+
+    if (otherParticipantId) {
+      const io = getIO();
+      io.to(otherParticipantId.toString()).emit("messages_read", {
+        conversationId,
+        readBy: userId,
+      });
+    }
+  } catch (error) {
+    console.error("Error marking messages as read:", error);
+  }
+};
+
+// Exposed API version of markMessagesAsRead
 exports.markAsRead = async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -289,33 +400,7 @@ exports.markAsRead = async (req, res) => {
         .json({ message: "Unauthorized access to this conversation" });
     }
 
-    // Update message status to 'read'
-    await Message.updateMany(
-      {
-        conversationId,
-        sender: { $ne: userId },
-        status: { $ne: "read" },
-      },
-      { status: "read" }
-    );
-
-    // Reset unread count
-    conversation.unreadCount.set(userId.toString(), 0);
-    await conversation.save();
-
-    // Notify the other participant that messages were read
-    const otherParticipantId = conversation.participants.find(
-      (p) => p.toString() !== userId.toString()
-    );
-
-    if (otherParticipantId) {
-      const io = getIO();
-      io.to(otherParticipantId.toString()).emit("messages_read", {
-        conversationId,
-        readBy: userId,
-      });
-    }
-
+    await markMessagesAsRead(conversationId, userId);
     res.status(200).json({ message: "Messages marked as read" });
   } catch (error) {
     console.error("Error marking messages as read:", error);

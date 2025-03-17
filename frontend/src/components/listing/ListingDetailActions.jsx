@@ -5,6 +5,7 @@ import StartConversationButton from "@/components/chat/StartConversationButton";
 import { useAuthStore } from "@/store/authStore";
 import { useLandlordAuthStore } from "@/store/landlordAuthStore";
 import { useNavigate } from "react-router-dom";
+import ChatDialog from "@/components/chat/ChatDialog";
 
 const ListingDetailActions = ({ listing }) => {
   const { user, isAuthenticated } = useAuthStore();
@@ -24,22 +25,15 @@ const ListingDetailActions = ({ listing }) => {
 
   return (
     <div className="flex flex-col md:flex-row gap-3 mt-4">
-      {!isOwnListing &&
-        (isAuthenticated ? (
-          <StartConversationButton
-            propertyId={listing._id}
-            landlordId={listing.landlord?._id}
-            propertyName={listing.propertyName}
-            className="bg-primaryBgColor text-white hover:bg-green-700 py-2 rounded-md flex-1"
-          />
-        ) : (
-          <Button
-            className="bg-primaryBgColor text-white hover:bg-green-700 py-2 rounded-md flex-1"
-            onClick={handleAuthenticationRequired}
-          >
-            Contact Landlord
-          </Button>
-        ))}
+      {!isOwnListing && (
+        <ChatDialog
+          propertyId={listing._id}
+          landlordId={listing.landlord?._id}
+          propertyName={listing.propertyName}
+          className="bg-primaryBgColor text-white hover:bg-green-700 py-2 rounded-md flex-1"
+          buttonText="Contact Landlord"
+        />
+      )}
 
       <div className="flex gap-2">
         <Tooltip title="Save">

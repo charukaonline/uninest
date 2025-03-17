@@ -1,6 +1,7 @@
 const socketIO = require("socket.io");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { updateCachedMessageStatus } = require("./redis");
 
 let io;
 
@@ -18,7 +19,7 @@ function initializeSocket(server) {
     try {
       const token = socket.handshake.auth.token;
       const userType = socket.handshake.auth.userType;
-      
+
       if (!token) {
         return next(new Error("Authentication error: Token not provided"));
       }
@@ -45,48 +46,76 @@ function initializeSocket(server) {
     // Join user's personal room
     socket.join(socket.user._id.toString());
 
-    socket.on('typing', async ({ conversationId }) => {
+    // Handle message delivery status
+    socket.on("message_delivered", async ({ messageId }) => {
       try {
-        // Find the conversation to get other participants
-        const Conversation = require('../models/Conversation');
-        const conversation = await Conversation.findById(conversationId);
-        
-        if (!conversation) return;
+        // Update message status in Redis to "delivered"
+        const updated = await updateCachedMessageStatus(messageId, "delivered");
 
-        // Notify other participants that this user is typing
-        conversation.participants.forEach(participantId => {
-          if (participantId.toString() !== socket.user._id.toString()) {
-            io.to(participantId.toString()).emit('user_typing', {
-              conversationId,
-              userId: socket.user._id,
-              username: socket.user.username
-            });
-          }
-        });
+        // If message wasn't in Redis, update in MongoDB
+        if (!updated) {
+          const Message = require("../models/Message");
+          await Message.findByIdAndUpdate(messageId, { status: "delivered" });
+        }
+
+        // Get message details to notify sender
+        const Message = require("../models/Message");
+        const message = await Message.findById(messageId);
+
+        if (message) {
+          // Notify the sender that message was delivered
+          io.to(message.sender.toString()).emit("message_status_update", {
+            messageId,
+            status: "delivered",
+          });
+        }
       } catch (error) {
-        console.error('Error handling typing event:', error);
+        console.error("Error handling message delivery:", error);
       }
     });
 
-    socket.on('stop_typing', async ({ conversationId }) => {
+    socket.on("typing", async ({ conversationId }) => {
       try {
         // Find the conversation to get other participants
-        const Conversation = require('../models/Conversation');
+        const Conversation = require("../models/Conversation");
         const conversation = await Conversation.findById(conversationId);
-        
+
         if (!conversation) return;
 
-        // Notify other participants that this user stopped typing
-        conversation.participants.forEach(participantId => {
+        // Notify other participants that this user is typing
+        conversation.participants.forEach((participantId) => {
           if (participantId.toString() !== socket.user._id.toString()) {
-            io.to(participantId.toString()).emit('user_stopped_typing', {
+            io.to(participantId.toString()).emit("user_typing", {
               conversationId,
-              userId: socket.user._id
+              userId: socket.user._id,
+              username: socket.user.username,
             });
           }
         });
       } catch (error) {
-        console.error('Error handling stop typing event:', error);
+        console.error("Error handling typing event:", error);
+      }
+    });
+
+    socket.on("stop_typing", async ({ conversationId }) => {
+      try {
+        // Find the conversation to get other participants
+        const Conversation = require("../models/Conversation");
+        const conversation = await Conversation.findById(conversationId);
+
+        if (!conversation) return;
+
+        // Notify other participants that this user stopped typing
+        conversation.participants.forEach((participantId) => {
+          if (participantId.toString() !== socket.user._id.toString()) {
+            io.to(participantId.toString()).emit("user_stopped_typing", {
+              conversationId,
+              userId: socket.user._id,
+            });
+          }
+        });
+      } catch (error) {
+        console.error("Error handling stop typing event:", error);
       }
     });
 
