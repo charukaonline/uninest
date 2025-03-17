@@ -40,6 +40,7 @@ import LandlordListings from "./pages/(LandlordDashboard)/LandlordListings";
 import Report from "./pages/(AdminDashboard)/Report";
 import Feedback from "./pages/(AdminDashboard)/Feedback";
 import LandlordInbox from "./pages/(LandlordDashboard)/LandlordInbox";
+import Search from "./pages/Search";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -63,6 +64,15 @@ function App() {
           }
         />
         <Route path="*" element={<NotFound />} />
+
+        <Route
+          path="/search"
+          element={
+            <Layout>
+              <Search />
+            </Layout>
+          }
+        />
 
         {/* Student signup and signin */}
         <Route
