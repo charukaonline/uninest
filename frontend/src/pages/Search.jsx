@@ -29,7 +29,9 @@ const Search = () => {
             setLoading(true);
             
             try {
-                // Use the search endpoint directly rather than separate calls
+                console.log("Searching for university with query:", query);
+                
+                // Use the query parameter explicitly in the API call
                 const response = await fetch(
                     `${import.meta.env.VITE_BACKEND_URL}/api/search/university?query=${encodeURIComponent(query)}`
                 );
@@ -39,7 +41,7 @@ const Search = () => {
                 }
                 
                 const data = await response.json();
-                console.log("Search response:", data); // Add this for debugging
+                console.log("Search response:", data);
                 
                 if (data.success) {
                     if (data.data.university) {
@@ -48,6 +50,16 @@ const Search = () => {
                         
                         setUniversity(data.data.university);
                         setListings(data.data.listings);
+                        
+                        // Log the location coordinates to verify they're correct
+                        if (data.data.university.location && data.data.university.location.coordinates) {
+                            console.log("University coordinates:", 
+                                data.data.university.location.coordinates.latitude,
+                                data.data.university.location.coordinates.longitude
+                            );
+                        } else {
+                            console.warn("University has no location coordinates!");
+                        }
                         
                         // Log the listings to check their structure
                         if (data.data.listings.length > 0) {
@@ -89,7 +101,7 @@ const Search = () => {
                 console.error('Error fetching search results:', error);
                 notification.error({
                     message: 'Error',
-                    description: 'Failed to load search results',
+                    description: 'Failed to load search results: ' + error.message,
                 });
             } finally {
                 setLoading(false);
