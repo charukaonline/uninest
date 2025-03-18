@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch, Tooltip } from "antd";
 import Map from "@/components/include/Map";
 import { motion } from "framer-motion";
-
+import UserPreference from '@/components/signup_pages/UserPreference';
 import { useEffect, useState } from "react";
 import PopularCard from "@/components/student_dashboard/PopularCard";
 import RecommendationCard from "@/components/student_dashboard/RecommendationCard";
@@ -15,22 +15,30 @@ import { FaBuilding, FaHome } from "react-icons/fa";
 
 export default function StudentDashboard() {
   const [isMapView, setIsMapView] = useState(false);
+  const [showPreferences, setShowPreferences] = useState(false);
 
   const { user, isAuthenticated, checkAuth, isCheckingAuth } = useAuthStore();
 
   useEffect(() => {
     if (!isAuthenticated) {
       checkAuth();
+    } else if (user && isAuthenticated) {
+
+      if (!user.hasCompletedPreferences) {
+        const timer = setTimeout(() => {
+          setShowPreferences(true);
+        }, 2000);
+
+        return () => clearTimeout(timer);
+      }
     }
-  }, []);
+  }, [isAuthenticated, user]);
 
-  if (isCheckingAuth) {
-    return <LoadingSpinner />;
-  }
-
-  if (!isAuthenticated || !user) {
-    return null;
-  }
+  const handlePreferenceClose = (values) => {
+    // Mark preferences as completed
+    localStorage.setItem("hasCompletedPreferences", "true");
+    setShowPreferences(false);
+  };
 
   const documentTitles = [
     `${user?.username}'s Dashboard`,
@@ -121,6 +129,14 @@ export default function StudentDashboard() {
 
         </div>
       </div>
+
+      {/* User Preferences Modal */}
+      <UserPreference
+        isVisible={showPreferences}
+        onClose={handlePreferenceClose}
+        userId={user?._id}
+        token={localStorage.getItem("token")}
+      />
     </>
   );
 }
