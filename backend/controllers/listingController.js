@@ -1,4 +1,5 @@
 const Listing = require("../models/Listing");
+const User = require("../models/User"); // Add User model import
 const fs = require("fs");
 const s3 = require("../config/awsS3");
 const { calculateInitialEloRating, calculateClickEloIncrease } = require("../utils/eloCalculator");
@@ -31,7 +32,16 @@ exports.addListing = async (req, res) => {
       nearestUniversity,
       coordinates,
       "university-distance": universityDistance, // Extract university distance
+      genderPreference, // Process the new field
     } = req.body;
+
+    // Validate gender preference
+    if (!genderPreference || !['boys', 'girls', 'mixed'].includes(genderPreference)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid gender preference. Must be one of: boys, girls, mixed'
+      });
+    }
 
     const numericFields = [
       "size",
@@ -109,6 +119,7 @@ exports.addListing = async (req, res) => {
       images: imageUrls,
       landlord: landlord._id,
       eloRating: initialEloRating,
+      genderPreference, // Add gender preference
     });
 
     await newListing.save();
@@ -130,12 +141,19 @@ exports.addListing = async (req, res) => {
 exports.getListings = async (req, res) => {
   try {
     const listings = await Listing.find()
-      .populate("landlord", "username email phoneNumber") // Update fields to match your User model
+      .populate({
+        path: "landlord",
+        select: "username email phoneNumber isFlagged",
+        match: { isFlagged: { $ne: true } } // Only include listings where landlord is not flagged
+      })
       .populate("nearestUniversity", "name location")
       .sort({ eloRating: -1 })
       .exec();
 
-    res.status(200).json(listings);
+    // Filter out listings where landlord is null (due to the match condition)
+    const filteredListings = listings.filter(listing => listing.landlord);
+
+    res.status(200).json(filteredListings);
   } catch (err) {
     console.error("Error fetching listings:", err);
     res.status(500).json({
@@ -148,12 +166,22 @@ exports.getListings = async (req, res) => {
 exports.getListingById = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id)
-      .populate("landlord", "username email phoneNumber") // Update fields to match your User model
+      .populate({
+        path: "landlord",
+        select: "username email phoneNumber isFlagged",
+      })
       .populate("nearestUniversity", "name location")
       .exec();
 
     if (!listing) {
       return res.status(404).json({ message: "Listing not found" });
+    }
+
+    // If landlord is flagged, don't show the listing
+    if (listing.landlord && listing.landlord.isFlagged) {
+      return res.status(403).json({
+        message: "This listing is currently unavailable"
+      });
     }
 
     res.status(200).json(listing);
@@ -175,14 +203,14 @@ exports.trackListingClick = async (req, res) => {
     }
 
     listing.eloRating = calculateClickEloIncrease(listing.eloRating, listing);
-    
+
     // Initialize views if it doesn't exist and increment
     if (listing.views === undefined) {
       listing.views = 1;
     } else {
       listing.views += 1;
     }
-    
+
     await listing.save();
 
     res.status(200).json({
@@ -200,18 +228,24 @@ exports.trackListingClick = async (req, res) => {
 
 exports.getPopularListings = async (req, res) => {
   try {
-
     const limit = parseInt(req.query.limit) || 5;
-    
-    // Find listings with highest eloRating (most popular)
+
     const popularListings = await Listing.find()
-      .populate("landlord", "username email phoneNumber")
+      .populate({
+        path: "landlord",
+        select: "username email phoneNumber isFlagged",
+        match: { isFlagged: { $ne: true } }
+      })
       .populate("nearestUniversity", "name location")
       .sort({ eloRating: -1 })
-      .limit(limit)
+      .limit(limit * 2)
       .exec();
 
-    res.status(200).json(popularListings);
+    const filteredListings = popularListings.filter(listing => listing.landlord);
+
+    const limitedListings = filteredListings.slice(0, limit);
+
+    res.status(200).json(limitedListings);
   } catch (err) {
     console.error("Error fetching popular listings:", err);
     res.status(500).json({
@@ -226,20 +260,35 @@ exports.getLandlordListings = async (req, res) => {
     const { landlordId } = req.params;
 
     if (!landlordId) {
-      return res.status(400).json({ 
-        message: "Landlord ID is required" 
+      return res.status(400).json({
+        message: "Landlord ID is required"
       });
     }
 
+    // Check if landlord is flagged
+    const landlord = await User.findById(landlordId);
+    if (!landlord) {
+      return res.status(404).json({
+        message: "Landlord not found"
+      });
+    }
+
+    const isAdminOrOwner = req.user &&
+      (req.user.role === 'admin' ||
+        req.user._id.toString() === landlordId);
+
+    if (!isAdminOrOwner && landlord.isFlagged) {
+      return res.status(200).json([]);
+    }
+
     const query = { landlord: landlordId };
-    const limit = parseInt(req.query.limit) || 0; // 0 means no limit
+    const limit = parseInt(req.query.limit) || 0;
 
     let listingsQuery = Listing.find(query)
-      .populate("landlord", "username email phoneNumber")
+      .populate("landlord", "username email phoneNumber isFlagged") // Add isFlagged to the populated fields
       .populate("nearestUniversity", "name location")
-      .sort({ createdAt: -1 }); // Sort by newest first
+      .sort({ createdAt: -1 });
 
-    // Apply limit if provided
     if (limit > 0) {
       listingsQuery = listingsQuery.limit(limit);
     }
@@ -252,6 +301,61 @@ exports.getLandlordListings = async (req, res) => {
     res.status(500).json({
       message: "Error fetching landlord listings",
       error: err.message,
+    });
+  }
+};
+
+exports.updateListing = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    // Validate gender preference if it's being updated
+    if (updates.genderPreference && !['boys', 'girls', 'mixed'].includes(updates.genderPreference)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid gender preference. Must be one of: boys, girls, mixed'
+      });
+    }
+
+    // Find the listing by ID and update it
+    const listing = await Listing.findById(id);
+
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: 'Listing not found'
+      });
+    }
+
+    // Check if user is authorized to update this listing
+    if (req.user.role !== 'admin' && listing.landlord.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not authorized to update this listing'
+      });
+    }
+
+    // Apply updates to the listing
+    Object.keys(updates).forEach(key => {
+      if (key !== 'landlord' && key !== '_id') { // Prevent changing landlord or _id
+        listing[key] = updates[key];
+      }
+    });
+
+    await listing.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Listing updated successfully',
+      listing
+    });
+  } catch (error) {
+    console.error('Error updating listing:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update listing',
+      error: error.message
     });
   }
 };

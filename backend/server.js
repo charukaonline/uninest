@@ -10,6 +10,7 @@ const session = require("express-session"); // Added session import
 const adminRoutes = require("./routes/admin");
 const listingRoutes = require("./routes/listingRoutes");
 const reviewRoutes = require("./routes/review");
+const preferenceRoutes = require('./routes/preference');
 const http = require("http");
 const { initializeSocket } = require("./config/socket");
 
@@ -95,3 +96,4 @@ app.use("/api/listings", listingRoutes);
 app.use("/api/university", require("./routes/university"));
 app.use("/api/review", reviewRoutes);
 app.use("/api/search", require("./routes/search")); 
+app.use('/api/preferences', preferenceRoutes);

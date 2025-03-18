@@ -7,6 +7,7 @@ import Map from '@/components/include/Map';
 import { Button } from '@/components/ui/button';
 import { Input, Table, Tag, Modal, notification } from 'antd';
 import { SearchOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
 const ManageListings = () => {
     const { listings, loading, error, fetchAllListings } = useListingStore();
@@ -102,20 +103,53 @@ const ManageListings = () => {
         });
     };
 
+    const handleFlagLandlord = async (landlordId) => {
+        try {
+            const response = await axios.post(
+                `http://localhost:5000/api/admin/flag-landlord/${landlordId}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                notification.success({
+                    message: "Success",
+                    description: "Landlord account has been flagged and their listings are now hidden",
+                });
+                
+                // Refresh the listings list
+                fetchAllListings();
+            }
+        } catch (error) {
+            notification.error({
+                message: "Error",
+                description: error.response?.data?.message || "Error flagging landlord account",
+            });
+        }
+    };
+
     const showFlagConfirm = (record) => {
         confirm({
-            title: 'Flag this listing?',
+            title: 'Flag this listing and landlord account?',
             icon: <ExclamationCircleOutlined />,
-            content: `Are you sure you want to flag "${record.propertyName}" for review?`,
+            content: `Are you sure you want to flag "${record.propertyName}" and its landlord account? This will hide all listings from this landlord.`,
             okText: 'Yes, Flag',
             okType: 'warning',
             cancelText: 'Cancel',
             centered: true,
             onOk() {
-                notification.info({
-                    message: 'Flag feature coming soon',
-                    description: 'This feature will be available in the next update.'
-                });
+                if (record.landlord && record.landlord._id) {
+                    handleFlagLandlord(record.landlord._id);
+                } else {
+                    notification.error({
+                        message: "Error",
+                        description: "Landlord information is missing",
+                    });
+                }
             },
         });
     };
@@ -196,6 +230,19 @@ const ManageListings = () => {
             key: 'createdAt',
             render: (date) => new Date(date).toLocaleDateString(),
             sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+        },
+        {
+            title: 'Status',
+            key: 'status',
+            render: (_, record) => {
+                const isLandlordFlagged = record.landlord?.isFlagged;
+                
+                return (
+                    <Tag color={isLandlordFlagged ? 'red' : 'green'}>
+                        {isLandlordFlagged ? 'Hidden (Landlord Flagged)' : 'Active'}
+                    </Tag>
+                )
+            },
         },
         {
             title: 'Actions',

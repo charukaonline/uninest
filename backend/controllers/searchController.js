@@ -1,58 +1,91 @@
 const University = require("../models/University");
 const Listing = require("../models/Listing");
+const User = require("../models/User");
+const mongoose = require('mongoose');
 
 exports.searchByUniversity = async (req, res) => {
     try {
-        const { query } = req.query;
+        console.log("Request params:", req.params);
+        console.log("Request query:", req.query);
 
-        if (!query) {
-            return res.status(400).json({
+        let searchQuery = req.query.query || req.query.q;
+        console.log("Search query:", searchQuery);
+
+        let universityId = req.params.universityId || req.query.id || req.query.universityId;
+        console.log("Extracted universityId:", universityId);
+
+        let university;
+
+        // If we have a search query, try to find university by name first
+        if (searchQuery && searchQuery.trim()) {
+            console.log("Searching for university by name/query:", searchQuery);
+            university = await University.findOne({
+                name: new RegExp(searchQuery, 'i')
+            });
+
+            if (!university) {
+                university = await University.findOne({
+                    $or: [
+                        { code: new RegExp(searchQuery, 'i') },
+                        { shortName: new RegExp(searchQuery, 'i') }
+                    ]
+                });
+            }
+
+            console.log("University found by search query:", university ? university.name : "None");
+        }
+
+        // If not found by search query and we have an ID, try by ID
+        if (!university && universityId && mongoose.Types.ObjectId.isValid(universityId)) {
+            university = await University.findById(universityId);
+            console.log("University found by ID:", university ? university.name : "None");
+        }
+
+        if (!university) {
+            const universities = await University.find().limit(1);
+            if (universities && universities.length > 0) {
+                university = universities[0];
+                console.log("Using fallback university:", university.name);
+            }
+        }
+
+        if (!university) {
+            return res.status(404).json({
                 success: false,
-                message: "Search query is required",
+                message: "No universities found in the system. Please add universities first.",
             });
         }
 
-        // First find universities matching the query - be more flexible with regex
-        const universities = await University.find({
-            name: { $regex: query, $options: "i" }
-        }).limit(1); // Only need the first match for efficiency
+        console.log("Final university used:", university.name);
 
-        if (universities.length === 0) {
-            return res.status(200).json({
-                success: true,
-                message: "No universities found matching your search",
-                data: {
-                    university: null,
-                    listings: [],
-                },
-            });
-        }
+        const activeUsers = await User.find({
+            role: 'landlord',
+            isFlagged: { $ne: true }
+        }).select('_id');
 
-        // Use the first matching university
-        const university = universities[0];
+        const activeLandlordIds = activeUsers.map(user => user._id);
 
-        // Find listings where nearestUniversity matches the university's _id
-        // Ensure we're populating the correct field and checking for ObjectId equality
-        const listings = await Listing.find()
-            .populate("landlord", "username email phoneNumber")
+        console.log(`Found ${activeLandlordIds.length} active landlords`);
+
+        const listings = await Listing.find({
+            nearestUniversity: university._id,
+            landlord: { $in: activeLandlordIds }
+        })
+            .populate({
+                path: "landlord",
+                select: "username email phoneNumber isFlagged"
+            })
             .populate("nearestUniversity", "name location")
+            .sort({ eloRating: -1 }) // Sort by popularity 
             .exec();
 
-        // Filter listings to only include those where nearestUniversity === university._id
-        const filteredListings = listings.filter(listing => 
-            listing.nearestUniversity && 
-            listing.nearestUniversity._id && 
-            listing.nearestUniversity._id.toString() === university._id.toString()
-        );
-
-        // More informative console logging for debugging
-        console.log(`Found ${filteredListings.length} listings for university: ${university.name} (ID: ${university._id})`);
+        console.log(`Found ${listings.length} listings for university: ${university.name} (ID: ${university._id})`);
 
         res.status(200).json({
             success: true,
             data: {
                 university,
-                listings: filteredListings,
+                listings: listings,
             },
         });
     } catch (error) {
@@ -67,7 +100,7 @@ exports.searchByUniversity = async (req, res) => {
 
 exports.searchByLocation = async (req, res) => {
     try {
-        const { lat, lng, radius = 5 } = req.query; // radius in kilometers, default 5km
+        const { lat, lng, radius = 5 } = req.query;
 
         if (!lat || !lng) {
             return res.status(400).json({
@@ -76,17 +109,17 @@ exports.searchByLocation = async (req, res) => {
             });
         }
 
-        // Find all listings within the given radius
-        // This is a simplified approach - for a more accurate geo search 
-        // you would use MongoDB's geospatial queries with $geoNear
-
-        // For now, let's get all listings and filter them by calculating distance
         const allListings = await Listing.find()
-            .populate("landlord", "username email phoneNumber")
+            .populate({
+                path: "landlord",
+                select: "username email phoneNumber isFlagged",
+                match: { isFlagged: { $ne: true } }
+            })
             .populate("nearestUniversity", "name location");
 
-        // Filter listings by calculating the distance
-        const nearbyListings = allListings.filter(listing => {
+        const activeListings = allListings.filter(listing => listing.landlord);
+
+        const nearbyListings = activeListings.filter(listing => {
             const distance = calculateDistance(
                 parseFloat(lat),
                 parseFloat(lng),
@@ -114,14 +147,20 @@ exports.searchByLocation = async (req, res) => {
 exports.getAllListings = async (req, res) => {
     try {
         const listings = await Listing.find()
-            .populate("landlord", "username email phoneNumber")
+            .populate({
+                path: "landlord",
+                select: "username email phoneNumber isFlagged",
+                match: { isFlagged: { $ne: true } }
+            })
             .populate("nearestUniversity", "name location")
             .sort({ eloRating: -1 })
             .exec();
 
+        const filteredListings = listings.filter(listing => listing.landlord);
+
         res.status(200).json({
             success: true,
-            data: listings
+            data: filteredListings
         });
     } catch (error) {
         console.error("Error fetching all listings:", error);
@@ -129,6 +168,61 @@ exports.getAllListings = async (req, res) => {
             success: false,
             message: "Error fetching all listings",
             error: error.message,
+        });
+    }
+};
+
+// Add a debug endpoint to check universities in the database
+exports.getAllUniversities = async (req, res) => {
+    try {
+        const universities = await University.find();
+
+        console.log(`Found ${universities.length} universities in the database`);
+
+        res.status(200).json({
+            success: true,
+            count: universities.length,
+            data: universities
+        });
+    } catch (error) {
+        console.error("Error fetching universities:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching universities",
+            error: error.message
+        });
+    }
+};
+
+// Add a function to search universities by name
+exports.searchUniversityByName = async (req, res) => {
+    try {
+        const { name } = req.query;
+
+        if (!name || name.trim().length < 2) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide at least 2 characters for university name search",
+            });
+        }
+
+        const universities = await University.find({
+            name: new RegExp(name, 'i') // Case insensitive search
+        });
+
+        console.log(`Found ${universities.length} universities matching "${name}"`);
+
+        res.status(200).json({
+            success: true,
+            count: universities.length,
+            data: universities
+        });
+    } catch (error) {
+        console.error("Error searching universities by name:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error searching universities",
+            error: error.message
         });
     }
 };
@@ -143,6 +237,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Distance in km
+    const distance = R * c;
     return distance;
 }
