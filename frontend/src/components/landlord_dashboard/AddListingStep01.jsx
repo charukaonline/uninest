@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
 
-import { Form, Input, Upload, Select, notification } from "antd";
+import { Form, Input, Upload, Select, notification, Radio } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 
 const AddListingStep01 = ({ onFinish }) => {
@@ -28,13 +28,13 @@ const AddListingStep01 = ({ onFinish }) => {
     const handleFormFinish = (values) => {
         // Log the form values before submitting
         console.log('Form values before submit:', values);
-        
+
         // Ensure propertyImages is properly formatted
         const formattedValues = {
             ...values,
             propertyImages: values.propertyImages || []
         };
-        
+
         onFinish(formattedValues);
     };
 
@@ -50,7 +50,7 @@ const AddListingStep01 = ({ onFinish }) => {
             >
                 <div className='w-full'>
                     <div className='bg-white p-8 rounded-xl shadow-lg'>
-                        <h2 className='text-3xl font-semibold text-gray-800 mb-8 border-b pb-4'>Add Property Details</h2>
+                        <h2 className='text-3xl font-semibold text-gray-800 mb-8 border-b pb-4'>Add Listing Details</h2>
 
                         <div className='grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-6'>
                             {/* First Column */}
@@ -78,6 +78,7 @@ const AddListingStep01 = ({ onFinish }) => {
                                         options={[
                                             { value: 'Boarding House', label: 'Boarding House' },
                                             { value: 'Apartment', label: 'Apartment' },
+                                            { value: 'Shared Room', label: 'Shared Room' },
                                         ]}
                                     />
                                 </Form.Item>
@@ -198,7 +199,7 @@ const AddListingStep01 = ({ onFinish }) => {
                                     name="propertyImages"
                                     valuePropName="fileList"
                                     getValueFromEvent={normFile}
-                                    rules={[{ 
+                                    rules={[{
                                         required: true,
                                         validator: (_, value) => {
                                             if (!value || value.length === 0) {
@@ -224,6 +225,19 @@ const AddListingStep01 = ({ onFinish }) => {
                                         <p className="ant-upload-text">Click or drag images to upload</p>
                                         <p className="ant-upload-hint text-gray-400">Support for JPG, JPEG, PNG files</p>
                                     </Upload.Dragger>
+                                </Form.Item>
+
+                                <Form.Item
+                                    label={<span className='text-base font-medium'>Gender Preference</span>}
+                                    name="genderPreference"
+                                    rules={[{ required: true, message: "Please select gender preference!" }]}
+                                >
+                                    <Radio.Group className="w-full">
+                                        <div className="flex flex-wrap gap-4">
+                                            <Radio value="boys">Boys Only</Radio>
+                                            <Radio value="girls">Girls Only</Radio>
+                                        </div>
+                                    </Radio.Group>
                                 </Form.Item>
                             </div>
                         </div>

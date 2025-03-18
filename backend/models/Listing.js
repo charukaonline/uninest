@@ -31,9 +31,15 @@ const listingSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  genderPreference: {
+    type: String,
+    enum: ['boys', 'girls', 'mixed'],
+    required: true,
+    default: 'mixed'
+  },
   createdAt: { type: Date, default: Date.now },
   eloRating: { type: Number, default: 1400 },
   views: { type: Number, default: 0 },
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("Listing", listingSchema);

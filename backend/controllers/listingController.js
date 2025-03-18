@@ -31,7 +31,16 @@ exports.addListing = async (req, res) => {
       nearestUniversity,
       coordinates,
       "university-distance": universityDistance, // Extract university distance
+      genderPreference, // Process the new field
     } = req.body;
+
+    // Validate gender preference
+    if (!genderPreference || !['boys', 'girls', 'mixed'].includes(genderPreference)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid gender preference. Must be one of: boys, girls, mixed'
+      });
+    }
 
     const numericFields = [
       "size",
@@ -109,6 +118,7 @@ exports.addListing = async (req, res) => {
       images: imageUrls,
       landlord: landlord._id,
       eloRating: initialEloRating,
+      genderPreference, // Add gender preference
     });
 
     await newListing.save();
@@ -253,5 +263,25 @@ exports.getLandlordListings = async (req, res) => {
       message: "Error fetching landlord listings",
       error: err.message,
     });
+  }
+};
+
+exports.updateListing = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    // Validate gender preference if it's being updated
+    if (updates.genderPreference && !['boys', 'girls', 'mixed'].includes(updates.genderPreference)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid gender preference. Must be one of: boys, girls, mixed'
+      });
+    }
+
+    // ...existing code for updating listing...
+
+  } catch (error) {
+    // ...existing error handling...
   }
 };

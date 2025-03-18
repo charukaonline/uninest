@@ -176,7 +176,7 @@ const ListingInfoHeroSection = ({ listing }) => {
                                 </div>
                             </div>
                             {/* Needs to be dynamic */}
-                            <h1 className=' mt-6 bg-white text-primaryBgColor font-semibold p-2 rounded-lg w-fit'>This boarding house is only for boys</h1>
+                            <h1 className=' mt-6 bg-white text-primaryBgColor font-semibold p-2 rounded-lg w-fit'>This boarding house is only for {listing.genderPreference}</h1>
                         </div>
 
                         <div className=' mt-6 flex items-center space-y-0 space-x-2'>
