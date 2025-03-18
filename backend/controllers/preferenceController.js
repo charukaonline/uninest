@@ -14,7 +14,12 @@ exports.savePreferences = async (req, res) => {
             });
         }
 
-        const { university } = req.body;
+        const { 
+            university, 
+            preferredAreas, 
+            priceRange, 
+            preferredPropertyType 
+        } = req.body;
 
         // Validate required fields
         if (!university) {
@@ -27,16 +32,29 @@ exports.savePreferences = async (req, res) => {
         let studentProfile = await StudentProfile.findOne({ userId });
 
         if (studentProfile) {
+            // Update existing profile with all fields
             studentProfile.university = university;
+            
+            // Update optional fields if provided
+            if (preferredAreas) studentProfile.preferredAreas = preferredAreas;
+            if (priceRange) studentProfile.priceRange = priceRange;
+            if (preferredPropertyType) studentProfile.preferredPropertyType = preferredPropertyType;
+            
             await studentProfile.save();
         } else {
-            // Create new profile with required fields
-            studentProfile = new StudentProfile({
+            // Create new profile with all provided fields
+            const profileData = {
                 userId,
                 university,
                 studentId: 'ST' + Date.now().toString().slice(-6) // Generate a temporary student ID
-            });
-
+            };
+            
+            // Add optional fields if provided
+            if (preferredAreas) profileData.preferredAreas = preferredAreas;
+            if (priceRange) profileData.priceRange = priceRange;
+            if (preferredPropertyType) profileData.preferredPropertyType = preferredPropertyType;
+            
+            studentProfile = new StudentProfile(profileData);
             await studentProfile.save();
         }
 
