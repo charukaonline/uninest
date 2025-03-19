@@ -1,36 +1,58 @@
 import LoadingSpinner from "@/components/include/LoadingSpinner";
 import StudentSidebar from "@/components/student_dashboard/StudentSidebar";
 import { useAuthStore } from "@/store/authStore";
+import { useRecommendationStore } from "@/store/recommendationStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch, Tooltip } from "antd";
+import { Switch, Tooltip, notification } from "antd";
 import Map from "@/components/include/Map";
 import { motion } from "framer-motion";
-
+import UserPreference from '@/components/signup_pages/UserPreference';
 import { useEffect, useState } from "react";
 import PopularCard from "@/components/student_dashboard/PopularCard";
 import RecommendationCard from "@/components/student_dashboard/RecommendationCard";
 import { Link } from "react-router-dom";
 import { FaBuilding, FaHome } from "react-icons/fa";
+import { Loader2 } from "lucide-react";
 
 export default function StudentDashboard() {
   const [isMapView, setIsMapView] = useState(false);
+  const [showPreferences, setShowPreferences] = useState(false);
 
   const { user, isAuthenticated, checkAuth, isCheckingAuth } = useAuthStore();
+  const { recommendations, isLoading: recommendationsLoading, fetchRecommendations, error: recommendationError } = useRecommendationStore();
 
   useEffect(() => {
     if (!isAuthenticated) {
       checkAuth();
+    } else if (user && isAuthenticated && user._id) {
+      // Only fetch recommendations if we have a valid user ID
+      fetchRecommendations(user._id);
+
+      if (!user.hasCompletedPreferences) {
+        const timer = setTimeout(() => {
+          setShowPreferences(true);
+        }, 2000);
+
+        return () => clearTimeout(timer);
+      }
     }
-  }, []);
+  }, [isAuthenticated, user]);
 
-  if (isCheckingAuth) {
-    return <LoadingSpinner />;
-  }
+  useEffect(() => {
+    if (recommendationError) {
+      notification.error({
+        message: "Error loading recommendations",
+        description: recommendationError
+      });
+    }
+  }, [recommendationError]);
 
-  if (!isAuthenticated || !user) {
-    return null;
-  }
+  const handlePreferenceClose = (values) => {
+    // Mark preferences as completed
+    localStorage.setItem("hasCompletedPreferences", "true");
+    setShowPreferences(false);
+  };
 
   const documentTitles = [
     `${user?.username}'s Dashboard`,
@@ -100,11 +122,24 @@ export default function StudentDashboard() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  mt-5 mb-8">
-                  <RecommendationCard />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5 mb-8">
+                  {recommendationsLoading ? (
+                    <div className="col-span-full flex justify-center py-8">
+                      <Loader2 className=" animate-spin" />
+                    </div>
+                  ) : recommendations && recommendations.length > 0 ? (
+                    recommendations.map((listing) => (
+                      <RecommendationCard key={listing._id} listing={listing} />
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-8">
+                      <p className="text-gray-500">No recommendations available at the moment.</p>
+                    </div>
+                  )}
                 </div>
               </>
             )}
+
           </Tabs>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -121,6 +156,14 @@ export default function StudentDashboard() {
 
         </div>
       </div>
+
+      {/* User Preferences Modal */}
+      <UserPreference
+        isVisible={showPreferences}
+        onClose={handlePreferenceClose}
+        userId={user?._id}
+        token={localStorage.getItem("token")}
+      />
     </>
   );
 }

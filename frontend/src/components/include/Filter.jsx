@@ -6,7 +6,7 @@ const Filter = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedProperty, setSelectedProperty] = useState("All");
 
-    const propertyOptions = ["All", "Boarding House", "Apartment"];
+    const propertyOptions = ["All", "Boarding House", "Apartment", "Shared Room"];
 
     return (
         <div className=' p-4 bg-primaryBgColor rounded-lg flex space-x-1 items-center justify-between'>

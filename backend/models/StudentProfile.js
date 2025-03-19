@@ -16,6 +16,19 @@ const studentProfileSchema = new mongoose.Schema({
   },
   course: String,
   yearOfStudy: Number,
+  
+  // New preference fields
+  preferredAreas: [String],
+  priceRange: {
+    min: { type: Number, default: 0 },
+    max: { type: Number, default: 100000 }
+  },
+  preferredPropertyType: {
+    type: String,
+    enum: ["Any", "Apartment", "Boarding House", "House", "Shared Room"],
+    default: "Any"
+  },
+  
   bookmarkedProperties: [
     {
       type: mongoose.Schema.Types.ObjectId,
