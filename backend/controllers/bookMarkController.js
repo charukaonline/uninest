@@ -24,3 +24,21 @@ exports.addBookMark = async (req, res) => {
         res.status(500).json({ message: "An error occurred while adding the bookmark.", error: error.message });
     }
 };
+
+exports.getBookMark = async (req, res) => {
+    try {
+        const { userId } = req.query;
+
+        // Validate query parameter
+        if (!userId) {
+            return res.status(400).json({ message: "userId is required." });
+        }
+
+        // Fetch bookmarks for the user
+        const bookMarks = await BookMark.find({ userId });
+
+        res.status(200).json({ message: "Bookmarks fetched successfully.", bookMarks });
+    } catch (error) {
+        res.status(500).json({ message: "An error occurred while fetching bookmarks.", error: error.message });
+    }
+};
