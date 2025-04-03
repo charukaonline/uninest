@@ -10,7 +10,7 @@ import { Form, Input, Tooltip, Rate } from "antd";
 import TextArea from 'antd/es/input/TextArea';
 import StarRating from '../include/StarRating';
 import { Button } from '../ui/button';
-import { RatingDialog, ReportDialog } from './ListingActions';
+import { AddBookMark, RatingDialog, ReportDialog } from './ListingActions';
 
 const ListingInfoHeroSection = ({ listing }) => {
     const [reviews, setReviews] = useState([]);
@@ -188,12 +188,13 @@ const ListingInfoHeroSection = ({ listing }) => {
                                 <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
                                     <BiSolidConversation className=' text-black' />Start Conversation
                                 </Button>
-                                <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
+                                {/* <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
                                     <FaBookmark className=' text-black' />Add to Bookmark
-                                </Button>
+                                </Button> */}
                                 <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
                                     <RiCalendarScheduleFill className=' text-black' />Schedule a Visit
                                 </Button>
+                                <AddBookMark listingId={listing._id} />
                                 <RatingDialog />
                                 <ReportDialog />
                             </div>

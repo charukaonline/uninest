@@ -256,15 +256,43 @@ export function ReportDialog() {
 
 export function AddBookMark() {
 
-    const addBookMark = (values) => {
+    const { isAuthenticated } = useAuthStore();
 
+    const addBookMark = async (values) => {
+        try {
+            const bookmarkData = {
+                listingId: values.listingId,
+                userId: values.userId,
+            };
+
+            const response = await axios.post('http://localhost:5000/api/bookmark/addBookMark', bookmarkData);
+
+            if (response.data.success) {
+                notification.success({
+                    message: 'Success',
+                    description: 'Bookmark added successfully'
+                });
+            } else {
+                notification.warning({
+                    message: 'Bookmark Exists',
+                    description: response.data.message || 'This bookmark already exists'
+                });
+            }
+        }
+        catch (error) {
+            console.error('Error adding bookmark:', error);
+            notification.error({
+                message: 'Error',
+                description: error.response?.data?.message || 'Failed to add bookmark'
+            });
+        }
     }
 
     return (
         <>
             <Button
                 className=" w-full bg-white text-black font-semibold hover:bg-gray-100"
-                onClick={addBookMark}
+                onClick={addBookMark} // This will need to pass the required values
             >
                 <FaBookmark className=' text-black' />Add to Bookmark
             </Button>
