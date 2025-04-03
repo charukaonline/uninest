@@ -19,10 +19,16 @@ exports.registerLandlord = async (req, res) => {
 
     const { email, username, phone, password } = req.body;
 
-    // Check if user exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+    // Check if email already exists
+    const emailExists = await User.findOne({ email });
+    if (emailExists) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
+
+    // Check if phone number already exists
+    const phoneExists = await User.findOne({ phoneNumber: phone });
+    if (phoneExists) {
+      return res.status(400).json({ message: "Phone number already registered" });
     }
 
     const hashedPassword = await bcryptjs.hash(password, 10);
