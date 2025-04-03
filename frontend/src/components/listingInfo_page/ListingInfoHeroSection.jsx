@@ -30,7 +30,7 @@ const ListingInfoHeroSection = ({ listing }) => {
             if (response.data.success) {
                 const approvedReviews = response.data.reviews.filter(review => review.status === 'approved');
                 setReviews(approvedReviews);
-                
+
                 // Calculate average rating
                 if (approvedReviews.length > 0) {
                     const totalRating = approvedReviews.reduce((sum, review) => sum + review.ratings, 0);
@@ -188,13 +188,10 @@ const ListingInfoHeroSection = ({ listing }) => {
                                 <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
                                     <BiSolidConversation className=' text-black' />Start Conversation
                                 </Button>
-                                {/* <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
-                                    <FaBookmark className=' text-black' />Add to Bookmark
-                                </Button> */}
+                                <AddBookMark listingId={listing._id} />
                                 <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
                                     <RiCalendarScheduleFill className=' text-black' />Schedule a Visit
                                 </Button>
-                                <AddBookMark listingId={listing._id} />
                                 <RatingDialog />
                                 <ReportDialog />
                             </div>

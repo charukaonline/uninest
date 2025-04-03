@@ -255,19 +255,28 @@ export function ReportDialog() {
 }
 
 export function AddBookMark() {
+    const { isAuthenticated, user } = useAuthStore(); // Get user from auth store
+    const navigate = useNavigate();
+    const { listingId } = useParams(); // Get listingId from route params
+    const [isBookmarked, setIsBookmarked] = useState(false); // State to track bookmark status
 
-    const { isAuthenticated } = useAuthStore();
+    const addBookMark = async () => {
+        if (!isAuthenticated) {
+            // Redirect to login if not authenticated
+            navigate('/auth/user-signin');
+            return;
+        }
 
-    const addBookMark = async (values) => {
         try {
             const bookmarkData = {
-                listingId: values.listingId,
-                userId: values.userId,
+                listingId,
+                userId: user._id, // Include user ID
             };
 
             const response = await axios.post('http://localhost:5000/api/bookmark/addBookMark', bookmarkData);
 
             if (response.data.success) {
+                setIsBookmarked(true); // Set bookmark status to true
                 notification.success({
                     message: 'Success',
                     description: 'Bookmark added successfully'
@@ -278,24 +287,23 @@ export function AddBookMark() {
                     description: response.data.message || 'This bookmark already exists'
                 });
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error('Error adding bookmark:', error);
             notification.error({
                 message: 'Error',
                 description: error.response?.data?.message || 'Failed to add bookmark'
             });
         }
-    }
+    };
 
     return (
-        <>
-            <Button
-                className=" w-full bg-white text-black font-semibold hover:bg-gray-100"
-                onClick={addBookMark} // This will need to pass the required values
-            >
-                <FaBookmark className=' text-black' />Add to Bookmark
-            </Button>
-        </>
+        <Button
+            className={`w-full font-semibold hover:bg-gray-100 ${
+                isBookmarked ? "bg-yellow-500 text-black" : "bg-white text-black"
+            }`} // Change button color based on state
+            onClick={addBookMark} // Call addBookMark on click
+        >
+            <FaBookmark className="text-black" /> Add to Bookmark
+        </Button>
     );
 }
