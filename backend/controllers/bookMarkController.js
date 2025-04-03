@@ -42,3 +42,15 @@ exports.getBookMark = async (req, res) => {
         res.status(500).json({ message: "An error occurred while fetching bookmarks.", error: error.message });
     }
 };
+
+// Add this function to fetch bookmarks by user
+exports.getBookmarksByUser = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const bookmarks = await BookMark.find({ user: userId }).populate("listing");
+        res.status(200).json(bookmarks);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch bookmarks", error: error.message });
+    }
+};
