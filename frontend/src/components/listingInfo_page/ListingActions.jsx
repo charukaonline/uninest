@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useAuthStore } from '@/store/authStore'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
+import { FaBookmark } from 'react-icons/fa6'
 
 export function ScheduleDialog() {
     return (
@@ -41,9 +42,9 @@ export function RatingDialog() {
                 ratings: values.rating,
                 review: values.review
             };
-            
+
             const response = await axios.post('http://localhost:5000/api/review/add-review', reviewData);
-            
+
             if (response.data.success) {
                 notification.success({
                     message: 'Success',
@@ -56,7 +57,7 @@ export function RatingDialog() {
                     description: response.data.message || 'Your review has been flagged for review'
                 });
             }
-            
+
             form.resetFields();
             setShowForm(false);
         } catch (error) {
@@ -249,6 +250,24 @@ export function ReportDialog() {
                     </div>
                 )}
             </AnimatePresence>
+        </>
+    );
+}
+
+export function AddBookMark() {
+
+    const addBookMark = (values) => {
+
+    }
+
+    return (
+        <>
+            <Button
+                className=" w-full bg-white text-black font-semibold hover:bg-gray-100"
+                onClick={addBookMark}
+            >
+                <FaBookmark className=' text-black' />Add to Bookmark
+            </Button>
         </>
     );
 }
