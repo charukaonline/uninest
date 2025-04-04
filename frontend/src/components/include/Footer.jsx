@@ -45,7 +45,7 @@ const Footer = () => {
         <div className=' flex justify-center items-start'>
           <div className="space-y-2">
             <h2 className="font-semibold text-md text-gray-800 mb-3">RENT & BUY</h2>
-            <Link to="/all listings" className="text-gray-600 hover:text-primaryBgColor transition-colors duration-200 block">All Listings</Link>
+            <Link to="/all-listings" className="text-gray-600 hover:text-primaryBgColor transition-colors duration-200 block">All Listings</Link>
             <Link to="/" className="text-gray-600 hover:text-primaryBgColor transition-colors duration-200 block">Student Dashboard</Link>
             <Link to="/" className="text-gray-600 hover:text-primaryBgColor transition-colors duration-200 block">House Owner Dashboard</Link>
           </div>

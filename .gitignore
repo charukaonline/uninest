@@ -133,4 +133,4 @@ dist
 uploads/
 
 # recommendation_server
-recommendation_server/_pycache_/
+recommendation_server/__pycache__/

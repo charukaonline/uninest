@@ -97,3 +97,4 @@ app.use("/api/university", require("./routes/university"));
 app.use("/api/review", reviewRoutes);
 app.use("/api/search", require("./routes/search")); 
 app.use('/api/preferences', preferenceRoutes);
+app.use("/api/bookmark", require("./routes/bookmarkRoutes"));

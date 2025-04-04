@@ -6,7 +6,7 @@ import { MdDashboard } from "react-icons/md";
 import { MdAddLocationAlt } from "react-icons/md";
 import { FaHouseChimney, FaInbox } from "react-icons/fa6";
 import { SiGoogleanalytics } from "react-icons/si";
-import { IoSettings } from "react-icons/io5";
+import { IoSettings, IoPricetags } from "react-icons/io5";
 import { MdFeedback } from "react-icons/md";
 import { IoMdHelpCircle } from "react-icons/io";
 import { RiLogoutBoxLine } from "react-icons/ri";
@@ -36,12 +36,13 @@ const Sidebar = () => {
         { name: 'Add Listing', path: `/landlord/${landlordId}/${email}/add-listings`, icon: <MdAddLocationAlt />, txtColor: '#7F7F7F' },
         { name: 'My Listings', path: `/landlord/${landlordId}/${email}/my-listings`, icon: <FaHouseChimney />, txtColor: '#7F7F7F' },
         { name: 'Inbox', path: `/landlord/${landlordId}/${email}/inbox`, icon: <FaInbox />, txtColor: '#7F7F7F' },
+        { name: 'Pricing', path: `/landlord/${landlordId}/${email}/pricing`, icon: <IoPricetags />, txtColor: '#7F7F7F' },
         { name: 'Settings', path: '/house-owner/settings', icon: <IoSettings />, txtColor: '#7F7F7F' },
     ];
 
     const lastLinks = [
         { name: 'Give Feedback', path: '/house-owner/feedback', icon: <MdFeedback />, txtColor: '#7F7F7F' },
-        { name: 'Help & Support', path: '/house-owner/help-support', icon: <IoMdHelpCircle />, txtColor: '#7F7F7F' },
+        // { name: 'Help & Support', path: '/house-owner/help-support', icon: <IoMdHelpCircle />, txtColor: '#7F7F7F' },
         { name: 'Logout', icon: <RiLogoutBoxLine />, txtColor: '#F10A0A', onclick: handleLogout },
     ];
 

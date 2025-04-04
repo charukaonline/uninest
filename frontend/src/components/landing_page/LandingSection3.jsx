@@ -1,7 +1,26 @@
 import { Link } from "react-router-dom";
 import BordingImage from "/bording.jpg";
+import { useNavigate } from 'react-router-dom';
+import { useLandlordAuthStore } from "@/store/landlordAuthStore";
 
 const LandingSection3 = () => {
+
+  const navigate = useNavigate();
+  const { landlord } = useLandlordAuthStore();
+
+  const handleButton = () => {
+    try {
+      if (!landlord) {
+        navigate("/auth/houseowner-signin");
+      }
+      else {
+        navigate(`/landlord/${landlord._id}/${landlord.email}`);
+      }
+    } catch (error) {
+      console.error("Error in handleButton:", error);
+    }
+  }
+
   return (
     <div className="flex flex-col md:flex-row items-center bg-white p-16 rounded-lg shadow-lg space-y-6 md:space-y-0">
       {/* Text Section */}
@@ -17,7 +36,10 @@ const LandingSection3 = () => {
           right people. Your next boarding house is just a click away!{" "}
         </p>
         <div className="flex items-center justify-center md:justify-start space-x-4">
-          <button className="bg-[#006845] text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+          <button
+            onClick={handleButton}
+            className="bg-[#006845] text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+          >
             Get Started
           </button>
           <Link to={"/"} className="text-gray-800 underline hover:text-[#006845]">

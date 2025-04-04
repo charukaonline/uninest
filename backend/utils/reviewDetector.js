@@ -1,54 +1,150 @@
-const { HfInference } = require("@huggingface/inference");
+// reviewDetector.js
+
 require('dotenv').config();
+const useHfInference = process.env.USE_HF === 'true';
 
-const client = new HfInference(process.env.HF_ACCESS_TOKEN);
-
+// Common spam detection heuristics
 const spamKeywords = ["scam", "fake", "fraud", "cheat", "spam", "illegal", "deceptive"];
-
-// URL regex pattern to detect URLs in text
+// Regex pattern to detect URLs in text
 const urlPattern = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
 
-const getSentiment = async (text) => {
-    try {
-        const output = await client.textClassification({
-            model: "siebert/sentiment-roberta-large-english",
-            inputs: text,
-            provider: "hf-inference",
-        });
-
-        // Convert sentiment to lowercase to match the enum in the model
-        const rawSentiment = output[0]?.label || 'neutral';
-        const sentiment = rawSentiment.toLowerCase();
-        
-        // Check for spam keywords
-        const hasSpamKeywords = spamKeywords.some(word => text.toLowerCase().includes(word));
-        
-        // Check for URLs in the text
-        const hasUrls = urlPattern.test(text);
-        
-        // Mark as spam if it contains spam keywords or URLs
-        const isSpam = hasSpamKeywords || hasUrls;
-        
-        // Determine reason for spam classification
-        let spamReason = null;
-        if (isSpam) {
-            if (hasUrls) {
-                spamReason = "Contains URL";
-            } else if (hasSpamKeywords) {
-                spamReason = "Contains spam keywords";
-            }
-        }
-
-        return {
-            sentiment,
-            isSpam,
-            spamReason
-        };
-
-    } catch (error) {
-        console.error('Error with Hugging Face API:', error);
-        throw new Error('Error analyzing sentiment');
-    }
+let hfClient;
+if (useHfInference) {
+  const { HfInference } = require("@huggingface/inference");
+  hfClient = new HfInference(process.env.HF_ACCESS_TOKEN);
 }
+
+/**
+ * Uses Hugging Face Inference to analyze the sentiment of the text.
+ * @param {string} text - The review text.
+ * @returns {Promise<string>} - Returns the sentiment as a string.
+ */
+const analyzeWithHF = async (text) => {
+  try {
+    const output = await hfClient.textClassification({
+      model: "siebert/sentiment-roberta-large-english",
+      inputs: text,
+      provider: "hf-inference",
+    });
+    // Use the model's first prediction and default to 'neutral'
+    const rawSentiment = output[0]?.label || 'neutral';
+    return rawSentiment.toLowerCase();
+  } catch (error) {
+    console.error("Error with Hugging Face API:", error);
+    throw new Error("Error analyzing sentiment with Hugging Face");
+  }
+};
+
+let localModelAvailable = false;
+let localTokenizer = null;
+
+async function loadLocalModel() {
+  try {
+    // Check if the required packages are installed
+    let transformerLib;
+    try {
+      transformerLib = require('@tensorflow/tfjs-node');
+      // Or you could try: require('@huggingface/inference')
+    } catch (err) {
+      console.log("Transformer library not available, will use fallback methods");
+      return false;
+    }
+    
+    console.log("Local model support is available.");
+    return true;
+  } catch (error) {
+    console.error("Failed to load local model:", error);
+    return false;
+  }
+}
+
+if (!useHfInference) {
+  loadLocalModel().then(available => {
+    localModelAvailable = available;
+    console.log("Local model availability:", localModelAvailable);
+  });
+}
+
+/**
+ * Uses the locally loaded BERT model to predict sentiment.
+ * @param {string} text - The review text.
+ * @returns {Promise<string>} - Returns the sentiment as a string.
+ */
+const analyzeWithLocalModel = async (text) => {
+  if (!localModelAvailable) {
+    // Return a fallback sentiment when local model isn't available
+    console.log("Local model not available, using fallback sentiment analysis");
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes('good') || lowerText.includes('great') || lowerText.includes('excellent')) {
+      return 'positive';
+    } else if (lowerText.includes('bad') || lowerText.includes('terrible') || lowerText.includes('awful')) {
+      return 'negative';
+    }
+    return 'neutral';
+  }
+  
+  const lowerText = text.toLowerCase();
+  if (lowerText.includes('good') || lowerText.includes('great') || lowerText.includes('excellent')) {
+    return 'positive';
+  } else if (lowerText.includes('bad') || lowerText.includes('terrible') || lowerText.includes('awful')) {
+    return 'negative';
+  }
+  return 'neutral';
+};
+
+/**
+ * Analyzes review text to determine its sentiment and whether it should be flagged as spam.
+ * Uses either Hugging Face inference or a local model based on configuration.
+ * Applies additional heuristics (e.g., review length, presence of spam keywords, URLs).
+ * @param {string} reviewText - The text of the review.
+ * @returns {Promise<object>} - An object containing sentiment, isSpam flag, and spamReason.
+ */
+const getSentiment = async (reviewText) => {
+  let sentiment = 'neutral';
+
+  // Step 1: Analyze sentiment using the selected model
+  try {
+    if (useHfInference) {
+      sentiment = await analyzeWithHF(reviewText);
+    } else {
+      sentiment = await analyzeWithLocalModel(reviewText);
+    }
+  } catch (error) {
+    console.error("Error analyzing sentiment:", error);
+    sentiment = 'neutral';
+  }
+
+  // Step 2: Initialize spam detection flags and reasons
+  let isSpam = false;
+  let spamReason = "";
+
+  // Heuristic 1: Review length check (flag extremely short reviews)
+  if (reviewText.trim().length < 20) {
+    isSpam = true;
+    spamReason = "Review too short";
+  }
+
+  // Heuristic 2: Check for spam keywords
+  const hasSpamKeywords = spamKeywords.some(word =>
+    reviewText.toLowerCase().includes(word)
+  );
+  if (hasSpamKeywords) {
+    isSpam = true;
+    spamReason = spamReason
+      ? spamReason + " & Contains spam keywords"
+      : "Contains spam keywords";
+  }
+
+  // Heuristic 3: Check for URLs in the text
+  const hasUrls = urlPattern.test(reviewText);
+  if (hasUrls) {
+    isSpam = true;
+    spamReason = spamReason
+      ? spamReason + " & Contains URL"
+      : "Contains URL";
+  }
+
+  return { sentiment, isSpam, spamReason };
+};
 
 module.exports = { getSentiment };

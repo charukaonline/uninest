@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Form, Rate, Input, Select, notification } from 'antd'
 import { MdRateReview, MdReport } from "react-icons/md"
@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useAuthStore } from '@/store/authStore'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
+import { FaBookmark } from 'react-icons/fa6'
+import { useBookmarkStore } from '@/store/bookmarkStore'
 
 export function ScheduleDialog() {
     return (
@@ -41,9 +43,9 @@ export function RatingDialog() {
                 ratings: values.rating,
                 review: values.review
             };
-            
+
             const response = await axios.post('http://localhost:5000/api/review/add-review', reviewData);
-            
+
             if (response.data.success) {
                 notification.success({
                     message: 'Success',
@@ -56,7 +58,7 @@ export function RatingDialog() {
                     description: response.data.message || 'Your review has been flagged for review'
                 });
             }
-            
+
             form.resetFields();
             setShowForm(false);
         } catch (error) {
@@ -250,5 +252,90 @@ export function ReportDialog() {
                 )}
             </AnimatePresence>
         </>
+    );
+}
+
+export function AddBookMark() {
+    const { isAuthenticated, user } = useAuthStore();
+    const navigate = useNavigate();
+    const { listingId } = useParams();
+    const [isBookmarked, setIsBookmarked] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const {
+        addBookmark,
+        removeBookmark,
+        isListingBookmarked,
+        fetchBookmarks,
+        bookmarks
+    } = useBookmarkStore();
+
+    useEffect(() => {
+        if (isAuthenticated && user?._id) {
+            const loadBookmarkStatus = async () => {
+                try {
+                    await fetchBookmarks(user._id);
+                    setIsBookmarked(isListingBookmarked(listingId));
+                } catch (error) {
+                    console.error("Error checking bookmark status:", error);
+                }
+            };
+            loadBookmarkStatus();
+        }
+    }, [isAuthenticated, user, listingId, fetchBookmarks, isListingBookmarked]);
+
+    const toggleBookmark = async () => {
+        if (!isAuthenticated) {
+            localStorage.setItem('redirectAfterLogin', location.pathname);
+            navigate('/auth/user-signin');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            if (isBookmarked) {
+                // Find the bookmark ID to remove
+                const bookmarkToRemove = bookmarks.find(
+                    bookmark => bookmark.listing?._id === listingId || bookmark.listing === listingId
+                );
+
+                if (bookmarkToRemove) {
+                    await removeBookmark(bookmarkToRemove._id, user._id);
+                    setIsBookmarked(false);
+                    notification.success({
+                        message: 'Success',
+                        description: 'Bookmark removed successfully'
+                    });
+                }
+            } else {
+                await addBookmark(listingId, user._id);
+                setIsBookmarked(true);
+                notification.success({
+                    message: 'Success',
+                    description: 'Bookmark added successfully'
+                });
+            }
+        } catch (error) {
+            console.error('Error managing bookmark:', error);
+            notification.error({
+                message: 'Error',
+                description: error.response?.data?.message ||
+                    `Failed to ${isBookmarked ? 'remove' : 'add'} bookmark`
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Button
+            className={`w-full font-semibold hover:bg-gray-100 ${isBookmarked ? "bg-yellow-500 text-black" : "bg-white text-black"
+                }`}
+            onClick={toggleBookmark}
+            disabled={loading}
+        >
+            <FaBookmark className="text-black mr-2" />
+            {loading ? 'Processing...' : isBookmarked ? 'Bookmarked' : 'Add to Bookmark'}
+        </Button>
     );
 }
