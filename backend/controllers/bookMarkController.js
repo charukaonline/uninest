@@ -2,48 +2,64 @@ const BookMark = require("../models/BookMark");
 
 exports.addBookMark = async (req, res) => {
     try {
-        const { listingId, userId } = req.body;
+        const { listing, user } = req.body;
 
         // Validate request body
-        if (!listingId || !userId) {
-            return res.status(400).json({ message: "listingId and userId are required." });
+        if (!listing || !user) {
+            return res.status(400).json({ message: "listing and user IDs are required." });
         }
 
         // Check for duplicate bookmark
-        const existingBookMark = await BookMark.findOne({ listingId, userId });
+        const existingBookMark = await BookMark.findOne({ listing, user });
         if (existingBookMark) {
             return res.status(409).json({ message: "Bookmark already exists." });
         }
 
         // Create and save the bookmark
-        const newBookMark = new BookMark({ listingId, userId });
+        const newBookMark = new BookMark({ listing, user });
         await newBookMark.save();
 
-        res.status(201).json({ message: "Bookmark added successfully.", bookMark: newBookMark });
+        res.status(201).json({ 
+            success: true,
+            message: "Bookmark added successfully.", 
+            bookmark: newBookMark 
+        });
     } catch (error) {
-        res.status(500).json({ message: "An error occurred while adding the bookmark.", error: error.message });
+        res.status(500).json({ 
+            success: false,
+            message: "An error occurred while adding the bookmark.", 
+            error: error.message 
+        });
     }
 };
 
 exports.getBookMark = async (req, res) => {
     try {
-        const { userId } = req.query;
+        const { user } = req.query;
 
         // Validate query parameter
-        if (!userId) {
-            return res.status(400).json({ message: "userId is required." });
+        if (!user) {
+            return res.status(400).json({ message: "user ID is required." });
         }
 
         // Fetch bookmarks for the user
-        const bookMarks = await BookMark.find({ userId });
+        const bookMarks = await BookMark.find({ user }).populate("listing");
 
-        res.status(200).json({ message: "Bookmarks fetched successfully.", bookMarks });
+        res.status(200).json({ 
+            success: true,
+            message: "Bookmarks fetched successfully.", 
+            bookmarks: bookMarks 
+        });
     } catch (error) {
-        res.status(500).json({ message: "An error occurred while fetching bookmarks.", error: error.message });
+        res.status(500).json({ 
+            success: false,
+            message: "An error occurred while fetching bookmarks.", 
+            error: error.message 
+        });
     }
 };
 
-// Add this function to fetch bookmarks by user
+// Function to fetch bookmarks by user
 exports.getBookmarksByUser = async (req, res) => {
     const { userId } = req.params;
 
@@ -51,6 +67,37 @@ exports.getBookmarksByUser = async (req, res) => {
         const bookmarks = await BookMark.find({ user: userId }).populate("listing");
         res.status(200).json(bookmarks);
     } catch (error) {
-        res.status(500).json({ message: "Failed to fetch bookmarks", error: error.message });
+        res.status(500).json({ 
+            success: false,
+            message: "Failed to fetch bookmarks", 
+            error: error.message 
+        });
+    }
+};
+
+// Add function to delete a bookmark
+exports.deleteBookmark = async (req, res) => {
+    const { bookmarkId } = req.params;
+    
+    try {
+        const deletedBookmark = await BookMark.findByIdAndDelete(bookmarkId);
+        
+        if (!deletedBookmark) {
+            return res.status(404).json({ 
+                success: false,
+                message: "Bookmark not found" 
+            });
+        }
+        
+        res.status(200).json({ 
+            success: true,
+            message: "Bookmark removed successfully" 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            message: "Failed to remove bookmark", 
+            error: error.message 
+        });
     }
 };

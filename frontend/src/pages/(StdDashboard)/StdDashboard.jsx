@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import PopularCard from "@/components/student_dashboard/PopularCard";
 import RecommendationCard from "@/components/student_dashboard/RecommendationCard";
 import { Link } from "react-router-dom";
-import { FaBuilding, FaHome } from "react-icons/fa";
+import { FaBuilding, FaHome, FaBookmark } from "react-icons/fa";
 import { Loader2 } from "lucide-react";
 
 export default function StudentDashboard() {
@@ -60,6 +60,24 @@ export default function StudentDashboard() {
     }
   }, [bookmarkError]);
 
+  // Enhanced function to refresh bookmarks
+  const refreshBookmarks = async () => {
+    if (isAuthenticated && user?._id) {
+      try {
+        await fetchBookmarks(user._id);
+      } catch (error) {
+        console.error("Error refreshing bookmarks:", error);
+      }
+    }
+  };
+
+  // Add this effect to refresh bookmarks when the view changes
+  useEffect(() => {
+    if (isViewingBookmarks) {
+      refreshBookmarks();
+    }
+  }, [isViewingBookmarks]);
+
   const handlePreferenceClose = (values) => {
     // Mark preferences as completed
     localStorage.setItem("hasCompletedPreferences", "true");
@@ -92,11 +110,11 @@ export default function StudentDashboard() {
       <div className="flex bg-white">
         <div><StudentSidebar /></div>
 
-        <div style={{ marginLeft: '210px', padding: '1rem' }} className=" w-full">
+        <div style={{ marginLeft: '210px', padding: '1rem' }} className="w-full">
           <Tabs defaultValue="recommended">
-            <div className=" flex justify-between items-center w-full">
+            <div className="flex justify-between items-center w-full">
               <div>
-                <h2 className=" font-semibold text-xl">
+                <h2 className="font-semibold text-xl">
                   {isViewingBookmarks ? "Your Bookmarks" : "Recommended for you"}
                 </h2>
               </div>
@@ -119,18 +137,21 @@ export default function StudentDashboard() {
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={toggleView}
-                    className={`px-4 py-2 rounded-lg transition ${
-                      isViewingBookmarks ? "bg-gray-300" : "bg-primaryBgColor text-white"
+                    className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                      isViewingBookmarks 
+                        ? "bg-gray-300 text-gray-800" 
+                        : "bg-primaryBgColor text-white"
                     }`}
                   >
-                    {isViewingBookmarks ? "View Recommendations" : "Bookmarks"}
+                    <FaBookmark className={isViewingBookmarks ? "text-gray-800" : "text-white"} />
+                    {isViewingBookmarks ? "View Recommendations" : "View Bookmarks"}
                   </button>
                 </div>
               </div>
             </div>
 
             {isMapView ? (
-              <div className=" mt-5 mb-5 w-full">
+              <div className="mt-5 mb-5 w-full">
                 <Map />
               </div>
             ) : (
@@ -139,20 +160,31 @@ export default function StudentDashboard() {
                   {isViewingBookmarks ? (
                     bookmarksLoading ? (
                       <div className="col-span-full flex justify-center py-8">
-                        <Loader2 className=" animate-spin" />
+                        <Loader2 className="animate-spin" />
                       </div>
                     ) : bookmarks && bookmarks.length > 0 ? (
                       bookmarks.map((bookmark) => (
-                        <RecommendationCard key={bookmark._id} listing={bookmark} />
+                        <RecommendationCard 
+                          key={bookmark._id} 
+                          listing={bookmark}
+                          isBookmarked={true}
+                          showMatchScore={false}
+                        />
                       ))
                     ) : (
-                      <div className="col-span-full text-center py-8">
-                        <p className="text-gray-500">No bookmarks available at the moment.</p>
+                      <div className="col-span-full text-center py-8 flex flex-col items-center">
+                        <p className="text-gray-500 mb-4">No bookmarks available at the moment.</p>
+                        <button
+                          onClick={() => setIsViewingBookmarks(false)}
+                          className="bg-primaryBgColor text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+                        >
+                          Explore Recommendations
+                        </button>
                       </div>
                     )
                   ) : recommendationsLoading ? (
                     <div className="col-span-full flex justify-center py-8">
-                      <Loader2 className=" animate-spin" />
+                      <Loader2 className="animate-spin" />
                     </div>
                   ) : recommendations && recommendations.length > 0 ? (
                     recommendations.map((listing) => (
@@ -169,14 +201,14 @@ export default function StudentDashboard() {
           </Tabs>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className=" mb-5">
-              <h1 className=" mb-3 font-semibold text-lg text-gray-600">Most Popular Boarding House</h1>
+            <div className="mb-5">
+              <h1 className="mb-3 font-semibold text-lg text-gray-600">Most Popular Boarding House</h1>
               <PopularCard limit={1} />
             </div>
           </motion.div>
 
-          <div className=" mt-10 items-center justify-center w-full">
-            <h1 className=" text-gray-600 font-semibold text-center">UniNest © {new Date().getFullYear()}</h1>
+          <div className="mt-10 items-center justify-center w-full">
+            <h1 className="text-gray-600 font-semibold text-center">UniNest © {new Date().getFullYear()}</h1>
           </div>
         </div>
       </div>

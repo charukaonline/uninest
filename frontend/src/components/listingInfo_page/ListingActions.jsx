@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Form, Rate, Input, Select, notification } from 'antd'
 import { MdRateReview, MdReport } from "react-icons/md"
@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { FaBookmark } from 'react-icons/fa6'
+import { useBookmarkStore } from '@/store/bookmarkStore'
 
 export function ScheduleDialog() {
     return (
@@ -255,55 +256,86 @@ export function ReportDialog() {
 }
 
 export function AddBookMark() {
-    const { isAuthenticated, user } = useAuthStore(); // Get user from auth store
+    const { isAuthenticated, user } = useAuthStore();
     const navigate = useNavigate();
-    const { listingId } = useParams(); // Get listingId from route params
-    const [isBookmarked, setIsBookmarked] = useState(false); // State to track bookmark status
+    const { listingId } = useParams();
+    const [isBookmarked, setIsBookmarked] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const {
+        addBookmark,
+        removeBookmark,
+        isListingBookmarked,
+        fetchBookmarks,
+        bookmarks
+    } = useBookmarkStore();
 
-    const addBookMark = async () => {
+    useEffect(() => {
+        if (isAuthenticated && user?._id) {
+            const loadBookmarkStatus = async () => {
+                try {
+                    await fetchBookmarks(user._id);
+                    setIsBookmarked(isListingBookmarked(listingId));
+                } catch (error) {
+                    console.error("Error checking bookmark status:", error);
+                }
+            };
+            loadBookmarkStatus();
+        }
+    }, [isAuthenticated, user, listingId, fetchBookmarks, isListingBookmarked]);
+
+    const toggleBookmark = async () => {
         if (!isAuthenticated) {
-            // Redirect to login if not authenticated
+            localStorage.setItem('redirectAfterLogin', location.pathname);
             navigate('/auth/user-signin');
             return;
         }
 
+        setLoading(true);
+
         try {
-            const bookmarkData = {
-                listingId,
-                userId: user._id, // Include user ID
-            };
+            if (isBookmarked) {
+                // Find the bookmark ID to remove
+                const bookmarkToRemove = bookmarks.find(
+                    bookmark => bookmark.listing?._id === listingId || bookmark.listing === listingId
+                );
 
-            const response = await axios.post('http://localhost:5000/api/bookmark/addBookMark', bookmarkData);
-
-            if (response.data.success) {
-                setIsBookmarked(true); // Set bookmark status to true
+                if (bookmarkToRemove) {
+                    await removeBookmark(bookmarkToRemove._id, user._id);
+                    setIsBookmarked(false);
+                    notification.success({
+                        message: 'Success',
+                        description: 'Bookmark removed successfully'
+                    });
+                }
+            } else {
+                await addBookmark(listingId, user._id);
+                setIsBookmarked(true);
                 notification.success({
                     message: 'Success',
                     description: 'Bookmark added successfully'
                 });
-            } else {
-                notification.warning({
-                    message: 'Bookmark Exists',
-                    description: response.data.message || 'This bookmark already exists'
-                });
             }
         } catch (error) {
-            console.error('Error adding bookmark:', error);
+            console.error('Error managing bookmark:', error);
             notification.error({
                 message: 'Error',
-                description: error.response?.data?.message || 'Failed to add bookmark'
+                description: error.response?.data?.message ||
+                    `Failed to ${isBookmarked ? 'remove' : 'add'} bookmark`
             });
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <Button
-            className={`w-full font-semibold hover:bg-gray-100 ${
-                isBookmarked ? "bg-yellow-500 text-black" : "bg-white text-black"
-            }`} // Change button color based on state
-            onClick={addBookMark} // Call addBookMark on click
+            className={`w-full font-semibold hover:bg-gray-100 ${isBookmarked ? "bg-yellow-500 text-black" : "bg-white text-black"
+                }`}
+            onClick={toggleBookmark}
+            disabled={loading}
         >
-            <FaBookmark className="text-black" /> Add to Bookmark
+            <FaBookmark className="text-black mr-2" />
+            {loading ? 'Processing...' : isBookmarked ? 'Bookmarked' : 'Add to Bookmark'}
         </Button>
     );
 }
