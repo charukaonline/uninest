@@ -7,6 +7,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Switch } from 'antd';
 import { FaHome, FaCalendarAlt, FaEnvelope, FaEye, FaHeart, FaPlus, FaMapMarkerAlt, FaBuilding, FaUserFriends } from 'react-icons/fa';
 import ListingCard from '@/components/landlord_dashboard/ListingCard';
+import { MdDashboard } from 'react-icons/md';
 
 const LandlordDashboard = () => {
     const [isMapView, setIsMapView] = useState(false);
@@ -73,6 +74,10 @@ const LandlordDashboard = () => {
             <div className="flex-1 ml-[220px] p-6">
                 <div className="flex justify-between items-center mb-6">
                     <div>
+                        <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+                            <MdDashboard className="mr-2 text-primaryBgColor" />
+                            Dashboard
+                        </h1>
                     </div>
                     <div className="flex items-center space-x-4">
                         <div className="flex space-x-2">

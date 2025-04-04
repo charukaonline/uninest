@@ -41,6 +41,7 @@ import Report from "./pages/(AdminDashboard)/Report";
 import Feedback from "./pages/(AdminDashboard)/Feedback";
 import LandlordInbox from "./pages/(LandlordDashboard)/LandlordInbox";
 import Search from "./pages/Search";
+import Pricing from "./pages/(LandlordDashboard)/Pricing";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -226,6 +227,15 @@ function App() {
           element={
             <LandlordProtectedRoute>
               <LandlordInbox />
+            </LandlordProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/landlord/:landlordId/:email/pricing"
+          element={
+            <LandlordProtectedRoute>
+              <Pricing />
             </LandlordProtectedRoute>
           }
         />
