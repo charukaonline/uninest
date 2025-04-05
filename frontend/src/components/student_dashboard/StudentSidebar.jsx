@@ -7,6 +7,7 @@ import { IoSettings } from 'react-icons/io5';
 import { MdDashboard, MdFeedback } from 'react-icons/md';
 import { RiLogoutBoxLine } from 'react-icons/ri';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import useMessageStore from '@/store/messageStore';
 
 const StudentSidebar = () => {
 
@@ -15,6 +16,8 @@ const StudentSidebar = () => {
 
     const { userId, email } = useParams();
     const { user, logout } = useAuthStore();
+    const { getUnreadCount } = useMessageStore();
+    const unreadCount = getUnreadCount();
 
     const handleLogout = async () => {
         try {
@@ -55,14 +58,30 @@ const StudentSidebar = () => {
             <ul className=' mt-8 space-y-3'>
                 {topLinks.map((link, index) => (
                     <li key={index}>
-                        <Link
-                            to={link.path}
-                            style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
-                            className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#030303] border-r-4 border-green-500" : "hover:text-white"}`}
-                        >
-                            <span className=' text-lg'>{link.icon}</span>
-                            <span className=' text-base'>{link.name}</span>
-                        </Link>
+                        {link.name === 'Inbox' ? (
+                            <Link
+                                to={link.path}
+                                style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
+                                className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#030303] border-r-4 border-green-500" : "hover:text-white"}`}
+                            >
+                                <span className=' text-lg'>{link.icon}</span>
+                                <span className=' text-base'>{link.name}</span>
+                                {unreadCount > 0 && (
+                                    <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </Link>
+                        ) : (
+                            <Link
+                                to={link.path}
+                                style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
+                                className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#030303] border-r-4 border-green-500" : "hover:text-white"}`}
+                            >
+                                <span className=' text-lg'>{link.icon}</span>
+                                <span className=' text-base'>{link.name}</span>
+                            </Link>
+                        )}
                     </li>
                 ))}
             </ul>
