@@ -11,6 +11,7 @@ import { MdFeedback } from "react-icons/md";
 import { IoMdHelpCircle } from "react-icons/io";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { notification } from 'antd';
+import useMessageStore from '@/store/messageStore';
 
 const Sidebar = () => {
 
@@ -18,6 +19,8 @@ const Sidebar = () => {
     const location = useLocation();
     const { landlordId, email } = useParams();
     const { landlord, landlordLogout } = useLandlordAuthStore();
+    const { getUnreadCount } = useMessageStore();
+    const unreadCount = getUnreadCount();
 
     const handleLogout = async () => {
         try {
@@ -61,14 +64,32 @@ const Sidebar = () => {
             <ul className="mt-8 space-y-3">
                 {topLinks.map((link, index) => (
                     <li key={index}>
-                        <Link
-                            to={link.path}
-                            style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
-                            className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#030303] border-r-4 border-green-500" : "hover:text-white"}`}
-                        >
-                            <span className="text-lg">{link.icon}</span>
-                            <span className="text-base">{link.name}</span>
-                        </Link>
+                        {link.name === 'Inbox' ? (
+                            <Link
+                                to={`/landlord/${landlordId}/${email}/inbox`}
+                                style={{ color: isActive(`/landlord/${landlordId}/${email}/inbox`) ? '#FFFFFF' : link.txtColor }}
+                                className={`flex items-center py-3 px-4 hover:bg-[#333333] transition rounded-md ${
+                                    isActive(`/landlord/${landlordId}/${email}/inbox`) ? 'bg-[#333333]' : ''
+                                }`}
+                            >
+                                {link.icon}
+                                <span className="ml-3 text-gray-300">{link.name}</span>
+                                {unreadCount > 0 && (
+                                    <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </Link>
+                        ) : (
+                            <Link
+                                to={link.path}
+                                style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
+                                className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#030303] border-r-4 border-green-500" : "hover:text-white"}`}
+                            >
+                                <span className="text-lg">{link.icon}</span>
+                                <span className="text-base">{link.name}</span>
+                            </Link>
+                        )}
                     </li>
                 ))}
             </ul>

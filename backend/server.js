@@ -10,9 +10,10 @@ const session = require("express-session"); // Added session import
 const adminRoutes = require("./routes/admin");
 const listingRoutes = require("./routes/listingRoutes");
 const reviewRoutes = require("./routes/review");
-const preferenceRoutes = require('./routes/preference');
+const preferenceRoutes = require("./routes/preference");
 const http = require("http");
 const { initializeSocket } = require("./config/socket");
+const messageRoutes = require("./routes/messageRoutes");
 
 dotenv.config();
 
@@ -95,6 +96,7 @@ app.use("/api/send-email", require("./routes/inquiry"));
 app.use("/api/listings", listingRoutes);
 app.use("/api/university", require("./routes/university"));
 app.use("/api/review", reviewRoutes);
-app.use("/api/search", require("./routes/search")); 
-app.use('/api/preferences', preferenceRoutes);
+app.use("/api/search", require("./routes/search"));
+app.use("/api/preferences", preferenceRoutes);
 app.use("/api/bookmark", require("./routes/bookmarkRoutes"));
+app.use("/api/messages", messageRoutes);
