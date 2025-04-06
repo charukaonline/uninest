@@ -9,6 +9,7 @@ const fs = require('fs').promises;
 const fsSync = require('fs'); // Add this line for synchronous fs operations
 
 const { generateTokenAndSetCookie } = require("../utils/generateTokenAndSetCookie");
+const validateNIC = require("../middleware/nicValidation");
 
 exports.registerLandlord = async (req, res) => {
   try {
@@ -73,6 +74,16 @@ exports.completeLandlordProfile = async (req, res) => {
 
     if (!nicDocument) {
       return res.status(400).json({ message: "NIC document is required" });
+    }
+
+    // Validate NIC number
+    try {
+      const { isFake } = validateNIC(nationalIdCardNumber);
+      if (isFake) {
+        return res.status(400).json({ message: "Invalid NIC number: Age is not realistic." });
+      }
+    } catch (validationError) {
+      return res.status(400).json({ message: validationError.message });
     }
 
     uploadedFile = nicDocument.path;
@@ -181,9 +192,9 @@ exports.landlordSignin = async (req, res) => {
     const { email, password } = req.body;
 
     // Find user by email and role
-    const landlord = await User.findOne({ 
-      email, 
-      role: "landlord" 
+    const landlord = await User.findOne({
+      email,
+      role: "landlord"
     });
 
     // Verify password
@@ -222,12 +233,12 @@ exports.landlordSignin = async (req, res) => {
         verificationStatus: landlordProfile?.verificationStatus
       }
     });
-    
+
   } catch (error) {
     console.error('Landlord signin error:', error);
-    res.status(500).json({ 
-      message: "Server error", 
-      error: error.message 
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
     });
   }
 };
@@ -246,7 +257,7 @@ exports.checkLandlordAuth = async (req, res) => {
     const landlord = await User.findById(decoded.userId)
       .select("-password")
       .where('role').equals('landlord');
-    
+
     if (!landlord) {
       return res.status(401).json({
         success: false,
@@ -255,7 +266,7 @@ exports.checkLandlordAuth = async (req, res) => {
     }
 
     const landlordProfile = await LandlordProfile.findOne({ userId: landlord._id });
-    
+
     res.status(200).json({
       success: true,
       landlord: {
