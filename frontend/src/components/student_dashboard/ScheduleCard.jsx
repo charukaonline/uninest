@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card, Typography, Divider, Tag } from 'antd'
 import { RiCalendarScheduleFill, RiTimeLine, RiMapPin2Line, RiPhoneLine, RiMailLine, RiUser3Line } from 'react-icons/ri'
 import { format } from 'date-fns'
@@ -6,7 +6,43 @@ import { format } from 'date-fns'
 const { Title, Text } = Typography;
 
 const ScheduleCard = ({ schedule, isUpcoming }) => {
-    const propertyImage = schedule.listingId?.propertyImages?.[0] || 'https://via.placeholder.com/150?text=No+Image';
+    const [imageUrl, setImageUrl] = useState('');
+    
+    // Log the listing data to debug
+    useEffect(() => {
+        console.log("Listing data:", schedule.listingId);
+        
+        const listing = schedule.listingId;
+        if (!listing) return;
+        
+        // Check all possible image field paths
+        if (listing.images && listing.images.length > 0) {
+            console.log("Found image in images array:", listing.images[0]);
+            setImageUrl(listing.images[0]);
+        } else if (listing.propertyImages && listing.propertyImages.length > 0) {
+            console.log("Found image in propertyImages array:", listing.propertyImages[0]);
+            setImageUrl(listing.propertyImages[0]);
+        } else if (listing.image) {
+            console.log("Found image in image field:", listing.image);
+            setImageUrl(listing.image);
+        } else {
+            // Try other possible paths
+            const possiblePaths = [
+                'propertyImage',
+                'thumbnail',
+                'photo',
+                'featuredImage'
+            ];
+            
+            for (const path of possiblePaths) {
+                if (listing[path]) {
+                    console.log(`Found image in ${path}:`, listing[path]);
+                    setImageUrl(listing[path]);
+                    break;
+                }
+            }
+        }
+    }, [schedule]);
 
     const formatDateDisplay = (dateStr) => {
         try {
@@ -24,9 +60,14 @@ const ScheduleCard = ({ schedule, isUpcoming }) => {
         >
             <div className="flex flex-col sm:flex-row gap-4">
                 <img
-                    src={propertyImage}
+                    src={imageUrl}
                     alt={schedule.listingId?.propertyName || 'Property'}
                     className="w-full sm:w-32 h-32 object-cover rounded-md"
+                    onError={(e) => {
+                        console.log("Image failed to load:", e.target.src);
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/150?text=No+Image';
+                    }}
                 />
                 <div className="flex-1">
                     <div className="flex justify-between items-start">
