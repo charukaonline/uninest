@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react'
 import scheduleStore from '@/store/scheduleStore'
 import { useAuthStore } from '@/store/authStore'
 import { Spin, Empty, Typography } from 'antd'
-import { isAfter } from 'date-fns'
 import ScheduleCard from '@/components/student_dashboard/ScheduleCard'
 
 const { Title } = Typography;
@@ -34,21 +33,31 @@ const StdSchedule = () => {
         document.title = "My Schedules";
     }, [user]);
 
-    const isUpcoming = (dateStr) => {
+    const isUpcoming = (dateStr, timeStr) => {
         try {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const now = new Date();
+
+            // Parse the date
             const scheduleDate = new Date(dateStr);
-            scheduleDate.setHours(0, 0, 0, 0);
-            return isAfter(scheduleDate, today) || scheduleDate.getTime() === today.getTime();
+
+            const [hours, minutes] = timeStr.split(':').map(Number);
+
+            scheduleDate.setHours(hours, minutes, 0, 0);
+
+            return scheduleDate > now;
         } catch (error) {
+            console.error("Error parsing date/time:", error);
             return false;
         }
     };
 
-    // Group schedules by upcoming and past
-    const upcomingSchedules = schedules.filter(schedule => isUpcoming(schedule.date));
-    const pastSchedules = schedules.filter(schedule => !isUpcoming(schedule.date));
+    // Group schedules by upcoming and past - update to pass both date and time
+    const upcomingSchedules = schedules.filter(schedule =>
+        isUpcoming(schedule.date, schedule.time)
+    );
+    const pastSchedules = schedules.filter(schedule =>
+        !isUpcoming(schedule.date, schedule.time)
+    );
 
     return (
         <div className="flex bg-white">
@@ -70,7 +79,7 @@ const StdSchedule = () => {
                     <div className="space-y-6">
                         {upcomingSchedules.length > 0 && (
                             <div>
-                                <h1 className="mb-4 text-base">Upcoming Visits</h1>
+                                <h1 className="mb-4 text-base text-primaryBgColor">Upcoming Visits</h1>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {upcomingSchedules.map((schedule) => (
                                         <ScheduleCard key={schedule._id} schedule={schedule} isUpcoming={true} />
@@ -81,7 +90,7 @@ const StdSchedule = () => {
 
                         {pastSchedules.length > 0 && (
                             <div>
-                                <Title level={4} className="mb-4 mt-8">Past Visits</Title>
+                                <h1 className="mb-4 text-base text-primaryBgColor">Past Visits</h1>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {pastSchedules.map((schedule) => (
                                         <ScheduleCard key={schedule._id} schedule={schedule} isUpcoming={false} />
