@@ -1,6 +1,6 @@
 import StudentSidebar from '@/components/student_dashboard/StudentSidebar'
-import React, { useEffect, useState } from 'react'
-import scheduleStore from '@/store/scheduleStore'
+import React, { useEffect } from 'react'
+import { useScheduleStore } from '@/store/scheduleStore'
 import { useAuthStore } from '@/store/authStore'
 import { Spin, Empty, Typography } from 'antd'
 import ScheduleCard from '@/components/student_dashboard/ScheduleCard'
@@ -8,42 +8,30 @@ import ScheduleCard from '@/components/student_dashboard/ScheduleCard'
 const { Title } = Typography;
 
 const StdSchedule = () => {
-    const [schedules, setSchedules] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { schedules, loading, getSchedulesByUserId } = useScheduleStore();
     const { user } = useAuthStore();
 
     useEffect(() => {
         const fetchSchedules = async () => {
             if (user?._id) {
                 try {
-                    setLoading(true);
-                    const data = await scheduleStore.getSchedulesByUserId(user._id);
-                    setSchedules(data);
+                    await getSchedulesByUserId(user._id);
                 } catch (error) {
                     console.error("Failed to fetch schedules:", error);
-                } finally {
-                    setLoading(false);
                 }
             }
         };
 
         fetchSchedules();
-
-        // Set document title
         document.title = "My Schedules";
-    }, [user]);
+    }, [user, getSchedulesByUserId]);
 
     const isUpcoming = (dateStr, timeStr) => {
         try {
             const now = new Date();
-
-            // Parse the date
             const scheduleDate = new Date(dateStr);
-
             const [hours, minutes] = timeStr.split(':').map(Number);
-
             scheduleDate.setHours(hours, minutes, 0, 0);
-
             return scheduleDate > now;
         } catch (error) {
             console.error("Error parsing date/time:", error);
@@ -51,10 +39,11 @@ const StdSchedule = () => {
         }
     };
 
-    // Group schedules by upcoming and past - update to pass both date and time
+    // Group schedules by upcoming and past - using both date and time
     const upcomingSchedules = schedules.filter(schedule =>
         isUpcoming(schedule.date, schedule.time)
     );
+    
     const pastSchedules = schedules.filter(schedule =>
         !isUpcoming(schedule.date, schedule.time)
     );

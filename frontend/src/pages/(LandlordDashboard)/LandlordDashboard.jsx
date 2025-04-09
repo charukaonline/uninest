@@ -1,5 +1,6 @@
 import { useLandlordAuthStore } from '@/store/landlordAuthStore'
 import useListingStore from '@/store/listingStore';
+import useScheduleStore from '@/store/scheduleStore';
 import React, { useEffect, useState } from 'react'
 import LoadingSpinner from '@/components/include/LoadingSpinner';
 import Sidebar from '@/components/landlord_dashboard/Sidebar';
@@ -8,19 +9,15 @@ import { Switch } from 'antd';
 import { FaHome, FaCalendarAlt, FaEnvelope, FaEye, FaHeart, FaPlus, FaMapMarkerAlt, FaBuilding, FaUserFriends } from 'react-icons/fa';
 import ListingCard from '@/components/landlord_dashboard/ListingCard';
 import { MdDashboard } from 'react-icons/md';
+import { RiCalendarScheduleFill } from 'react-icons/ri';
 
 const LandlordDashboard = () => {
     const [isMapView, setIsMapView] = useState(false);
     const { landlord, isLandlordAuthenticated, checkLandlordAuth, isCheckingLandlordAuth } = useLandlordAuthStore();
     const { fetchLandlordListings, landlordListings, loading: listingsLoading } = useListingStore();
     const [totalListingsCount, setTotalListingsCount] = useState(0);
+    const [dashboardSchedules, setDashboardSchedules] = useState([]);
     const { landlordId, email } = useParams();
-
-    const scheduledVisits = [
-        { id: 1, name: "John Doe", property: "Cozy Studio Apartment", date: "Nov 15, 2023", time: "10:00 AM", status: "Confirmed" },
-        { id: 2, name: "Jane Smith", property: "Modern 2-Bedroom Flat", date: "Nov 16, 2023", time: "3:30 PM", status: "Pending" },
-        { id: 3, name: "Robert Johnson", property: "Spacious 3-Bedroom House", date: "Nov 18, 2023", time: "1:00 PM", status: "Confirmed" },
-    ];
 
     const inquiries = [
         { id: 1, name: "Emma Wilson", property: "Cozy Studio Apartment", message: "Is the apartment still available? I'm interested in viewing it.", date: "Nov 12, 2023" },
@@ -59,6 +56,30 @@ const LandlordDashboard = () => {
         }
     }, [landlord]);
 
+    // Fetch schedules for dashboard
+    useEffect(() => {
+        const fetchDashboardSchedules = async () => {
+            if (landlord && landlord._id) {
+                try {
+                    const { getSchedulesByLandlordId } = useScheduleStore.getState();
+                    const schedules = await getSchedulesByLandlordId(landlord._id);
+                    
+                    // Get only upcoming and limit to 3 for dashboard display
+                    const upcoming = schedules.filter(schedule => 
+                        new Date(`${schedule.date}T${schedule.time}`) > new Date() &&
+                        schedule.status !== 'cancelled'
+                    ).slice(0, 3);
+                    
+                    setDashboardSchedules(upcoming);
+                } catch (error) {
+                    console.error("Error fetching dashboard schedules:", error);
+                }
+            }
+        };
+
+        fetchDashboardSchedules();
+    }, [landlord]);
+
     if (isCheckingLandlordAuth || listingsLoading) {
         return <LoadingSpinner />;
     }
@@ -87,6 +108,10 @@ const LandlordDashboard = () => {
                             <Link to="/all-listings" className="px-4 py-2 bg-primaryBgColor text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
                                 <FaBuilding /> All Listings
                             </Link>
+                            <Link to={`/landlord/${landlordId}/${email}/schedule`} className="px-4 py-2 bg-primaryBgColor text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+                                <RiCalendarScheduleFill />
+                                Schedules
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -108,7 +133,7 @@ const LandlordDashboard = () => {
                         </div>
                         <div>
                             <p className="text-gray-500">Scheduled Visits</p>
-                            <p className="text-2xl font-bold">{scheduledVisits.length}</p>
+                            <p className="text-2xl font-bold">{dashboardSchedules.length}</p>
                         </div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow-sm flex items-center">
@@ -128,17 +153,6 @@ const LandlordDashboard = () => {
                         <h3 className="text-xl font-semibold text-gray-800 flex items-center">
                             <FaHome className="mr-2 text-primaryBgColor" /> My Listings
                         </h3>
-                        <div className="flex items-center space-x-3">
-                            <span className="text-base">Map View</span>
-                            <Switch
-                                checked={isMapView}
-                                onChange={(checked) => setIsMapView(checked)}
-                                size="default"
-                                style={{
-                                    backgroundColor: isMapView ? '#006845' : '#adadad'
-                                }}
-                            />
-                        </div>
                     </div>
 
                     {/* Content area */}
@@ -185,19 +199,21 @@ const LandlordDashboard = () => {
                         <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                             <FaCalendarAlt className="mr-2 text-blue-600" /> Latest Scheduled Visits
                         </h3>
-                        {scheduledVisits.length > 0 ? (
+                        {dashboardSchedules.length > 0 ? (
                             <div className="space-y-4">
-                                {scheduledVisits.map(visit => (
-                                    <div key={visit.id} className="border-b border-gray-100 pb-3 last:border-b-0">
+                                {dashboardSchedules.map(schedule => (
+                                    <div key={schedule._id} className="border-b border-gray-100 pb-3 last:border-b-0">
                                         <div className="flex justify-between">
                                             <div>
-                                                <p className="font-medium">{visit.name}</p>
-                                                <p className="text-sm text-gray-600">{visit.property}</p>
+                                                <p className="font-medium">{schedule.userId?.username || 'Anonymous User'}</p>
+                                                <p className="text-sm text-gray-600">{schedule.listingId?.propertyName || 'Property Visit'}</p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-sm">{visit.date}, {visit.time}</p>
-                                                <span className={`text-xs px-2 py-1 rounded-full ${visit.status === 'Confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                    {visit.status}
+                                                <p className="text-sm">{schedule.date}, {schedule.time}</p>
+                                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                                    schedule.status === 'confirmed' ? 'bg-green-100 text-green-700' : 
+                                                    'bg-yellow-100 text-yellow-700'}`}>
+                                                    {schedule.status === 'confirmed' ? 'Confirmed' : 'Pending'}
                                                 </span>
                                             </div>
                                         </div>
@@ -210,7 +226,7 @@ const LandlordDashboard = () => {
                             </div>
                         )}
                         <div className="mt-4 text-right">
-                            <Link to="/visits" className="text-primaryBgColor hover:underline">View all visits →</Link>
+                            <Link to={`/landlord/${landlordId}/${email}/schedule`} className="text-primaryBgColor hover:underline">View all visits →</Link>
                         </div>
                     </div>
 

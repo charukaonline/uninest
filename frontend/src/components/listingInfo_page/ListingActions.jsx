@@ -9,7 +9,7 @@ import axios from 'axios'
 import { FaBookmark } from 'react-icons/fa6'
 import { useBookmarkStore } from '@/store/bookmarkStore'
 import { RiCalendarScheduleFill } from 'react-icons/ri'
-import scheduleStore from "@/store/scheduleStore";
+import { useScheduleStore } from "@/store/scheduleStore";
 
 export function ScheduleDialog() {
     return (
@@ -349,20 +349,17 @@ export function ScheduleVisit() {
     const location = useLocation();
     const { listingId } = useParams();
     const [listing, setListing] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const { addSchedule, loading } = useScheduleStore();
 
     // Fetch listing data to get landlordId
     useEffect(() => {
         const fetchListing = async () => {
             if (listingId) {
-                setIsLoading(true);
                 try {
                     const response = await axios.get(`http://localhost:5000/api/listings/${listingId}`);
                     setListing(response.data);
                 } catch (error) {
                     console.error("Error fetching listing:", error);
-                } finally {
-                    setIsLoading(false);
                 }
             }
         };
@@ -390,17 +387,17 @@ export function ScheduleVisit() {
 
         const scheduleData = {
             studentId: user._id,
-            landlordId: listing.landlord._id, // Use the correct landlord ID from the listing
-            listingId: listingId, // The listing ID from params
+            landlordId: listing.landlord._id,
+            listingId: listingId,
             date: values.date,
             time: values.time,
         };
 
         try {
-            await scheduleStore.addSchedule(scheduleData);
+            await addSchedule(scheduleData);
             setShowScheduleForm(false);
         } catch (error) {
-            // Error is handled in scheduleStore
+            // Error is handled in the store
         }
     };
 
@@ -409,10 +406,10 @@ export function ScheduleVisit() {
             <Button
                 className="w-full bg-white text-black font-semibold hover:bg-gray-100"
                 onClick={handleScheduleClick}
-                disabled={isLoading}
+                disabled={loading}
             >
                 <RiCalendarScheduleFill className="text-black" />
-                {isLoading ? "Loading..." : "Schedule a Visit"}
+                {loading ? "Loading..." : "Schedule a Visit"}
             </Button>
 
             <AnimatePresence>

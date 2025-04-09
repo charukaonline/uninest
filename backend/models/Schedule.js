@@ -6,7 +6,7 @@ const scheduleSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   landlordId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // Changed from "Landlord" to "User"
+    ref: "User", 
     required: true,
   },
   listingId: {
@@ -14,6 +14,15 @@ const scheduleSchema = new mongoose.Schema({
     ref: "Listing",
     required: true,
   },
-});
+  status: {
+    type: String, 
+    enum: ['pending', 'confirmed', 'cancelled'],
+    default: 'pending'
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+}, { timestamps: true });
 
 module.exports = mongoose.model("Schedule", scheduleSchema);

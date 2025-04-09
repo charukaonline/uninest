@@ -81,7 +81,7 @@ exports.getSchedulesByUserId = async (req, res) => {
         const schedules = await Schedule.find({ userId })
             .populate({
                 path: 'listingId',
-                select: 'propertyName images location address city province' // Changed from propertyImages to images
+                select: 'propertyName images propertyType address city province'
             })
             .populate({
                 path: 'landlordId',
@@ -95,6 +95,96 @@ exports.getSchedulesByUserId = async (req, res) => {
         console.error("Error fetching user schedules:", error);
         res.status(500).json({
             message: "Error fetching schedules",
+            error: error.message
+        });
+    }
+};
+
+exports.getSchedulesByLandlordId = async (req, res) => {
+    try {
+        const { landlordId } = req.params;
+
+        // Find all schedules for this landlord and populate with listing and student details
+        const schedules = await Schedule.find({ landlordId })
+            .populate({
+                path: 'listingId',
+                select: 'propertyName images propertyType address city province'
+            })
+            .populate({
+                path: 'userId',
+                select: 'username email phoneNumber',
+                match: { role: 'user' }
+            })
+            .sort({ date: 1, time: 1 });
+
+        res.status(200).json({ schedules });
+    } catch (error) {
+        console.error("Error fetching landlord schedules:", error);
+        res.status(500).json({
+            message: "Error fetching schedules",
+            error: error.message
+        });
+    }
+};
+
+exports.updateScheduleStatus = async (req, res) => {
+    try {
+        const { scheduleId } = req.params;
+        const { status } = req.body;
+
+        if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
+            return res.status(400).json({
+                message: "Invalid status. Must be one of: pending, confirmed, cancelled"
+            });
+        }
+
+        // Find the schedule
+        const schedule = await Schedule.findById(scheduleId);
+        
+        if (!schedule) {
+            return res.status(404).json({
+                message: "Schedule not found"
+            });
+        }
+
+        // Update status
+        schedule.status = status;
+        await schedule.save();
+        
+        // Create notifications
+        if (status === 'confirmed' || status === 'cancelled') {
+            try {
+                // Get user and listing information for notifications
+                const [student, landlord, listing] = await Promise.all([
+                    User.findById(schedule.userId).select('username email').exec(),
+                    User.findById(schedule.landlordId).select('username email').exec(),
+                    Listing.findById(schedule.listingId).select('propertyName').exec()
+                ]);
+                
+                // Create notification for student
+                const studentNotification = new Notification({
+                    userId: schedule.userId,
+                    type: "schedule_update",
+                    title: `Visit ${status === 'confirmed' ? 'Confirmed' : 'Cancelled'}`,
+                    message: `Your visit to ${listing?.propertyName || 'the property'} has been ${status}`,
+                    relatedId: schedule._id,
+                    refModel: "Schedule"
+                });
+                await studentNotification.save();
+            } catch (notificationError) {
+                console.error("Error creating schedule notification:", notificationError);
+                // Continue with the response even if notification fails
+            }
+        }
+
+        res.status(200).json({
+            message: `Schedule ${status} successfully`,
+            schedule
+        });
+    } catch (error) {
+        console.error("Error updating schedule status:", error);
+        res.status(500).json({
+            message: "Error updating schedule",
             error: error.message
         });
     }

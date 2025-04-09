@@ -44,6 +44,7 @@ import Search from "./pages/Search";
 import Pricing from "./pages/(LandlordDashboard)/Pricing";
 import StdSchedule from "./pages/(StdDashboard)/StdSchedule";
 import StdNotifications from "./pages/(StdDashboard)/StdNotifications"; // Fixed: Changed from StdNotification to StdNotifications
+import LandlordSchedules from "./pages/(LandlordDashboard)/LandlordSchedules";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -247,6 +248,15 @@ function App() {
           element={
             <LandlordProtectedRoute>
               <LandlordInbox />
+            </LandlordProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/landlord/:landlordId/:email/schedule"
+          element={
+            <LandlordProtectedRoute>
+              <LandlordSchedules />
             </LandlordProtectedRoute>
           }
         />
