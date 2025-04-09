@@ -64,7 +64,7 @@ const StdSchedule = () => {
             <div><StudentSidebar /></div>
 
             <div className="flex-1 ml-[220px] p-4">
-                <h1 className="text-xl font-bold mb-8">Profile Settings</h1>
+                <h1 className="text-xl font-bold mb-8">Schedules</h1>
 
                 {loading ? (
                     <div className="flex justify-center items-center h-64">

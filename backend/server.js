@@ -11,6 +11,7 @@ const adminRoutes = require("./routes/admin");
 const listingRoutes = require("./routes/listingRoutes");
 const reviewRoutes = require("./routes/review");
 const preferenceRoutes = require('./routes/preference');
+const notificationRoutes = require('./routes/notificationRoutes');
 const http = require("http");
 const { initializeSocket } = require("./config/socket");
 
@@ -99,3 +100,4 @@ app.use("/api/search", require("./routes/search"));
 app.use('/api/preferences', preferenceRoutes);
 app.use("/api/bookmark", require("./routes/bookmarkRoutes"));
 app.use("/api/schedule", require("./routes/scheduleRoutes"));
+app.use('/api/notifications', notificationRoutes);

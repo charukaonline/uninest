@@ -43,6 +43,7 @@ import LandlordInbox from "./pages/(LandlordDashboard)/LandlordInbox";
 import Search from "./pages/Search";
 import Pricing from "./pages/(LandlordDashboard)/Pricing";
 import StdSchedule from "./pages/(StdDashboard)/StdSchedule";
+import StdNotifications from "./pages/(StdDashboard)/StdNotifications"; // Fixed: Changed from StdNotification to StdNotifications
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -200,6 +201,15 @@ function App() {
           element={
             <ProtectedRoute>
               <StdSchedule />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/:userId/:email/notifications"
+          element={
+            <ProtectedRoute>
+              <StdNotifications />
             </ProtectedRoute>
           }
         />

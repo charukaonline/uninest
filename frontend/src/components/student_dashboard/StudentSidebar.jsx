@@ -31,7 +31,7 @@ const StudentSidebar = () => {
         { name: 'Dashboard', path: `/student/${userId}/${email}`, icon: <MdDashboard />, txtColor: '#7F7F7F' },
         { name: 'Inbox', path: `/student/${userId}/${email}/inbox`, icon: <FaInbox />, txtColor: '#7F7F7F' },
         { name: 'Schedule', path: `/student/${userId}/${email}/schedule`, icon: <RiCalendarScheduleFill />, txtColor: '#7F7F7F' },
-        { name: 'Notifications', path: `/student/${userId}/${email}/notification`, icon: <FaBell />, txtColor: '#7F7F7F' },
+        { name: 'Notifications', path: `/student/${userId}/${email}/notifications`, icon: <FaBell />, txtColor: '#7F7F7F' },
         { name: 'Settings', path: `/student/${userId}/${email}/settings`, icon: <IoSettings />, txtColor: '#7F7F7F' },
     ];
 
