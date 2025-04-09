@@ -10,7 +10,11 @@ const StdNotifications = () => {
     const { user } = useAuthStore();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('all');
+    const [activeTab, setActiveTab] = useState('unread');
+
+    useEffect(() => {
+        document.title = `(${notifications.filter(n => !n.read).length}) Notifications`;
+    }, [notifications]);
 
     // Fetch notifications from backend
     useEffect(() => {
@@ -83,7 +87,32 @@ const StdNotifications = () => {
                         { key: 'unread', label: `Unread (${notifications.filter(n => !n.read).length})` },
                         { key: 'all', label: 'All' },
                     ]}
+                    className="custom-tabs"
+                    tabBarStyle={{
+                        color: '#7F7F7F',
+                        marginBottom: '16px'
+                    }}
+                    tabBarGutter={8}
+                    type="card"
+                    tabBarActiveTextColor="#FFFFFF"
+                    tabBarInactiveTextColor="#7F7F7F"
                 />
+
+                <style jsx global>{`
+                    .custom-tabs .ant-tabs-tab.ant-tabs-tab-active {
+                        background-color: #006845;
+                        border-color: #006845;
+                    }
+                    .custom-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+                        color: white !important;
+                    }
+                    .custom-tabs .ant-tabs-tab:hover {
+                        color: #006845;
+                    }
+                    .custom-tabs .ant-tabs-ink-bar {
+                        background-color: #006845;
+                    }
+                `}</style>
 
                 {loading ? (
                     <div className="flex justify-center items-center h-64">
@@ -103,11 +132,11 @@ const StdNotifications = () => {
                                 className={`p-4 border rounded-lg cursor-pointer transition hover:shadow-md ${!notification.read ? 'bg-gray-50 border-l-4 border-l-green-500' : ''}`}
                             >
                                 <div className="flex justify-between">
-                                    <h3 className="text-lg font-medium">{notification.title}</h3>
-                                    {!notification.read && <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">New</span>}
+                                    <h3 className="text-base font-medium">{notification.title}</h3>
+                                    {!notification.read && <span className="bg-primaryBgColor text-white text-xs px-2 py-2 rounded-full">New</span>}
                                 </div>
-                                <p className="mt-1">{notification.message}</p>
-                                <p className="text-xs text-gray-500 mt-2">{formatDate(notification.createdAt)}</p>
+                                <p className="mt-1 text-sm font-semibold">{notification.message}</p>
+                                <p className="text-sm text-gray-500 mt-2">{formatDate(notification.createdAt)}</p>
                             </div>
                         ))}
                     </div>
