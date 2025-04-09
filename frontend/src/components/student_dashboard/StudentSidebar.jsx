@@ -5,7 +5,7 @@ import { FaBell, FaInbox } from 'react-icons/fa';
 import { IoMdHelpCircle } from 'react-icons/io';
 import { IoSettings } from 'react-icons/io5';
 import { MdDashboard, MdFeedback } from 'react-icons/md';
-import { RiLogoutBoxLine } from 'react-icons/ri';
+import { RiCalendarScheduleFill, RiLogoutBoxLine } from 'react-icons/ri';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 const StudentSidebar = () => {
@@ -30,6 +30,7 @@ const StudentSidebar = () => {
     const topLinks = [
         { name: 'Dashboard', path: `/student/${userId}/${email}`, icon: <MdDashboard />, txtColor: '#7F7F7F' },
         { name: 'Inbox', path: `/student/${userId}/${email}/inbox`, icon: <FaInbox />, txtColor: '#7F7F7F' },
+        { name: 'Schedule', path: `/student/${userId}/${email}/schedule`, icon: <RiCalendarScheduleFill />, txtColor: '#7F7F7F' },
         { name: 'Notifications', path: `/student/${userId}/${email}/notification`, icon: <FaBell />, txtColor: '#7F7F7F' },
         { name: 'Settings', path: `/student/${userId}/${email}/settings`, icon: <IoSettings />, txtColor: '#7F7F7F' },
     ];

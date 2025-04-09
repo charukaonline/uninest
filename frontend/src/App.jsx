@@ -42,6 +42,7 @@ import Feedback from "./pages/(AdminDashboard)/Feedback";
 import LandlordInbox from "./pages/(LandlordDashboard)/LandlordInbox";
 import Search from "./pages/Search";
 import Pricing from "./pages/(LandlordDashboard)/Pricing";
+import StdSchedule from "./pages/(StdDashboard)/StdSchedule";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -190,6 +191,15 @@ function App() {
           element={
             <ProtectedRoute>
               <StdInbox />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/:userId/:email/schedule"
+          element={
+            <ProtectedRoute>
+              <StdSchedule />
             </ProtectedRoute>
           }
         />

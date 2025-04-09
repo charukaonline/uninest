@@ -37,6 +37,27 @@ const scheduleStore = {
             throw error;
         }
     },
+
+    // Get schedules for a specific user
+    getSchedulesByUserId: async (userId) => {
+        try {
+            const response = await axios.get(`${API_URL}/user/${userId}`);
+            
+            if (response.data) {
+                scheduleStore.schedules = response.data.schedules;
+                return response.data.schedules;
+            }
+        } catch (error) {
+            console.error("Error fetching schedules:", error);
+            
+            notification.error({
+                message: "Error",
+                description: error.response?.data?.message || "Failed to fetch schedules",
+            });
+            
+            throw error;
+        }
+    }
 };
 
 export default scheduleStore;

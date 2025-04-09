@@ -72,3 +72,30 @@ exports.addSchedule = async (req, res) => {
             .json({ message: "Error creating schedule", error: error.message });
     }
 };
+
+exports.getSchedulesByUserId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Find all schedules for this user and populate with listing details
+        const schedules = await Schedule.find({ userId })
+            .populate({
+                path: 'listingId',
+                select: 'propertyName propertyImages location'
+            })
+            .populate({
+                path: 'landlordId',
+                select: 'username email phoneNumber', // Make sure we're selecting fields available in the User model
+                match: { role: 'landlord' } // Ensure we're getting landlord users only
+            })
+            .sort({ date: 1, time: 1 }); // Sort by date and time ascending
+        
+        res.status(200).json({ schedules });
+    } catch (error) {
+        console.error("Error fetching user schedules:", error);
+        res.status(500).json({ 
+            message: "Error fetching schedules", 
+            error: error.message 
+        });
+    }
+};

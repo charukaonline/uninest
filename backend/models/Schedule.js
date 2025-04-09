@@ -6,7 +6,7 @@ const scheduleSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   landlordId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Landlord",
+    ref: "User", // Changed from "Landlord" to "User"
     required: true,
   },
   listingId: {
