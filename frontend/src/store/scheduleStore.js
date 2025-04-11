@@ -107,7 +107,7 @@ export const useScheduleStore = create((set, get) => ({
         }
     },
 
-    // Update schedule status (confirm/cancel)
+    // Update schedule status (confirm/cancel/reject)
     updateScheduleStatus: async (scheduleId, status) => {
         set({ loading: true, error: null });
         try {
@@ -122,11 +122,18 @@ export const useScheduleStore = create((set, get) => ({
                     error: null
                 }));
 
+                let successMessage = '';
+                if (status === 'confirmed') {
+                    successMessage = 'The scheduled visit has been confirmed successfully.';
+                } else if (status === 'rejected') {
+                    successMessage = 'The scheduled visit has been rejected successfully.'; 
+                } else {
+                    successMessage = 'The scheduled visit has been cancelled successfully.';
+                }
+
                 notification.success({
                     message: 'Success',
-                    description: status === 'confirmed' ? 
-                        'The scheduled visit has been confirmed successfully.' : 
-                        'The scheduled visit has been cancelled successfully.'
+                    description: successMessage
                 });
 
                 return response.data;

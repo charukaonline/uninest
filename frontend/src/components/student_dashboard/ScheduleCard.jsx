@@ -56,7 +56,11 @@ const ScheduleCard = ({ schedule, isUpcoming }) => {
     return (
         <Card
             hoverable
-            className={`overflow-hidden ${isUpcoming ? 'border-green-400' : 'border-gray-300'}`}
+            className={`overflow-hidden ${
+                schedule.status === 'rejected' ? 'border-orange-400' :
+                schedule.status === 'cancelled' ? 'border-red-400' :
+                isUpcoming ? 'border-green-400' : 'border-gray-300'
+            }`}
         >
             <div className="flex flex-col sm:flex-row gap-4">
                 <img
@@ -72,8 +76,15 @@ const ScheduleCard = ({ schedule, isUpcoming }) => {
                 <div className="flex-1">
                     <div className="flex justify-between items-start">
                         <Title level={5} className="mb-1">{schedule.listingId?.propertyName || 'Unknown Property'}</Title>
-                        {isUpcoming && <Tag color="green">Upcoming</Tag>}
-                        {!isUpcoming && <Tag color="gray">Past</Tag>}
+                        {schedule.status === 'rejected' ? (
+                            <Tag color="orange">Rejected</Tag>
+                        ) : schedule.status === 'cancelled' ? (
+                            <Tag color="red">Cancelled</Tag>
+                        ) : isUpcoming ? (
+                            <Tag color="green">Upcoming</Tag>
+                        ) : (
+                            <Tag color="gray">Past</Tag>
+                        )}
                     </div>
 
                     <div className="text-sm space-y-2 mt-2">

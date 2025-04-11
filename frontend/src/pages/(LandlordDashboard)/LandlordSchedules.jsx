@@ -1,5 +1,5 @@
 import Sidebar from '@/components/landlord_dashboard/Sidebar'
-import { Empty, Spin, Card, Button, notification, Tabs } from 'antd';
+import { Empty, Spin, Card, Button, notification, Tabs, Image } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { useLandlordAuthStore } from '@/store/landlordAuthStore';
 import { useParams } from 'react-router-dom';
@@ -12,11 +12,11 @@ const { TabPane } = Tabs;
 const LandlordSchedules = () => {
     const [activeTab, setActiveTab] = useState('upcoming');
     const { landlord } = useLandlordAuthStore();
-    const { 
-        schedules, 
-        loading, 
-        getSchedulesByLandlordId, 
-        updateScheduleStatus 
+    const {
+        schedules,
+        loading,
+        getSchedulesByLandlordId,
+        updateScheduleStatus
     } = useScheduleStore();
 
     useEffect(() => {
@@ -40,11 +40,15 @@ const LandlordSchedules = () => {
     };
 
     const upcomingSchedules = schedules.filter(schedule =>
-        isUpcoming(schedule.date, schedule.time) && schedule.status !== 'cancelled'
+        isUpcoming(schedule.date, schedule.time) &&
+        schedule.status !== 'cancelled' &&
+        schedule.status !== 'rejected'
     );
-    
+
     const pastSchedules = schedules.filter(schedule =>
-        !isUpcoming(schedule.date, schedule.time) || schedule.status === 'cancelled'
+        !isUpcoming(schedule.date, schedule.time) ||
+        schedule.status === 'cancelled' ||
+        schedule.status === 'rejected'
     );
 
     const formatDate = (dateStr) => {
@@ -60,6 +64,14 @@ const LandlordSchedules = () => {
         }
     };
 
+    const handleReject = async (scheduleId) => {
+        try {
+            await updateScheduleStatus(scheduleId, 'rejected');
+        } catch (error) {
+            console.error('Error rejecting schedule:', error);
+        }
+    };
+
     const handleCancel = async (scheduleId) => {
         try {
             await updateScheduleStatus(scheduleId, 'cancelled');
@@ -69,24 +81,43 @@ const LandlordSchedules = () => {
     };
 
     const renderScheduleCard = (schedule) => (
-        <Card 
-            key={schedule._id} 
-            className={`mb-4 ${schedule.status === 'confirmed' ? 'border-l-4 border-l-green-500' : 
-                        schedule.status === 'cancelled' ? 'border-l-4 border-l-red-500' : 
-                        'border-l-4 border-l-yellow-500'}`}
+        <Card
+            key={schedule._id}
+            className={`mb-4 ${schedule.status === 'confirmed' ? 'border-l-4 border-l-green-500' :
+                    schedule.status === 'rejected' ? 'border-l-4 border-l-orange-500' :
+                        schedule.status === 'cancelled' ? 'border-l-4 border-l-red-500' :
+                            'border-l-4 border-l-yellow-500'}`}
             hoverable
         >
             <div className="flex flex-col md:flex-row gap-4">
+                {/* Property Image */}
+                <div className="w-full md:w-32 h-32">
+                    {schedule.listingId?.images && schedule.listingId.images.length > 0 ? (
+                        <Image
+                            src={schedule.listingId.images[0]}
+                            alt={schedule.listingId.propertyName || "Property"}
+                            className="w-full h-full object-cover rounded-md"
+                            fallback=""
+                            preview={false}
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
+                            <FaBuilding className="text-gray-400" size={32} />
+                        </div>
+                    )}
+                </div>
+
                 <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="text-lg font-semibold">{schedule.listingId?.propertyName || 'Property Visit'}</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            schedule.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                            schedule.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${schedule.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                schedule.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
+                                    schedule.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                        'bg-yellow-100 text-yellow-800'
+                            }`}>
                             {schedule.status === 'confirmed' ? 'Confirmed' :
-                             schedule.status === 'cancelled' ? 'Cancelled' : 'Pending'}
+                                schedule.status === 'rejected' ? 'Rejected' :
+                                    schedule.status === 'cancelled' ? 'Cancelled' : 'Pending'}
                         </span>
                     </div>
 
@@ -118,21 +149,21 @@ const LandlordSchedules = () => {
                     {/* Only show action buttons for upcoming and pending visits */}
                     {isUpcoming(schedule.date, schedule.time) && schedule.status === 'pending' && (
                         <div className="flex justify-end gap-2">
-                            <Button 
-                                type="primary" 
+                            <Button
+                                type="primary"
                                 onClick={() => handleAccept(schedule._id)}
                                 className="bg-primaryBgColor hover:bg-green-700 flex items-center"
                                 icon={<FaCheckCircle />}
                             >
                                 Accept
                             </Button>
-                            <Button 
-                                danger 
-                                onClick={() => handleCancel(schedule._id)}
+                            <Button
+                                danger
+                                onClick={() => handleReject(schedule._id)}
                                 className="flex items-center"
                                 icon={<FaTimesCircle />}
                             >
-                                Cancel
+                                Reject
                             </Button>
                         </div>
                     )}
@@ -206,7 +237,7 @@ const LandlordSchedules = () => {
                 `}</style>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default LandlordSchedules
+export default LandlordSchedules;
