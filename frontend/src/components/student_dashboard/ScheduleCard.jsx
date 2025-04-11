@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 
 const { Title, Text } = Typography;
 
-const ScheduleCard = ({ schedule, isUpcoming }) => {
+const ScheduleCard = ({ schedule, isUpcoming, statusLabel, statusClassName }) => {
     const [imageUrl, setImageUrl] = useState('');
     
     // Log the listing data to debug
@@ -76,15 +76,11 @@ const ScheduleCard = ({ schedule, isUpcoming }) => {
                 <div className="flex-1">
                     <div className="flex justify-between items-start">
                         <Title level={5} className="mb-1">{schedule.listingId?.propertyName || 'Unknown Property'}</Title>
-                        {schedule.status === 'rejected' ? (
-                            <Tag color="orange">Rejected</Tag>
-                        ) : schedule.status === 'confirmed' && isUpcoming ? (
-                            <Tag color="green">Confirmed</Tag>
-                        ) : schedule.status === 'pending' && isUpcoming ? (
-                            <Tag color="gold">Pending</Tag>
-                        ) : (
-                            <Tag color="gray">Past</Tag>
-                        )}
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusClassName || ''}`}>
+                            {statusLabel || 
+                                (schedule.status === 'rejected' ? 'Rejected' : 
+                                isUpcoming ? 'Upcoming' : 'Past')}
+                        </span>
                     </div>
 
                     <div className="text-sm space-y-2 mt-2">

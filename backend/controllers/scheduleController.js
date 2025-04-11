@@ -1,7 +1,7 @@
 const Schedule = require("../models/Schedule");
 const User = require("../models/User");
 const Listing = require("../models/Listing");
-const { sendScheduleNotification } = require("../services/emailService");
+const { sendScheduleNotification, sendScheduleStatusEmail } = require("../services/emailService");
 const Notification = require("../models/Notification");
 
 exports.addSchedule = async (req, res) => {
@@ -140,7 +140,7 @@ exports.updateScheduleStatus = async (req, res) => {
 
         // Find the schedule
         const schedule = await Schedule.findById(scheduleId);
-        
+
         if (!schedule) {
             return res.status(404).json({
                 message: "Schedule not found"
@@ -150,8 +150,8 @@ exports.updateScheduleStatus = async (req, res) => {
         // Update status
         schedule.status = status;
         await schedule.save();
-        
-        // Create notifications
+
+        // Create notifications and send email
         if (status === 'confirmed' || status === 'rejected') {
             try {
                 // Get user and listing information for notifications
@@ -160,7 +160,7 @@ exports.updateScheduleStatus = async (req, res) => {
                     User.findById(schedule.landlordId).select('username email').exec(),
                     Listing.findById(schedule.listingId).select('propertyName').exec()
                 ]);
-                
+
                 // Create notification for student
                 const studentNotification = new Notification({
                     userId: schedule.userId,
@@ -171,6 +171,19 @@ exports.updateScheduleStatus = async (req, res) => {
                     refModel: "Property"
                 });
                 await studentNotification.save();
+
+                // Send email notification to student
+                if (student && landlord && listing) {
+                    await sendScheduleStatusEmail(
+                        student.email,
+                        student.username,
+                        landlord.username,
+                        listing.propertyName,
+                        schedule.date,
+                        schedule.time,
+                        status
+                    );
+                }
             } catch (notificationError) {
                 console.error("Error creating schedule notification:", notificationError);
                 // Continue with the response even if notification fails
