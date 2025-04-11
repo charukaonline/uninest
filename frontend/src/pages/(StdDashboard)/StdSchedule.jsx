@@ -39,13 +39,19 @@ const StdSchedule = () => {
         }
     };
 
-    // Group schedules by upcoming and past - using both date and time
+    // Group schedules by upcoming, rejected, and past
     const upcomingSchedules = schedules.filter(schedule =>
-        isUpcoming(schedule.date, schedule.time)
+        isUpcoming(schedule.date, schedule.time) && 
+        schedule.status !== 'rejected'
+    );
+    
+    const rejectedSchedules = schedules.filter(schedule =>
+        schedule.status === 'rejected'
     );
     
     const pastSchedules = schedules.filter(schedule =>
-        !isUpcoming(schedule.date, schedule.time)
+        !isUpcoming(schedule.date, schedule.time) && 
+        schedule.status !== 'rejected'
     );
 
     return (
@@ -76,6 +82,17 @@ const StdSchedule = () => {
                                 </div>
                             </div>
                         )}
+                        
+                        {rejectedSchedules.length > 0 && (
+                            <div>
+                                <h1 className="mb-4 text-base text-primaryBgColor">Rejected Visits</h1>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {rejectedSchedules.map((schedule) => (
+                                        <ScheduleCard key={schedule._id} schedule={schedule} isUpcoming={false} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {pastSchedules.length > 0 && (
                             <div>
@@ -91,7 +108,7 @@ const StdSchedule = () => {
                 )}
             </div>
         </div>
-    )
+    );
 }
 
 export default StdSchedule

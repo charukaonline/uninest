@@ -58,7 +58,6 @@ const ScheduleCard = ({ schedule, isUpcoming }) => {
             hoverable
             className={`overflow-hidden ${
                 schedule.status === 'rejected' ? 'border-orange-400' :
-                schedule.status === 'cancelled' ? 'border-red-400' :
                 isUpcoming ? 'border-green-400' : 'border-gray-300'
             }`}
         >
@@ -73,15 +72,16 @@ const ScheduleCard = ({ schedule, isUpcoming }) => {
                         e.target.src = 'https://via.placeholder.com/150?text=No+Image';
                     }}
                 />
+
                 <div className="flex-1">
                     <div className="flex justify-between items-start">
                         <Title level={5} className="mb-1">{schedule.listingId?.propertyName || 'Unknown Property'}</Title>
                         {schedule.status === 'rejected' ? (
                             <Tag color="orange">Rejected</Tag>
-                        ) : schedule.status === 'cancelled' ? (
-                            <Tag color="red">Cancelled</Tag>
-                        ) : isUpcoming ? (
-                            <Tag color="green">Upcoming</Tag>
+                        ) : schedule.status === 'confirmed' && isUpcoming ? (
+                            <Tag color="green">Confirmed</Tag>
+                        ) : schedule.status === 'pending' && isUpcoming ? (
+                            <Tag color="gold">Pending</Tag>
                         ) : (
                             <Tag color="gray">Past</Tag>
                         )}

@@ -41,14 +41,16 @@ const LandlordSchedules = () => {
 
     const upcomingSchedules = schedules.filter(schedule =>
         isUpcoming(schedule.date, schedule.time) &&
-        schedule.status !== 'cancelled' &&
         schedule.status !== 'rejected'
     );
 
-    const pastSchedules = schedules.filter(schedule =>
-        !isUpcoming(schedule.date, schedule.time) ||
-        schedule.status === 'cancelled' ||
+    const rejectedSchedules = schedules.filter(schedule =>
         schedule.status === 'rejected'
+    );
+
+    const pastSchedules = schedules.filter(schedule =>
+        !isUpcoming(schedule.date, schedule.time) && 
+        schedule.status !== 'rejected'
     );
 
     const formatDate = (dateStr) => {
@@ -72,21 +74,12 @@ const LandlordSchedules = () => {
         }
     };
 
-    const handleCancel = async (scheduleId) => {
-        try {
-            await updateScheduleStatus(scheduleId, 'cancelled');
-        } catch (error) {
-            console.error('Error cancelling schedule:', error);
-        }
-    };
-
     const renderScheduleCard = (schedule) => (
         <Card
             key={schedule._id}
             className={`mb-4 ${schedule.status === 'confirmed' ? 'border-l-4 border-l-green-500' :
                     schedule.status === 'rejected' ? 'border-l-4 border-l-orange-500' :
-                        schedule.status === 'cancelled' ? 'border-l-4 border-l-red-500' :
-                            'border-l-4 border-l-yellow-500'}`}
+                    'border-l-4 border-l-yellow-500'}`}
             hoverable
         >
             <div className="flex flex-col md:flex-row gap-4">
@@ -110,14 +103,13 @@ const LandlordSchedules = () => {
                 <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="text-lg font-semibold">{schedule.listingId?.propertyName || 'Property Visit'}</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${schedule.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                schedule.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
-                                    schedule.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                                        'bg-yellow-100 text-yellow-800'
-                            }`}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            schedule.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                            schedule.status === 'rejected' ? 'bg-orange-100 text-orange-800' :
+                            'bg-yellow-100 text-yellow-800'
+                        }`}>
                             {schedule.status === 'confirmed' ? 'Confirmed' :
-                                schedule.status === 'rejected' ? 'Rejected' :
-                                    schedule.status === 'cancelled' ? 'Cancelled' : 'Pending'}
+                            schedule.status === 'rejected' ? 'Rejected' : 'Pending'}
                         </span>
                     </div>
 
@@ -146,8 +138,8 @@ const LandlordSchedules = () => {
                         )}
                     </div>
 
-                    {/* Only show action buttons for upcoming and pending visits */}
-                    {isUpcoming(schedule.date, schedule.time) && schedule.status === 'pending' && (
+                    {/* Only show action buttons for pending visits */}
+                    {schedule.status === 'pending' && (
                         <div className="flex justify-end gap-2">
                             <Button
                                 type="primary"
@@ -202,7 +194,23 @@ const LandlordSchedules = () => {
                             </div>
                         )}
                     </TabPane>
-                    <TabPane tab={`Past & Cancelled (${pastSchedules.length})`} key="past">
+                    <TabPane tab={`Rejected (${rejectedSchedules.length})`} key="rejected">
+                        {loading ? (
+                            <div className="flex justify-center items-center h-64">
+                                <Spin size="large" />
+                            </div>
+                        ) : rejectedSchedules.length === 0 ? (
+                            <Empty
+                                description="No rejected scheduled visits"
+                                className="my-12"
+                            />
+                        ) : (
+                            <div className="space-y-4">
+                                {rejectedSchedules.map(renderScheduleCard)}
+                            </div>
+                        )}
+                    </TabPane>
+                    <TabPane tab={`Past (${pastSchedules.length})`} key="past">
                         {loading ? (
                             <div className="flex justify-center items-center h-64">
                                 <Spin size="large" />
@@ -223,16 +231,24 @@ const LandlordSchedules = () => {
                 <style jsx global>{`
                     .custom-tabs .ant-tabs-tab.ant-tabs-tab-active {
                         background-color: #006845;
-                        border-color: #006845;
+                        border-radius: 4px 4px 0 0;
                     }
                     .custom-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
                         color: white !important;
+                    }
+                    .custom-tabs .ant-tabs-tab {
+                        padding: 8px 16px;
+                        margin-right: 4px;
+                        transition: all 0.3s;
                     }
                     .custom-tabs .ant-tabs-tab:hover {
                         color: #006845;
                     }
                     .custom-tabs .ant-tabs-ink-bar {
                         background-color: #006845;
+                    }
+                    .custom-tabs .ant-tabs-nav::before {
+                        border-bottom: 1px solid #e8e8e8;
                     }
                 `}</style>
             </div>

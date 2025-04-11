@@ -132,9 +132,9 @@ exports.updateScheduleStatus = async (req, res) => {
         const { scheduleId } = req.params;
         const { status } = req.body;
 
-        if (!['pending', 'confirmed', 'cancelled', 'rejected'].includes(status)) {
+        if (!['pending', 'confirmed', 'rejected'].includes(status)) {
             return res.status(400).json({
-                message: "Invalid status. Must be one of: pending, confirmed, cancelled, rejected"
+                message: "Invalid status. Must be one of: pending, confirmed, rejected"
             });
         }
 
@@ -152,7 +152,7 @@ exports.updateScheduleStatus = async (req, res) => {
         await schedule.save();
         
         // Create notifications
-        if (status === 'confirmed' || status === 'cancelled' || status === 'rejected') {
+        if (status === 'confirmed' || status === 'rejected') {
             try {
                 // Get user and listing information for notifications
                 const [student, landlord, listing] = await Promise.all([
@@ -165,7 +165,7 @@ exports.updateScheduleStatus = async (req, res) => {
                 const studentNotification = new Notification({
                     userId: schedule.userId,
                     type: "property_update",
-                    title: `Visit ${status === 'confirmed' ? 'Confirmed' : status === 'rejected' ? 'Rejected' : 'Cancelled'}`,
+                    title: `Visit ${status === 'confirmed' ? 'Confirmed' : 'Rejected'}`,
                     message: `Your visit to ${listing?.propertyName || 'the property'} has been ${status}`,
                     relatedId: schedule._id,
                     refModel: "Property"
