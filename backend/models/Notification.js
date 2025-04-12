@@ -8,7 +8,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["message", "review", "property_update", "account", "system"],
+    enum: ["message", "review", "property_update", "account", "system", "schedule_update"],
     required: true,
   },
   title: {
@@ -25,7 +25,7 @@ const notificationSchema = new mongoose.Schema({
   },
   refModel: {
     type: String,
-    enum: ["Property", "Message", "Review", "User"],
+    enum: ["Property", "Message", "Review", "User", "Schedule"],
   },
   read: {
     type: Boolean,

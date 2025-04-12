@@ -11,4 +11,5 @@ module.exports = {
   Listing: require("./Listing"),
   University: require("./University"),
   BookMark: require("./BookMark"),
+  Schedule: require("./Schedule"),
 };

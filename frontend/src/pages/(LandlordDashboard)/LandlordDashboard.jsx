@@ -1,32 +1,40 @@
 import { useLandlordAuthStore } from '@/store/landlordAuthStore'
 import useListingStore from '@/store/listingStore';
-import React, { useEffect, useState } from 'react'
+import { useScheduleStore } from '@/store/scheduleStore';
+import React, { useEffect, useState, useRef } from 'react'
 import LoadingSpinner from '@/components/include/LoadingSpinner';
 import Sidebar from '@/components/landlord_dashboard/Sidebar';
 import { Link, useParams } from 'react-router-dom';
-import { Switch } from 'antd';
+import { Switch, notification } from 'antd';
 import { FaHome, FaCalendarAlt, FaEnvelope, FaEye, FaHeart, FaPlus, FaMapMarkerAlt, FaBuilding, FaUserFriends } from 'react-icons/fa';
 import ListingCard from '@/components/landlord_dashboard/ListingCard';
 import { MdDashboard } from 'react-icons/md';
+import { RiCalendarScheduleFill } from 'react-icons/ri';
 
 const LandlordDashboard = () => {
     const [isMapView, setIsMapView] = useState(false);
     const { landlord, isLandlordAuthenticated, checkLandlordAuth, isCheckingLandlordAuth } = useLandlordAuthStore();
     const { fetchLandlordListings, landlordListings, loading: listingsLoading } = useListingStore();
     const [totalListingsCount, setTotalListingsCount] = useState(0);
+    const [dashboardSchedules, setDashboardSchedules] = useState([]);
     const { landlordId, email } = useParams();
-
-    const scheduledVisits = [
-        { id: 1, name: "John Doe", property: "Cozy Studio Apartment", date: "Nov 15, 2023", time: "10:00 AM", status: "Confirmed" },
-        { id: 2, name: "Jane Smith", property: "Modern 2-Bedroom Flat", date: "Nov 16, 2023", time: "3:30 PM", status: "Pending" },
-        { id: 3, name: "Robert Johnson", property: "Spacious 3-Bedroom House", date: "Nov 18, 2023", time: "1:00 PM", status: "Confirmed" },
-    ];
+    const { updateScheduleStatus } = useScheduleStore();
 
     const inquiries = [
         { id: 1, name: "Emma Wilson", property: "Cozy Studio Apartment", message: "Is the apartment still available? I'm interested in viewing it.", date: "Nov 12, 2023" },
         { id: 2, name: "Michael Brown", property: "Modern 2-Bedroom Flat", message: "Are utilities included in the rent?", date: "Nov 14, 2023" },
         { id: 3, name: "Sarah Davis", property: "Spacious 3-Bedroom House", message: "Is the property pet-friendly?", date: "Nov 14, 2023" },
     ];
+
+    // Animation state for counters
+    const [animatedListingCount, setAnimatedListingCount] = useState(0);
+    const [animatedScheduleCount, setAnimatedScheduleCount] = useState(0);
+    const [animatedInquiryCount, setAnimatedInquiryCount] = useState(0);
+
+    // Animation frame references
+    const listingCountRef = useRef(null);
+    const scheduleCountRef = useRef(null);
+    const inquiryCountRef = useRef(null);
 
     useEffect(() => {
         if (!isLandlordAuthenticated) {
@@ -36,10 +44,8 @@ const LandlordDashboard = () => {
 
     useEffect(() => {
         if (landlord && landlord._id) {
-            // Fetch limited listings for display on dashboard
             fetchLandlordListings(landlord._id, 3)
                 .then(() => {
-                    // After fetching the limited listings, fetch all to get the total count
                     return fetchLandlordListings(landlord._id, 0, false);
                 })
                 .then((allListings) => {
@@ -58,6 +64,137 @@ const LandlordDashboard = () => {
             document.title = `${landlord.username}'s Dashboard`;
         }
     }, [landlord]);
+
+    useEffect(() => {
+        const fetchDashboardSchedules = async () => {
+            if (landlord && landlord._id) {
+                try {
+                    const { getSchedulesByLandlordId } = useScheduleStore.getState();
+                    const schedules = await getSchedulesByLandlordId(landlord._id);
+                    
+                    const upcoming = schedules.filter(schedule => 
+                        new Date(`${schedule.date}T${schedule.time}`) > new Date() &&
+                        schedule.status !== 'cancelled'
+                    ).slice(0, 3);
+                    
+                    setDashboardSchedules(upcoming);
+                } catch (error) {
+                    console.error("Error fetching dashboard schedules:", error);
+                }
+            }
+        };
+
+        fetchDashboardSchedules();
+    }, [landlord]);
+
+    useEffect(() => {
+        if (totalListingsCount > 0) {
+            let startTime;
+            const duration = 1500; // animation duration in ms
+            
+            const animateCount = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                const progress = Math.min((timestamp - startTime) / duration, 1);
+                
+                setAnimatedListingCount(Math.floor(progress * totalListingsCount));
+                
+                if (progress < 1) {
+                    listingCountRef.current = requestAnimationFrame(animateCount);
+                } else {
+                    setAnimatedListingCount(totalListingsCount); // ensure the final value is exact
+                }
+            };
+            
+            listingCountRef.current = requestAnimationFrame(animateCount);
+            
+            return () => {
+                if (listingCountRef.current) {
+                    cancelAnimationFrame(listingCountRef.current);
+                }
+            };
+        }
+    }, [totalListingsCount]);
+
+    useEffect(() => {
+        if (dashboardSchedules.length > 0) {
+            let startTime;
+            const duration = 1500; // animation duration in ms
+            
+            const animateCount = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                const progress = Math.min((timestamp - startTime) / duration, 1);
+                
+                setAnimatedScheduleCount(Math.floor(progress * dashboardSchedules.length));
+                
+                if (progress < 1) {
+                    scheduleCountRef.current = requestAnimationFrame(animateCount);
+                } else {
+                    setAnimatedScheduleCount(dashboardSchedules.length);
+                }
+            };
+            
+            scheduleCountRef.current = requestAnimationFrame(animateCount);
+            
+            return () => {
+                if (scheduleCountRef.current) {
+                    cancelAnimationFrame(scheduleCountRef.current);
+                }
+            };
+        }
+    }, [dashboardSchedules.length]);
+
+    useEffect(() => {
+        if (inquiries.length > 0) {
+            let startTime;
+            const duration = 1500; // animation duration in ms
+            
+            const animateCount = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                const progress = Math.min((timestamp - startTime) / duration, 1);
+                
+                setAnimatedInquiryCount(Math.floor(progress * inquiries.length));
+                
+                if (progress < 1) {
+                    inquiryCountRef.current = requestAnimationFrame(animateCount);
+                } else {
+                    setAnimatedInquiryCount(inquiries.length);
+                }
+            };
+            
+            inquiryCountRef.current = requestAnimationFrame(animateCount);
+            
+            return () => {
+                if (inquiryCountRef.current) {
+                    cancelAnimationFrame(inquiryCountRef.current);
+                }
+            };
+        }
+    }, [inquiries.length]);
+
+    const handleUpdateStatus = async (scheduleId, status) => {
+        try {
+            await updateScheduleStatus(scheduleId, status);
+            
+            setDashboardSchedules(prev => 
+                prev.map(schedule => 
+                    schedule._id === scheduleId 
+                    ? {...schedule, status} 
+                    : schedule
+                )
+            );
+            
+            notification.success({
+                message: `Schedule ${status === 'confirmed' ? 'Confirmed' : 'Rejected'}`,
+                description: `The schedule has been ${status} successfully.`
+            });
+        } catch (error) {
+            console.error(`Error updating schedule status:`, error);
+            notification.error({
+                message: 'Error',
+                description: 'Failed to update the schedule status.'
+            });
+        }
+    };
 
     if (isCheckingLandlordAuth || listingsLoading) {
         return <LoadingSpinner />;
@@ -87,11 +224,13 @@ const LandlordDashboard = () => {
                             <Link to="/all-listings" className="px-4 py-2 bg-primaryBgColor text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
                                 <FaBuilding /> All Listings
                             </Link>
+                            <Link to={`/landlord/${landlordId}/${email}/schedule`} className="px-4 py-2 bg-primaryBgColor text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+                                <RiCalendarScheduleFill /> Schedules
+                            </Link>
                         </div>
                     </div>
                 </div>
 
-                {/* Statistics Section */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-white p-4 rounded-lg shadow-sm flex items-center">
                         <div className="rounded-full bg-green-100 p-3 mr-4">
@@ -99,7 +238,7 @@ const LandlordDashboard = () => {
                         </div>
                         <div>
                             <p className="text-gray-500">Total Properties</p>
-                            <p className="text-2xl font-bold">{totalListingsCount}</p>
+                            <p className="text-2xl font-bold">{animatedListingCount}</p>
                         </div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow-sm flex items-center">
@@ -108,7 +247,7 @@ const LandlordDashboard = () => {
                         </div>
                         <div>
                             <p className="text-gray-500">Scheduled Visits</p>
-                            <p className="text-2xl font-bold">{scheduledVisits.length}</p>
+                            <p className="text-2xl font-bold">{animatedScheduleCount}</p>
                         </div>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow-sm flex items-center">
@@ -117,31 +256,18 @@ const LandlordDashboard = () => {
                         </div>
                         <div>
                             <p className="text-gray-500">New Inquiries</p>
-                            <p className="text-2xl font-bold">{inquiries.length}</p>
+                            <p className="text-2xl font-bold">{animatedInquiryCount}</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Listings Section */}
                 <div className="bg-white rounded-lg shadow-sm p-5 mb-6">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xl font-semibold text-gray-800 flex items-center">
                             <FaHome className="mr-2 text-primaryBgColor" /> My Listings
                         </h3>
-                        <div className="flex items-center space-x-3">
-                            <span className="text-base">Map View</span>
-                            <Switch
-                                checked={isMapView}
-                                onChange={(checked) => setIsMapView(checked)}
-                                size="default"
-                                style={{
-                                    backgroundColor: isMapView ? '#006845' : '#adadad'
-                                }}
-                            />
-                        </div>
                     </div>
 
-                    {/* Content area */}
                     <div className="mt-4">
                         {isMapView ? (
                             <div className="h-[400px] bg-gray-100 rounded-lg flex items-center justify-center relative">
@@ -185,24 +311,71 @@ const LandlordDashboard = () => {
                         <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                             <FaCalendarAlt className="mr-2 text-blue-600" /> Latest Scheduled Visits
                         </h3>
-                        {scheduledVisits.length > 0 ? (
+                        {dashboardSchedules.length > 0 ? (
                             <div className="space-y-4">
-                                {scheduledVisits.map(visit => (
-                                    <div key={visit.id} className="border-b border-gray-100 pb-3 last:border-b-0">
-                                        <div className="flex justify-between">
-                                            <div>
-                                                <p className="font-medium">{visit.name}</p>
-                                                <p className="text-sm text-gray-600">{visit.property}</p>
+                                {dashboardSchedules.map(schedule => {
+                                    const scheduleDate = new Date(`${schedule.date}T${schedule.time}`);
+                                    const formattedDate = scheduleDate.toLocaleDateString('en-US', {
+                                        weekday: 'short', 
+                                        month: 'short', 
+                                        day: 'numeric'
+                                    });
+                                    const formattedTime = scheduleDate.toLocaleTimeString('en-US', {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    });
+                                    
+                                    return (
+                                        <div key={schedule._id} className={`border-l-4 ${
+                                            schedule.status === 'confirmed' ? 'border-l-green-500' : 
+                                            'border-l-yellow-500'} p-3 rounded-md shadow-sm hover:shadow-md transition`}>
+                                            <div className="flex justify-between">
+                                                <div>
+                                                    <p className="font-medium flex items-center">
+                                                        <FaUserFriends className="text-primaryBgColor mr-2" />
+                                                        {schedule.userId?.username || 'Anonymous User'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600 flex items-center mt-1">
+                                                        <FaBuilding className="text-gray-500 mr-2" />
+                                                        {schedule.listingId?.propertyName || 'Property Visit'}
+                                                    </p>
+                                                    <div className="flex items-center gap-3 mt-2">
+                                                        <p className="text-xs bg-gray-100 px-2 py-1 rounded flex items-center">
+                                                            <FaCalendarAlt className="text-primaryBgColor mr-1" />
+                                                            {formattedDate}
+                                                        </p>
+                                                        <p className="text-xs bg-gray-100 px-2 py-1 rounded flex items-center">
+                                                            <FaCalendarAlt className="text-primaryBgColor mr-1" />
+                                                            {formattedTime}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className={`text-xs px-3 py-1 rounded-full ${
+                                                        schedule.status === 'confirmed' ? 'bg-green-100 text-green-700' : 
+                                                        'bg-yellow-100 text-yellow-700'}`}>
+                                                        {schedule.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-sm">{visit.date}, {visit.time}</p>
-                                                <span className={`text-xs px-2 py-1 rounded-full ${visit.status === 'Confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                    {visit.status}
-                                                </span>
-                                            </div>
+                                            
+                                            {schedule.status === 'pending' && (
+                                                <div className="mt-3 flex justify-end space-x-2">
+                                                    <button 
+                                                        className="text-xs px-3 py-1 bg-primaryBgColor text-white rounded hover:bg-green-700 transition"
+                                                        onClick={() => handleUpdateStatus(schedule._id, 'confirmed')}>
+                                                        Confirm
+                                                    </button>
+                                                    <button 
+                                                        className="text-xs px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                                                        onClick={() => handleUpdateStatus(schedule._id, 'rejected')}>
+                                                        Reject
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="h-48 flex items-center justify-center">
@@ -210,7 +383,7 @@ const LandlordDashboard = () => {
                             </div>
                         )}
                         <div className="mt-4 text-right">
-                            <Link to="/visits" className="text-primaryBgColor hover:underline">View all visits →</Link>
+                            <Link to={`/landlord/${landlordId}/${email}/schedule`} className="text-primaryBgColor hover:underline">View all visits →</Link>
                         </div>
                     </div>
 
@@ -244,12 +417,12 @@ const LandlordDashboard = () => {
                     </div>
                 </div>
 
-                <div className=" mt-10 items-center justify-center w-full">
-                    <h1 className=" text-gray-600 font-semibold text-center">UniNest © {new Date().getFullYear()}</h1>
+                <div className="mt-10 items-center justify-center w-full">
+                    <h1 className="text-gray-600 font-semibold text-center">UniNest © {new Date().getFullYear()}</h1>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default LandlordDashboard
+export default LandlordDashboard;

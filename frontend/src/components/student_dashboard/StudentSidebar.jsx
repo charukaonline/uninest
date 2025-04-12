@@ -1,14 +1,17 @@
 import { useAuthStore } from '@/store/authStore';
 import { notification } from 'antd';
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { FaBell, FaInbox } from 'react-icons/fa';
 import { IoMdHelpCircle } from 'react-icons/io';
 import { IoSettings } from 'react-icons/io5';
 import { MdDashboard, MdFeedback } from 'react-icons/md';
-import { RiLogoutBoxLine } from 'react-icons/ri';
+import { RiCalendarScheduleFill, RiLogoutBoxLine } from 'react-icons/ri';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import axios from 'axios';
 
 const StudentSidebar = () => {
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -27,10 +30,44 @@ const StudentSidebar = () => {
 
     const isActive = (path) => location.pathname === path;
 
+    // Fetch notifications to get unread count
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            if (!user?._id) return;
+
+            try {
+                const response = await axios.get(`http://localhost:5000/api/notifications/user/${user._id}`);
+
+                if (response.data && response.data.notifications) {
+                    const notifs = response.data.notifications;
+                    setNotifications(notifs);
+                    setUnreadCount(notifs.filter(n => !n.read).length);
+                }
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+            }
+        };
+
+        fetchNotifications();
+
+        // Set up interval to check for new notifications (every 60 seconds)
+        const intervalId = setInterval(fetchNotifications, 60000);
+
+        // Clean up the interval on component unmount
+        return () => clearInterval(intervalId);
+    }, [user]);
+
     const topLinks = [
         { name: 'Dashboard', path: `/student/${userId}/${email}`, icon: <MdDashboard />, txtColor: '#7F7F7F' },
         { name: 'Inbox', path: `/student/${userId}/${email}/inbox`, icon: <FaInbox />, txtColor: '#7F7F7F' },
-        { name: 'Notifications', path: `/student/${userId}/${email}/notification`, icon: <FaBell />, txtColor: '#7F7F7F' },
+        { name: 'Schedule', path: `/student/${userId}/${email}/schedule`, icon: <RiCalendarScheduleFill />, txtColor: '#7F7F7F' },
+        {
+            name: 'Notifications',
+            path: `/student/${userId}/${email}/notifications`,
+            icon: <FaBell />,
+            txtColor: '#7F7F7F',
+            badge: unreadCount > 0
+        },
         { name: 'Settings', path: `/student/${userId}/${email}/settings`, icon: <IoSettings />, txtColor: '#7F7F7F' },
     ];
 
@@ -60,8 +97,15 @@ const StudentSidebar = () => {
                             style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
                             className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#030303] border-r-4 border-green-500" : "hover:text-white"}`}
                         >
-                            <span className=' text-lg'>{link.icon}</span>
-                            <span className=' text-base'>{link.name}</span>
+                            <div className="relative">
+                                <span className='text-lg'>{link.icon}</span>
+                                {link.badge && (
+                                    <span className="absolute -top-2 -right-2 bg-primaryBgColor text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
+                            </div>
+                            <span className='text-base'>{link.name}</span>
                         </Link>
                     </li>
                 ))}
