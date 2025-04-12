@@ -8,6 +8,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { FaBookmark } from 'react-icons/fa6'
 import { useBookmarkStore } from '@/store/bookmarkStore'
+import { RiCalendarScheduleFill } from 'react-icons/ri'
+import { useScheduleStore } from "@/store/scheduleStore";
 
 export function ScheduleDialog() {
     return (
@@ -337,5 +339,127 @@ export function AddBookMark() {
             <FaBookmark className="text-black mr-2" />
             {loading ? 'Processing...' : isBookmarked ? 'Bookmarked' : 'Add to Bookmark'}
         </Button>
+    );
+}
+
+export function ScheduleVisit() {
+    const [showScheduleForm, setShowScheduleForm] = useState(false);
+    const { isAuthenticated, user } = useAuthStore();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { listingId } = useParams();
+    const [listing, setListing] = useState(null);
+    const { addSchedule, loading } = useScheduleStore();
+
+    // Fetch listing data to get landlordId
+    useEffect(() => {
+        const fetchListing = async () => {
+            if (listingId) {
+                try {
+                    const response = await axios.get(`http://localhost:5000/api/listings/${listingId}`);
+                    setListing(response.data);
+                } catch (error) {
+                    console.error("Error fetching listing:", error);
+                }
+            }
+        };
+
+        fetchListing();
+    }, [listingId]);
+
+    const handleScheduleClick = () => {
+        if (!isAuthenticated) {
+            localStorage.setItem("redirectAfterLogin", location.pathname);
+            navigate("/auth/user-signin");
+            return;
+        }
+        setShowScheduleForm(true);
+    };
+
+    const handleSubmit = async (values) => {
+        if (!listing || !listing.landlord) {
+            notification.error({
+                message: "Error",
+                description: "Missing listing or landlord information"
+            });
+            return;
+        }
+
+        const scheduleData = {
+            studentId: user._id,
+            landlordId: listing.landlord._id,
+            listingId: listingId,
+            date: values.date,
+            time: values.time,
+        };
+
+        try {
+            await addSchedule(scheduleData);
+            setShowScheduleForm(false);
+        } catch (error) {
+            // Error is handled in the store
+        }
+    };
+
+    return (
+        <>
+            <Button
+                className="w-full bg-white text-black font-semibold hover:bg-gray-100"
+                onClick={handleScheduleClick}
+                disabled={loading}
+            >
+                <RiCalendarScheduleFill className="text-black" />
+                {loading ? "Loading..." : "Schedule a Visit"}
+            </Button>
+
+            <AnimatePresence>
+                {showScheduleForm && (
+                    <div className="fixed -inset-3 h-screen bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ type: "spring", duration: 0.3 }}
+                            className="bg-white p-6 rounded-lg w-[400px]"
+                        >
+                            <h2 className="text-xl font-semibold mb-4">Schedule a Visit</h2>
+                            <Form layout="vertical" onFinish={handleSubmit}>
+                                <Form.Item
+                                    name="date"
+                                    label="Select Date"
+                                    rules={[{ required: true, message: "Please select a date" }]}
+                                >
+                                    <Input type="date" className="focus:border-primaryBgColor" />
+                                </Form.Item>
+
+                                <Form.Item
+                                    name="time"
+                                    label="Select Time"
+                                    rules={[{ required: true, message: "Please select a time" }]}
+                                >
+                                    <Input type="time" className="focus:border-primaryBgColor" />
+                                </Form.Item>
+
+                                <div className="flex justify-end space-x-2 mt-4">
+                                    <Button
+                                        type="button"
+                                        onClick={() => setShowScheduleForm(false)}
+                                        className="bg-gray-200 text-black hover:bg-gray-300"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        className="bg-primaryBgColor text-white hover:bg-green-600"
+                                    >
+                                        Submit Schedule
+                                    </Button>
+                                </div>
+                            </Form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </>
     );
 }

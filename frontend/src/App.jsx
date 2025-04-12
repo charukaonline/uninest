@@ -42,6 +42,9 @@ import Feedback from "./pages/(AdminDashboard)/Feedback";
 import LandlordInbox from "./pages/(LandlordDashboard)/LandlordInbox";
 import Search from "./pages/Search";
 import Pricing from "./pages/(LandlordDashboard)/Pricing";
+import StdSchedule from "./pages/(StdDashboard)/StdSchedule";
+import StdNotifications from "./pages/(StdDashboard)/StdNotifications"; // Fixed: Changed from StdNotification to StdNotifications
+import LandlordSchedules from "./pages/(LandlordDashboard)/LandlordSchedules";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -194,6 +197,24 @@ function App() {
           }
         />
 
+        <Route
+          path="/student/:userId/:email/schedule"
+          element={
+            <ProtectedRoute>
+              <StdSchedule />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/:userId/:email/notifications"
+          element={
+            <ProtectedRoute>
+              <StdNotifications />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Landlord Dashboard - Update this route */}
         <Route
           path="/landlord/:landlordId/:email"
@@ -227,6 +248,15 @@ function App() {
           element={
             <LandlordProtectedRoute>
               <LandlordInbox />
+            </LandlordProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/landlord/:landlordId/:email/schedule"
+          element={
+            <LandlordProtectedRoute>
+              <LandlordSchedules />
             </LandlordProtectedRoute>
           }
         />
