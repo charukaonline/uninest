@@ -6,6 +6,7 @@ import Filter from "@/components/include/Filter";
 import { Switch } from "antd";
 import { motion } from "framer-motion";
 import Map from "@/components/include/Map";
+import ListingsMap from "@/components/include/ListingsMap";
 
 const AllListings = () => {
   const { listings, loading, error, fetchAllListings } = useListingStore();
@@ -69,7 +70,7 @@ const AllListings = () => {
 
       {isMapView ? (
         <div className="mt-5 mb-5 w-full">
-          <Map />
+          <ListingsMap listings={listings} />
         </div>
       ) : (
         <>
