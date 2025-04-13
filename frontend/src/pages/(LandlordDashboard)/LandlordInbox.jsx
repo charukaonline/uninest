@@ -171,7 +171,7 @@ const ChatInterface = ({ conversation, socket }) => {
   }
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col relative z-10">
       {/* Chat Header */}
       <div className="p-4 rounded-lg flex items-center space-x-3 bg-[#181818]">
         <div className="w-12 h-12 rounded-full bg-purple-400 flex items-center justify-center text-white text-xl font-bold">
@@ -194,9 +194,7 @@ const ChatInterface = ({ conversation, socket }) => {
         <div
           className="flex-1 p-4 overflow-y-auto space-y-4"
           style={{
-            backgroundImage: "url(/chat-background.jpg)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
+            minHeight: "calc(100vh - 230px)",
           }}
         >
           {messages.length === 0 ? (
@@ -528,13 +526,20 @@ const LandlordInbox = () => {
           <div className="flex justify-between w-full h-full gap-4">
             {/* Chatting Section */}
             <div
-              className="w-3/4 bg-white rounded-lg shadow-md"
+              className="w-3/4 bg-white rounded-lg shadow-md overflow-hidden"
               style={{
-                backgroundImage: "url(/chat-background.jpg)",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
+                position: "relative",
               }}
             >
+              <div
+                className="absolute inset-0 z-0"
+                style={{
+                  backgroundImage: "url(/chat-background.jpg)",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundAttachment: "fixed",
+                }}
+              />
               {selectedConversation ? (
                 <ChatInterface
                   conversation={selectedConversation}
