@@ -233,14 +233,14 @@ exports.sendMessage = async (req, res) => {
         // Create notification
         const notification = new Notification({
           userId: recipientId,
-          type: "new_message",
+          type: "message",
           title: "New Message",
           message: `${sender.username} sent you a message: "${text.substring(
             0,
             50
           )}${text.length > 50 ? "..." : ""}"`,
-          relatedId: conversationId,
-          refModel: "Conversation",
+          relatedId: newMessage._id,
+          refModel: "Message",
         });
 
         await notification.save();
@@ -342,15 +342,15 @@ exports.createConversation = async (req, res) => {
         // Create notification
         const notification = new Notification({
           userId: recipientId,
-          type: "new_message",
+          type: "message",
           title: "New Message",
           message: `${
             sender.username
           } sent you a message: "${initialMessage.substring(0, 50)}${
             initialMessage.length > 50 ? "..." : ""
           }"`,
-          relatedId: conversation._id,
-          refModel: "Conversation",
+          relatedId: newMessage._id,
+          refModel: "Message",
         });
 
         await notification.save();
