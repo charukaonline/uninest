@@ -4,11 +4,13 @@ const bcryptjs = require("bcryptjs");
 const { validationResult } = require("express-validator");
 const User = require("../models/User");
 const LandlordProfile = require("../models/LandlordProfile");
-const drive = require('../config/googleDrive');
-const fs = require('fs').promises;
-const fsSync = require('fs'); // Add this line for synchronous fs operations
+const drive = require("../config/googleDrive");
+const fs = require("fs").promises;
+const fsSync = require("fs"); // Add this line for synchronous fs operations
 
-const { generateTokenAndSetCookie } = require("../utils/generateTokenAndSetCookie");
+const {
+  generateTokenAndSetCookie,
+} = require("../utils/generateTokenAndSetCookie");
 const validateNIC = require("../middleware/nicValidation");
 
 exports.registerLandlord = async (req, res) => {
@@ -29,7 +31,9 @@ exports.registerLandlord = async (req, res) => {
     // Check if phone number already exists
     const phoneExists = await User.findOne({ phoneNumber: phone });
     if (phoneExists) {
-      return res.status(400).json({ message: "Phone number already registered" });
+      return res
+        .status(400)
+        .json({ message: "Phone number already registered" });
     }
 
     const hashedPassword = await bcryptjs.hash(password, 10);
@@ -53,8 +57,8 @@ exports.registerLandlord = async (req, res) => {
       userId: user._id,
       user: {
         ...user._doc,
-        password: undefined
-      }
+        password: undefined,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -64,13 +68,17 @@ exports.registerLandlord = async (req, res) => {
 exports.completeLandlordProfile = async (req, res) => {
   let uploadedFile = null;
   try {
-    console.log('Starting landlord profile completion...');
+    console.log("Starting landlord profile completion...");
     const { userId } = req.params;
     const { residentialAddress, nationalIdCardNumber } = req.body;
     const nicDocument = req.file;
 
-    console.log('Request data:', { userId, residentialAddress, nationalIdCardNumber });
-    console.log('File:', nicDocument);
+    console.log("Request data:", {
+      userId,
+      residentialAddress,
+      nationalIdCardNumber,
+    });
+    console.log("File:", nicDocument);
 
     if (!nicDocument) {
       return res.status(400).json({ message: "NIC document is required" });
@@ -80,22 +88,26 @@ exports.completeLandlordProfile = async (req, res) => {
     try {
       const { isFake } = validateNIC(nationalIdCardNumber);
       if (isFake) {
-        return res.status(400).json({ message: "Invalid NIC number: Age is not realistic." });
+        return res
+          .status(400)
+          .json({ message: "Invalid NIC number: Age is not realistic." });
       }
     } catch (validationError) {
       return res.status(400).json({ message: validationError.message });
     }
 
     uploadedFile = nicDocument.path;
-    console.log('File path:', uploadedFile);
+    console.log("File path:", uploadedFile);
 
     // Check if file exists before upload
     try {
       await fs.access(uploadedFile);
-      console.log('File exists and is accessible');
+      console.log("File exists and is accessible");
     } catch (error) {
-      console.error('File access error:', error);
-      return res.status(400).json({ message: "File access error", error: error.message });
+      console.error("File access error:", error);
+      return res
+        .status(400)
+        .json({ message: "File access error", error: error.message });
     }
 
     // Check if user exists
@@ -104,24 +116,24 @@ exports.completeLandlordProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log('Uploading to Google Drive...');
+    console.log("Uploading to Google Drive...");
     // Upload to Google Drive
     let driveResponse;
     try {
       driveResponse = await drive.files.create({
         requestBody: {
           name: `NIC_${userId}_${Date.now()}.pdf`,
-          mimeType: 'application/pdf',
-          parents: ['1JnPe9dbyS6OHfxQUEmmKEqJrW67OQmZq'],
+          mimeType: "application/pdf",
+          parents: ["1JnPe9dbyS6OHfxQUEmmKEqJrW67OQmZq"],
         },
         media: {
-          mimeType: 'application/pdf',
+          mimeType: "application/pdf",
           body: fsSync.createReadStream(uploadedFile),
         },
       });
-      console.log('Drive upload successful:', driveResponse.data);
+      console.log("Drive upload successful:", driveResponse.data);
     } catch (uploadError) {
-      console.error('Drive upload error:', uploadError);
+      console.error("Drive upload error:", uploadError);
       throw new Error(`Drive upload failed: ${uploadError.message}`);
     }
 
@@ -131,11 +143,13 @@ exports.completeLandlordProfile = async (req, res) => {
       residentialAddress,
       nationalIdCardNumber,
       verificationStatus: "pending",
-      verificationDocuments: [{
-        documentType: 'NIC',
-        driveFileId: driveResponse.data.id,
-        uploadDate: new Date()
-      }],
+      verificationDocuments: [
+        {
+          documentType: "NIC",
+          driveFileId: driveResponse.data.id,
+          uploadDate: new Date(),
+        },
+      ],
       subscription: {
         plan: "free",
         status: "active",
@@ -144,25 +158,24 @@ exports.completeLandlordProfile = async (req, res) => {
       },
     });
 
-    console.log('Saving landlord profile...');
+    console.log("Saving landlord profile...");
     await landlordProfile.save();
 
     // Clean up uploaded file
     try {
       await fs.access(uploadedFile);
       await fs.unlink(uploadedFile);
-      console.log('File cleanup successful');
+      console.log("File cleanup successful");
     } catch (unlinkError) {
-      console.error('File cleanup error:', unlinkError);
+      console.error("File cleanup error:", unlinkError);
     }
 
     res.status(200).json({
       message: "Landlord profile completed, waiting for verification",
       profile: landlordProfile,
     });
-
   } catch (error) {
-    console.error('Complete error:', error);
+    console.error("Complete error:", error);
 
     // Clean up file if it exists
     if (uploadedFile) {
@@ -170,14 +183,14 @@ exports.completeLandlordProfile = async (req, res) => {
         await fs.access(uploadedFile);
         await fs.unlink(uploadedFile);
       } catch (unlinkError) {
-        console.error('Cleanup error:', unlinkError);
+        console.error("Cleanup error:", unlinkError);
       }
     }
 
     res.status(500).json({
       message: "Server error",
       error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
   }
 };
@@ -194,7 +207,7 @@ exports.landlordSignin = async (req, res) => {
     // Find user by email and role
     const landlord = await User.findOne({
       email,
-      role: "landlord"
+      role: "landlord",
     });
 
     // Verify password
@@ -204,7 +217,9 @@ exports.landlordSignin = async (req, res) => {
     }
 
     // Get landlord profile
-    const landlordProfile = await LandlordProfile.findOne({ userId: landlord._id });
+    const landlordProfile = await LandlordProfile.findOne({
+      userId: landlord._id,
+    });
     if (!landlordProfile) {
       return res.status(404).json({ message: "Landlord profile not found" });
     }
@@ -212,7 +227,7 @@ exports.landlordSignin = async (req, res) => {
     if (landlord.isFlagged) {
       return res.status(403).json({
         success: false,
-        message: "Your account has been suspended. Please contact support."
+        message: "Your account has been suspended. Please contact support.",
       });
     }
 
@@ -221,7 +236,7 @@ exports.landlordSignin = async (req, res) => {
     await landlord.save();
 
     // Generate token with landlord type
-    generateTokenAndSetCookie(res, landlord._id, 'landlord');
+    generateTokenAndSetCookie(res, landlord._id, "landlord");
 
     res.status(200).json({
       success: true,
@@ -230,64 +245,75 @@ exports.landlordSignin = async (req, res) => {
         email: landlord.email,
         username: landlord.username,
         isVerified: landlord.isVerified,
-        verificationStatus: landlordProfile?.verificationStatus
-      }
+        verificationStatus: landlordProfile?.verificationStatus,
+      },
     });
-
   } catch (error) {
-    console.error('Landlord signin error:', error);
+    console.error("Landlord signin error:", error);
     res.status(500).json({
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
 
 exports.checkLandlordAuth = async (req, res) => {
   try {
-    const token = req.cookies.landlordToken;  // Change to landlordToken
+    const token = req.cookies.landlordToken; // Change to landlordToken
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "No authentication token"
+        message: "No authentication token",
       });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const landlord = await User.findById(decoded.userId)
       .select("-password")
-      .where('role').equals('landlord');
+      .where("role")
+      .equals("landlord");
 
     if (!landlord) {
       return res.status(401).json({
         success: false,
-        message: "Invalid landlord account"
+        message: "Invalid landlord account",
       });
     }
 
-    const landlordProfile = await LandlordProfile.findOne({ userId: landlord._id });
+    const landlordProfile = await LandlordProfile.findOne({
+      userId: landlord._id,
+    });
+
+    // Generate a token for API calls that can be used in Authorization header
+    const jwtToken = jwt.sign(
+      { userId: landlord._id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
 
     res.status(200).json({
       success: true,
+      token: jwtToken, // Add the token to the response
       landlord: {
-        _id: landlord._id.toString(),  // Changed from id to _id
+        _id: landlord._id.toString(),
         email: landlord.email,
         username: landlord.username,
         isVerified: landlord.isVerified,
-        profile: landlordProfile
-      }
+        profile: landlordProfile,
+      },
     });
-
   } catch (error) {
     console.error("Auth check error:", error);
     res.status(401).json({
       success: false,
-      message: "Authentication failed"
+      message: "Authentication failed",
     });
   }
 };
 
 exports.logoutLandlord = async (req, res) => {
-  res.clearCookie("landlordToken");  // Change to landlordToken
+  res.clearCookie("landlordToken"); // Change to landlordToken
   res.status(200).json({ success: true, message: "Logged out successfully" });
 };

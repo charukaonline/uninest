@@ -4,10 +4,23 @@ import { Check, CheckCheck } from "lucide-react";
 import { Bs1CircleFill } from "react-icons/bs";
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { useAuthStore } from "@/store/authStore";
+import { useLandlordAuthStore } from "@/store/landlordAuthStore";
 import { notification, Spin, Empty } from "antd";
 import { io } from "socket.io-client";
 import { format } from "date-fns";
+
+// Token manager for handling landlord API token
+const tokenManager = {
+  setToken: (token) => {
+    localStorage.setItem("landlordApiToken", token);
+  },
+  getToken: () => {
+    return localStorage.getItem("landlordApiToken");
+  },
+  clearToken: () => {
+    localStorage.removeItem("landlordApiToken");
+  },
+};
 
 const MessageStatus = ({ status }) => {
   switch (status) {
@@ -32,7 +45,7 @@ const formatTime = (dateString) => {
 };
 
 const ChatInterface = ({ conversation, socket }) => {
-  const { user } = useAuthStore();
+  const { landlord } = useLandlordAuthStore();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -61,7 +74,7 @@ const ChatInterface = ({ conversation, socket }) => {
           `${API_URL}/chat/conversations/${conversation._id}/messages`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${tokenManager.getToken()}`,
             },
           }
         );
@@ -73,7 +86,7 @@ const ChatInterface = ({ conversation, socket }) => {
           {},
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${tokenManager.getToken()}`,
             },
           }
         );
@@ -106,7 +119,7 @@ const ChatInterface = ({ conversation, socket }) => {
             {},
             {
               headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                Authorization: `Bearer ${tokenManager.getToken()}`,
               },
             }
           )
@@ -132,7 +145,9 @@ const ChatInterface = ({ conversation, socket }) => {
           text: newMessage,
         },
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: {
+            Authorization: `Bearer ${tokenManager.getToken()}`,
+          },
         }
       );
 
@@ -193,14 +208,14 @@ const ChatInterface = ({ conversation, socket }) => {
               <div
                 key={message._id}
                 className={`flex ${
-                  message.sender._id === user?._id
+                  message.sender._id === landlord?._id
                     ? "justify-end"
                     : "justify-start"
                 }`}
               >
                 <div
                   className={`max-w-[70%] ${
-                    message.sender._id === user?._id
+                    message.sender._id === landlord?._id
                       ? "bg-[#181818] text-white"
                       : "bg-white text-[#181818]"
                   } p-3 rounded-lg shadow`}
@@ -209,14 +224,14 @@ const ChatInterface = ({ conversation, socket }) => {
                   <div className="flex items-center justify-between">
                     <p
                       className={`text-xs ${
-                        message.sender._id === user?._id
+                        message.sender._id === landlord?._id
                           ? "text-gray-400"
                           : "text-gray-500"
                       } text-right mt-1`}
                     >
                       {formatTime(message.createdAt)}
                     </p>
-                    {message.sender._id === user?._id && (
+                    {message.sender._id === landlord?._id && (
                       <MessageStatus status={message.status || "sent"} />
                     )}
                   </div>
@@ -252,7 +267,7 @@ const ChatInterface = ({ conversation, socket }) => {
 };
 
 const LandlordInbox = () => {
-  const { user, isAuthenticated } = useAuthStore();
+  const { landlord, isLandlordAuthenticated } = useLandlordAuthStore();
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -271,39 +286,85 @@ const LandlordInbox = () => {
 
   // Setup socket connection
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
+    if (!isLandlordAuthenticated || !landlord) return;
 
-    const socketUrl =
-      import.meta.env.MODE === "development" ? "http://localhost:5000" : "/";
-    const newSocket = io(socketUrl, {
-      auth: { token: localStorage.getItem("token") },
-    });
+    // First, make sure we have a token
+    const fetchAuthToken = async () => {
+      try {
+        // Get the auth token for API calls
+        const authResponse = await axios.get(
+          `${API_URL}/auth/landlord/checkLandlordAuth`,
+          { withCredentials: true }
+        );
 
-    newSocket.on("connect", () => {
-      console.log("Socket connected");
-    });
+        if (authResponse.data?.token) {
+          // Store the token for future API calls
+          tokenManager.setToken(authResponse.data.token);
 
-    newSocket.on("connect_error", (err) => {
-      console.error("Socket connection error:", err);
-    });
+          // Now connect socket using that token
+          const socketUrl =
+            import.meta.env.MODE === "development"
+              ? "http://localhost:5000"
+              : "/";
 
-    setSocket(newSocket);
+          const newSocket = io(socketUrl, {
+            auth: { token: authResponse.data.token },
+          });
+
+          newSocket.on("connect", () => {
+            console.log("Socket connected successfully");
+          });
+
+          newSocket.on("connect_error", (err) => {
+            console.error("Socket connection error:", err);
+          });
+
+          setSocket(newSocket);
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        notification.error({
+          message: "Connection Error",
+          description: "Failed to establish real-time connection",
+        });
+      }
+    };
+
+    fetchAuthToken();
 
     return () => {
-      newSocket.disconnect();
+      if (socket) socket.disconnect();
     };
-  }, [isAuthenticated, user]);
+  }, [isLandlordAuthenticated, landlord, API_URL]);
 
   // Fetch conversations
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isLandlordAuthenticated) return;
 
     const fetchConversations = async () => {
       try {
         setLoading(true);
+
+        // First check if we already have a token
+        if (!tokenManager.getToken()) {
+          // Get the auth token for API calls
+          const authResponse = await axios.get(
+            `${API_URL}/auth/landlord/checkLandlordAuth`,
+            { withCredentials: true }
+          );
+
+          if (authResponse.data?.token) {
+            tokenManager.setToken(authResponse.data.token);
+          } else {
+            throw new Error("Failed to get authentication token");
+          }
+        }
+
+        // Use the token to get conversations
         const response = await axios.get(`${API_URL}/chat/conversations`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${tokenManager.getToken()}` },
         });
+
         setConversations(response.data);
 
         // Select the first conversation by default if available
@@ -322,7 +383,7 @@ const LandlordInbox = () => {
     };
 
     fetchConversations();
-  }, [isAuthenticated, API_URL]);
+  }, [isLandlordAuthenticated, API_URL]);
 
   // Listen for new conversations and messages
   useEffect(() => {
@@ -364,7 +425,7 @@ const LandlordInbox = () => {
       // Fetch all conversations again to include the new one
       axios
         .get(`${API_URL}/chat/conversations`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${tokenManager.getToken()}` },
         })
         .then((response) => {
           setConversations(response.data);
@@ -421,7 +482,7 @@ const LandlordInbox = () => {
           {},
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${tokenManager.getToken()}`,
             },
           }
         )
@@ -444,7 +505,7 @@ const LandlordInbox = () => {
     }
   };
 
-  if (!isAuthenticated) {
+  if (!isLandlordAuthenticated) {
     return (
       <div className="flex justify-center items-center h-screen">
         <p>Please log in to view your messages</p>
