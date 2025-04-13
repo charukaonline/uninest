@@ -102,3 +102,4 @@ app.use("/api/bookmark", require("./routes/bookmarkRoutes"));
 app.use("/api/schedules", require("./routes/scheduleRoutes")); // Changed from schedule to schedules
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/chat", require("./routes/chat"));
+app.use('/api/page-status', require('./routes/pageStatus'));

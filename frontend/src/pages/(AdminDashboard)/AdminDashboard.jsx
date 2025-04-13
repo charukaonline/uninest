@@ -19,12 +19,11 @@ export default function AdminDashboard() {
   const { allUsers, fetchAllUsers } = useAdminStore();
   const { listings, fetchAllListings } = useListingStore();
 
-  const handleLogout = async () => {
+  const handlePagesButtonClick = () => {
     try {
-      await adminLogout();
-      navigate("/auth/uninest-admin");
+      navigate(`/admin/${adminId}/${email}/handle-pages`);
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("Error navigating to pages:", error);
     }
   };
 
@@ -94,11 +93,11 @@ export default function AdminDashboard() {
               Welcome Back, {admin.username}
             </h1>
             <Button
-              onClick={handleLogout}
+              onClick={handlePagesButtonClick}
               variant="outline"
-              className=" bg-primaryBgColor text-white hover:bg-red-500 hover:text-white font-semibold"
+              className=" bg-primaryBgColor text-white hover:bg-green-700 hover:text-white"
             >
-              Logout
+              Manage Pages
             </Button>
           </div>
         </header>

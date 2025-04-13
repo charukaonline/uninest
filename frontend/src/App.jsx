@@ -45,6 +45,8 @@ import Pricing from "./pages/(LandlordDashboard)/Pricing";
 import StdSchedule from "./pages/(StdDashboard)/StdSchedule";
 import StdNotifications from "./pages/(StdDashboard)/StdNotifications"; // Fixed: Changed from StdNotification to StdNotifications
 import LandlordSchedules from "./pages/(LandlordDashboard)/LandlordSchedules";
+import HandlePages from "./pages/(AdminDashboard)/HandlePages";
+import PageStatusWrapper from "./components/include/PageStatusWrapper";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -57,286 +59,297 @@ function App() {
 
   return (
     <>
-      <Routes>
-        {/* Main pages */}
-        <Route
-          path="/"
-          element={
-            <Layout>
-              <Home />
-            </Layout>
-          }
-        />
-        <Route path="*" element={<NotFound />} />
-
-        <Route
-          path="/search"
-          element={
-            <Layout>
-              <Search />
-            </Layout>
-          }
-        />
-
-        {/* Student signup and signin */}
-        <Route
-          path="/auth/user-signup"
-          element={
-            <AuthenticatedUser>
+      <PageStatusWrapper>
+        <Routes>
+          {/* Main pages */}
+          <Route
+            path="/"
+            element={
               <Layout>
-                <UserSignupPage />
+                <Home />
               </Layout>
-            </AuthenticatedUser>
-          }
-        />
-        <Route
-          path="/auth/user-signin"
-          element={
-            <AuthenticatedUser>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+
+          <Route
+            path="/search"
+            element={
               <Layout>
-                <UserSigninPage />
+                <Search />
               </Layout>
-            </AuthenticatedUser>
-          }
-        />
-        <Route
-          path="/auth/google/success"
-          element={
-            <Layout>
-              <UserPreference />
-            </Layout>
-          }
-        />
-        <Route path="/auth/email-verify" element={<EmailVerificationPage />} />
+            }
+          />
 
-        {/* House owners signup and signin */}
-        <Route
-          path="/auth/houseowner-signup"
-          element={
-            <AuthenticatedLandlord>
+          {/* Student signup and signin */}
+          <Route
+            path="/auth/user-signup"
+            element={
+              <AuthenticatedUser>
+                <Layout>
+                  <UserSignupPage />
+                </Layout>
+              </AuthenticatedUser>
+            }
+          />
+          <Route
+            path="/auth/user-signin"
+            element={
+              <AuthenticatedUser>
+                <Layout>
+                  <UserSigninPage />
+                </Layout>
+              </AuthenticatedUser>
+            }
+          />
+          <Route
+            path="/auth/google/success"
+            element={
               <Layout>
-                <HouseownerSignupPage />
+                <UserPreference />
               </Layout>
-            </AuthenticatedLandlord>
-          }
-        />
-        <Route
-          path="/auth/verification-pending"
-          element={
-            <Layout>
-              <PendingHouseowner />
-            </Layout>
-          }
-        />
-        <Route
-          path="/auth/houseowner-signin"
-          element={
-            <AuthenticatedLandlord>
+            }
+          />
+          <Route path="/auth/email-verify" element={<EmailVerificationPage />} />
+
+          {/* House owners signup and signin */}
+          <Route
+            path="/auth/houseowner-signup"
+            element={
+              <AuthenticatedLandlord>
+                <Layout>
+                  <HouseownerSignupPage />
+                </Layout>
+              </AuthenticatedLandlord>
+            }
+          />
+          <Route
+            path="/auth/verification-pending"
+            element={
               <Layout>
-                <HouseownerSigninPage />
+                <PendingHouseowner />
               </Layout>
-            </AuthenticatedLandlord>
-          }
-        />
+            }
+          />
+          <Route
+            path="/auth/houseowner-signin"
+            element={
+              <AuthenticatedLandlord>
+                <Layout>
+                  <HouseownerSigninPage />
+                </Layout>
+              </AuthenticatedLandlord>
+            }
+          />
 
-        {/* All Listings */}
-        <Route
-          path="/all-listings"
-          element={
-            <Layout>
-              <AllListings />
-            </Layout>
-          }
-        />
+          {/* All Listings */}
+          <Route
+            path="/all-listings"
+            element={
+              <Layout>
+                <AllListings />
+              </Layout>
+            }
+          />
 
-        {/* One Listing Details */}
-        <Route
-          path="/listing/:listingId"
-          element={
-            <Layout>
-              <ListingInfo />
-            </Layout>
-          }
-        />
+          {/* One Listing Details */}
+          <Route
+            path="/listing/:listingId"
+            element={
+              <Layout>
+                <ListingInfo />
+              </Layout>
+            }
+          />
 
-        {/* Privacy Policy */}
-        <Route
-          path="/privacy-policy"
-          element={
-            <Layout>
-              <PrivacyPolicy />
-            </Layout>
-          }
-        />
+          {/* Privacy Policy */}
+          <Route
+            path="/privacy-policy"
+            element={
+              <Layout>
+                <PrivacyPolicy />
+              </Layout>
+            }
+          />
 
-        {/* Student Dashboard */}
-        <Route
-          path="/student/:userId/:email"
-          element={
-            <ProtectedRoute>
-              <StudentDashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* Student Dashboard */}
+          <Route
+            path="/student/:userId/:email"
+            element={
+              <ProtectedRoute>
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/student/:userId/:email/settings"
-          element={
-            <ProtectedRoute>
-              <StdSettings />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/student/:userId/:email/settings"
+            element={
+              <ProtectedRoute>
+                <StdSettings />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/student/:userId/:email/inbox"
-          element={
-            <ProtectedRoute>
-              <StdInbox />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/student/:userId/:email/inbox"
+            element={
+              <ProtectedRoute>
+                <StdInbox />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/student/:userId/:email/schedule"
-          element={
-            <ProtectedRoute>
-              <StdSchedule />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/student/:userId/:email/schedule"
+            element={
+              <ProtectedRoute>
+                <StdSchedule />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/student/:userId/:email/notifications"
-          element={
-            <ProtectedRoute>
-              <StdNotifications />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/student/:userId/:email/notifications"
+            element={
+              <ProtectedRoute>
+                <StdNotifications />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Landlord Dashboard - Update this route */}
-        <Route
-          path="/landlord/:landlordId/:email"
-          element={
-            <LandlordProtectedRoute>
-              <LandlordDashboard />
-            </LandlordProtectedRoute>
-          }
-        />
+          {/* Landlord Dashboard - Update this route */}
+          <Route
+            path="/landlord/:landlordId/:email"
+            element={
+              <LandlordProtectedRoute>
+                <LandlordDashboard />
+              </LandlordProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/landlord/:landlordId/:email/add-listings"
-          element={
-            <LandlordProtectedRoute>
-              <AddListings />
-            </LandlordProtectedRoute>
-          }
-        />
+          <Route
+            path="/landlord/:landlordId/:email/add-listings"
+            element={
+              <LandlordProtectedRoute>
+                <AddListings />
+              </LandlordProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/landlord/:landlordId/:email/my-listings"
-          element={
-            <LandlordProtectedRoute>
-              <LandlordListings />
-            </LandlordProtectedRoute>
-          }
-        />
+          <Route
+            path="/landlord/:landlordId/:email/my-listings"
+            element={
+              <LandlordProtectedRoute>
+                <LandlordListings />
+              </LandlordProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/landlord/:landlordId/:email/inbox"
-          element={
-            <LandlordProtectedRoute>
-              <LandlordInbox />
-            </LandlordProtectedRoute>
-          }
-        />
+          <Route
+            path="/landlord/:landlordId/:email/inbox"
+            element={
+              <LandlordProtectedRoute>
+                <LandlordInbox />
+              </LandlordProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/landlord/:landlordId/:email/schedule"
-          element={
-            <LandlordProtectedRoute>
-              <LandlordSchedules />
-            </LandlordProtectedRoute>
-          }
-        />
+          <Route
+            path="/landlord/:landlordId/:email/schedule"
+            element={
+              <LandlordProtectedRoute>
+                <LandlordSchedules />
+              </LandlordProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/landlord/:landlordId/:email/pricing"
-          element={
-            <LandlordProtectedRoute>
-              <Pricing />
-            </LandlordProtectedRoute>
-          }
-        />
+          <Route
+            path="/landlord/:landlordId/:email/pricing"
+            element={
+              <LandlordProtectedRoute>
+                <Pricing />
+              </LandlordProtectedRoute>
+            }
+          />
 
-        {/* Admin Login */}
-        <Route
-          path="/auth/uninest-admin"
-          element={
-            <AuthenticatedAdmin>
-              <AdminLogin />
-            </AuthenticatedAdmin>
-          }
-        />
+          {/* Admin Login */}
+          <Route
+            path="/auth/uninest-admin"
+            element={
+              <AuthenticatedAdmin>
+                <AdminLogin />
+              </AuthenticatedAdmin>
+            }
+          />
 
-        {/* Admin Dashboard */}
-        <Route
-          path="/admin/:adminId/:email"
-          element={
-            <AdminProtectedRoute>
-              <AdminDashboard />
-            </AdminProtectedRoute>
-          }
-        />
+          {/* Admin Dashboard */}
+          <Route
+            path="/admin/:adminId/:email"
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboard />
+              </AdminProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/:adminId/:email/users"
-          element={
-            <AdminProtectedRoute>
-              <ManageUsers />
-            </AdminProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/:adminId/:email/users"
+            element={
+              <AdminProtectedRoute>
+                <ManageUsers />
+              </AdminProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/:adminId/:email/listings"
-          element={
-            <AdminProtectedRoute>
-              <ManageListings />
-            </AdminProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/:adminId/:email/listings"
+            element={
+              <AdminProtectedRoute>
+                <ManageListings />
+              </AdminProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/:adminId/:email/add-university"
-          element={
-            <AdminProtectedRoute>
-              <AddUniversity />
-            </AdminProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/:adminId/:email/add-university"
+            element={
+              <AdminProtectedRoute>
+                <AddUniversity />
+              </AdminProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/:adminId/:email/reports"
-          element={
-            <AdminProtectedRoute>
-              <Report />
-            </AdminProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/:adminId/:email/reports"
+            element={
+              <AdminProtectedRoute>
+                <Report />
+              </AdminProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin/:adminId/:email/feedbacks"
-          element={
-            <AdminProtectedRoute>
-              <Feedback />
-            </AdminProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin/:adminId/:email/feedbacks"
+            element={
+              <AdminProtectedRoute>
+                <Feedback />
+              </AdminProtectedRoute>
+            }
+          />
 
-        {/* <Route path="/admin/analytics" element={<Analytics />} /> */}
-      </Routes>
+          <Route
+            path="/admin/:adminId/:email/handle-pages"
+            element={
+              <AdminProtectedRoute>
+                <HandlePages />
+              </AdminProtectedRoute>
+            }
+          />
+
+          {/* <Route path="/admin/analytics" element={<Analytics />} /> */}
+        </Routes>
+      </PageStatusWrapper>
     </>
   );
 }
