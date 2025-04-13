@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { IoMdPin } from "react-icons/io";
 import { BiSolidConversation } from "react-icons/bi";
 import { FaBookmark, FaChevronLeft, FaChevronRight } from "react-icons/fa6";
@@ -7,10 +7,16 @@ import { RiCalendarScheduleFill } from "react-icons/ri";
 import { MdRateReview, MdReport } from "react-icons/md";
 
 import { Form, Input, Tooltip, Rate } from "antd";
-import TextArea from 'antd/es/input/TextArea';
-import StarRating from '../include/StarRating';
-import { Button } from '../ui/button';
-import { AddBookMark, RatingDialog, ReportDialog, ScheduleVisit } from './ListingActions';
+import TextArea from "antd/es/input/TextArea";
+import StarRating from "../include/StarRating";
+import { Button } from "../ui/button";
+import {
+  AddBookMark,
+  RatingDialog,
+  ReportDialog,
+  ScheduleVisit,
+  StartConversation,
+} from "./ListingActions";
 
 const ListingInfoHeroSection = ({ listing }) => {
   const [reviews, setReviews] = useState([]);
@@ -26,29 +32,41 @@ const ListingInfoHeroSection = ({ listing }) => {
 
   const fetchReviews = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/review/listing-reviews/${listing._id}`);
+      const response = await axios.get(
+        `http://localhost:5000/api/review/listing-reviews/${listing._id}`
+      );
       if (response.data.success) {
-        const approvedReviews = response.data.reviews.filter(review => review.status === 'approved');
+        const approvedReviews = response.data.reviews.filter(
+          (review) => review.status === "approved"
+        );
         setReviews(approvedReviews);
 
         // Calculate average rating
         if (approvedReviews.length > 0) {
-          const totalRating = approvedReviews.reduce((sum, review) => sum + review.ratings, 0);
-          setAverageRating(parseFloat((totalRating / approvedReviews.length).toFixed(1)));
+          const totalRating = approvedReviews.reduce(
+            (sum, review) => sum + review.ratings,
+            0
+          );
+          setAverageRating(
+            parseFloat((totalRating / approvedReviews.length).toFixed(1))
+          );
           setReviewCount(approvedReviews.length);
         }
       }
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      console.error("Error fetching reviews:", error);
     }
   };
 
   // Sample images array - replace with actual listing images when available
-  const images = Array.isArray(listing.images) ? listing.images :
-    [listing.images,
-      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1770&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1780&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1770&auto=format&fit=crop'];
+  const images = Array.isArray(listing.images)
+    ? listing.images
+    : [
+        listing.images,
+        "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1770&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1780&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=1770&auto=format&fit=crop",
+      ];
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -66,7 +84,9 @@ const ListingInfoHeroSection = ({ listing }) => {
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+    setCurrentImageIndex(
+      (prevIndex) => (prevIndex - 1 + images.length) % images.length
+    );
   };
 
   const selectImage = (index) => {
@@ -74,20 +94,21 @@ const ListingInfoHeroSection = ({ listing }) => {
   };
 
   return (
-    <div className='overflow-x-hidden px-6 w-full'>
-      <div className=' p-6 mt-3'>
-
-        <div className='flex justify-between items-center'>
-          <div className='flex items-center space-x-3'>
-            <h1 className='text-2xl font-semibold'>{listing.propertyName}</h1>
-            <div className='flex items-center space-x-1 text-gray-500'>
-              <h2><IoMdPin className="text-lg" /></h2>
-              <h2 className='text-base leading-none'>{listing.address}</h2>
+    <div className="overflow-x-hidden px-6 w-full">
+      <div className=" p-6 mt-3">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl font-semibold">{listing.propertyName}</h1>
+            <div className="flex items-center space-x-1 text-gray-500">
+              <h2>
+                <IoMdPin className="text-lg" />
+              </h2>
+              <h2 className="text-base leading-none">{listing.address}</h2>
             </div>
           </div>
 
           <div>
-            <h2 className=' text-xl text-primaryBgColor'>
+            <h2 className=" text-xl text-primaryBgColor">
               LKR {listing.monthlyRent.toLocaleString()}/month
             </h2>
           </div>
@@ -107,14 +128,16 @@ const ListingInfoHeroSection = ({ listing }) => {
           </Tooltip>
         </div>
 
-        <div className=' flex space-x-2 mt-2'>
-          <div className=' items-center w-2/3'>
+        <div className=" flex space-x-2 mt-2">
+          <div className=" items-center w-2/3">
             <div className="relative">
               {/* Main image carousel */}
               <div className="relative h-[400px] w-full overflow-hidden rounded-lg">
                 <img
                   src={images[currentImageIndex]}
-                  alt={`${listing.propertyName} - Image ${currentImageIndex + 1}`}
+                  alt={`${listing.propertyName} - Image ${
+                    currentImageIndex + 1
+                  }`}
                   className="h-full w-full object-cover transition-opacity duration-300"
                 />
 
@@ -145,7 +168,11 @@ const ListingInfoHeroSection = ({ listing }) => {
                 {images.map((img, index) => (
                   <div
                     key={index}
-                    className={`h-16 w-24 flex-shrink-0 cursor-pointer rounded-md border-2 ${currentImageIndex === index ? 'border-primaryBgColor' : 'border-transparent'}`}
+                    className={`h-16 w-24 flex-shrink-0 cursor-pointer rounded-md border-2 ${
+                      currentImageIndex === index
+                        ? "border-primaryBgColor"
+                        : "border-transparent"
+                    }`}
                     onClick={() => selectImage(index)}
                   >
                     <img
@@ -158,36 +185,45 @@ const ListingInfoHeroSection = ({ listing }) => {
               </div>
             </div>
           </div>
-          <div className=' p-4 rounded-lg w-1/3 bg-primaryBgColor'>
-
-            <div className=' mb-2'>
-              <div className=' flex space-x-3 items-center mt-2'>
+          <div className=" p-4 rounded-lg w-1/3 bg-primaryBgColor">
+            <div className=" mb-2">
+              <div className=" flex space-x-3 items-center mt-2">
                 <div className="rounded-full w-14 h-14 bg-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-                  {listing.landlord.email ? listing.landlord.email.charAt(0).toUpperCase() : 'U'}
+                  {listing.landlord.email
+                    ? listing.landlord.email.charAt(0).toUpperCase()
+                    : "U"}
                 </div>
-                <div className=' items-center -space-y-2'>
-                  <div className=' flex flex-row items-center -space-y-2 space-x-2'>
-                    <h1 className=' text-lg text-white'>{listing.landlord.username}</h1>
-                    <h1 className=' text-sm text-gray-300'>(House Owner)</h1>
+                <div className=" items-center -space-y-2">
+                  <div className=" flex flex-row items-center -space-y-2 space-x-2">
+                    <h1 className=" text-lg text-white">
+                      {listing.landlord.username}
+                    </h1>
+                    <h1 className=" text-sm text-gray-300">(House Owner)</h1>
                   </div>
                   <div>
-                    <h2 className=' text-gray-200'>Listed At: {new Date(listing.createdAt).toLocaleString()}</h2>
+                    <h2 className=" text-gray-200">
+                      Listed At: {new Date(listing.createdAt).toLocaleString()}
+                    </h2>
                   </div>
                 </div>
               </div>
               {/* Needs to be dynamic */}
-              <h1 className=' mt-6 bg-white text-primaryBgColor font-semibold p-2 rounded-lg w-fit'>This boarding house is only for {listing.genderPreference}</h1>
+              <h1 className=" mt-6 bg-white text-primaryBgColor font-semibold p-2 rounded-lg w-fit">
+                This boarding house is only for {listing.genderPreference}
+              </h1>
             </div>
 
-            <div className=' mt-6 flex items-center space-y-0 space-x-2'>
-              <StarRating rating={averageRating} /><h2 className=' text-white'>({averageRating}) {reviewCount > 0 ? `${reviewCount} reviews` : 'No reviews yet'}</h2>
+            <div className=" mt-6 flex items-center space-y-0 space-x-2">
+              <StarRating rating={averageRating} />
+              <h2 className=" text-white">
+                ({averageRating}){" "}
+                {reviewCount > 0 ? `${reviewCount} reviews` : "No reviews yet"}
+              </h2>
             </div>
 
-            <div className=' flex flex-col  h-fit rounded-lg p-2'>
-              <div className=' flex flex-col space-y-3 items-center mt-6'>
-                <Button className=" w-full bg-white text-black font-semibold hover:bg-gray-100">
-                  <BiSolidConversation className=' text-black' />Start Conversation
-                </Button>
+            <div className=" flex flex-col  h-fit rounded-lg p-2">
+              <div className=" flex flex-col space-y-3 items-center mt-6">
+                <StartConversation listing={listing} />
                 <AddBookMark listingId={listing._id} />
                 <ScheduleVisit />
                 <RatingDialog />
@@ -198,7 +234,7 @@ const ListingInfoHeroSection = ({ listing }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ListingInfoHeroSection
+export default ListingInfoHeroSection;

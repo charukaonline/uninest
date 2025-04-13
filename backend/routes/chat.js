@@ -1,29 +1,32 @@
 const express = require("express");
 const router = express.Router();
-const { auth } = require("../middleware/auth");
+const { verifyToken } = require("../middleware/verifyToken");
 const chatController = require("../controllers/chatController");
 
 // Get all conversations for current user
-router.get("/conversations", auth, chatController.getConversations);
+router.get("/conversations", verifyToken, chatController.getConversations);
 
 // Get messages for a specific conversation
 router.get(
   "/conversations/:conversationId/messages",
-  auth,
+  verifyToken,
   chatController.getMessages
 );
 
 // Send a message
-router.post("/messages", auth, chatController.sendMessage);
+router.post("/messages", verifyToken, chatController.sendMessage);
 
 // Create a new conversation
-router.post("/conversations", auth, chatController.createConversation);
+router.post("/conversations", verifyToken, chatController.createConversation);
 
 // Mark messages as read
 router.put(
   "/conversations/:conversationId/read",
-  auth,
+  verifyToken,
   chatController.markAsRead
 );
+
+// Get total unread message count
+router.get("/unread-count", verifyToken, chatController.getUnreadCount);
 
 module.exports = router;
