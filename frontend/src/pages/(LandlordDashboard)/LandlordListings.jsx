@@ -3,7 +3,7 @@ import Sidebar from '@/components/landlord_dashboard/Sidebar';
 import { useLandlordAuthStore } from '@/store/landlordAuthStore';
 import useListingStore from '@/store/listingStore';
 import LoadingSpinner from '@/components/include/LoadingSpinner';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FaEdit, FaEye, FaTrash, FaPlus, FaBuilding, FaHome, FaChartLine } from 'react-icons/fa';
 import { Input, Button, Popconfirm, notification, Tag, Modal, Card, Avatar, Row, Col, Pagination, Empty } from 'antd';
 import { SearchOutlined, ExclamationCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
@@ -17,6 +17,8 @@ const LandlordListings = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(6);
     const { confirm } = Modal;
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!isLandlordAuthenticated) {
@@ -198,7 +200,9 @@ const LandlordListings = () => {
                                                         type="primary"
                                                         size="small"
                                                         icon={<FaChartLine />}
-                                                        onClick={() => notification.info({ message: 'Analytics feature coming soon' })}
+                                                        onClick={() =>
+                                                            navigate(`/landlord/${landlordId}/${email}/my-listings/${listing._id}`
+                                                            )}
                                                         style={{ backgroundColor: '#722ED1' }}
                                                     >
                                                         Analytics
@@ -244,7 +248,7 @@ const LandlordListings = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
