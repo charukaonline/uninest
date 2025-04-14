@@ -47,6 +47,7 @@ import StdNotifications from "./pages/(StdDashboard)/StdNotifications"; // Fixed
 import LandlordSchedules from "./pages/(LandlordDashboard)/LandlordSchedules";
 import HandlePages from "./pages/(AdminDashboard)/HandlePages";
 import PageStatusWrapper from "./components/include/PageStatusWrapper";
+import ListingsAnalytics from "./pages/(LandlordDashboard)/ListingsAnalytics";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -269,6 +270,15 @@ function App() {
             element={
               <LandlordProtectedRoute>
                 <Pricing />
+              </LandlordProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/landlord/:landlordId/:email/my-listings/:listingId"
+            element={
+              <LandlordProtectedRoute>
+                <ListingsAnalytics />
               </LandlordProtectedRoute>
             }
           />
