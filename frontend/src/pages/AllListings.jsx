@@ -5,11 +5,12 @@ import LoadingSpinner from "@/components/include/LoadingSpinner";
 import Filter from "@/components/include/Filter";
 import { Switch } from "antd";
 import { motion } from "framer-motion";
-import Map from "@/components/include/Map";
+import ListingsMap from "@/components/include/ListingsMap";
 
 const AllListings = () => {
   const { listings, loading, error, fetchAllListings } = useListingStore();
   const [currentPage, setCurrentPage] = useState(1);
+  const [filteredListings, setFilteredListings] = useState([]);
   const itemsPerPage = 9;
 
   const [isMapView, setIsMapView] = useState(false);
@@ -19,14 +20,25 @@ const AllListings = () => {
     fetchAllListings();
   }, [listings.length]);
 
+  // Set filtered listings to all listings initially
+  useEffect(() => {
+    setFilteredListings(listings);
+  }, [listings]);
+
+  // Handle filter changes
+  const handleFilterChange = (filtered) => {
+    setFilteredListings(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
   if (loading) return <LoadingSpinner />;
   if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
 
-  // Calculate pagination
+  // Calculate pagination based on filtered listings
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentListings = listings.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(listings.length / itemsPerPage);
+  const currentListings = filteredListings.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredListings.length / itemsPerPage);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -45,13 +57,13 @@ const AllListings = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-5">
-        <Filter />
+        <Filter onFilterChange={handleFilterChange} />
       </div>
 
       <div className="flex justify-between items-center mt-2 mb-6">
         <div>
           <span className="text-xl font-bold">
-            We have {listings.length} listings available
+            We have {filteredListings.length} listings available
           </span>
         </div>
         <div className="flex items-center space-x-3">
@@ -68,9 +80,10 @@ const AllListings = () => {
       </div>
 
       {isMapView ? (
-        <div className="mt-5 mb-5 w-full">
-          <Map />
+        <div className="mt-5 mb-5 w-full" style={{ height: "600px" }}>
+          <ListingsMap listings={filteredListings} />
         </div>
+
       ) : (
         <>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

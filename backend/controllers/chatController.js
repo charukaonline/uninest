@@ -1,20 +1,30 @@
 const Conversation = require("../models/Conversation");
 const Message = require("../models/Message");
 const User = require("../models/User");
+const Listing = require("../models/Listing");
 const { getIO } = require("../config/socket");
 const mongoose = require("mongoose");
+const chatCache = require("../services/chatCache");
+const Notification = require("../models/Notification");
 
 // Get all conversations for a user
 exports.getConversations = async (req, res) => {
   try {
     const userId = req.userId;
 
+    // Try to get from cache first
+    const cachedConversations = await chatCache.getCachedConversations(userId);
+    if (cachedConversations) {
+      return res.status(200).json(cachedConversations);
+    }
+
+    // If not in cache, get from database
     const conversations = await Conversation.find({
       participants: userId,
     })
       .populate({
         path: "participants",
-        select: "username email role",
+        select: "username email role profileImage",
       })
       .populate({
         path: "lastMessage",
@@ -22,7 +32,7 @@ exports.getConversations = async (req, res) => {
       })
       .populate({
         path: "propertyId",
-        select: "propertyName",
+        select: "propertyName images",
       })
       .sort({ updatedAt: -1 });
 
@@ -42,6 +52,9 @@ exports.getConversations = async (req, res) => {
         updatedAt: conv.updatedAt,
       };
     });
+
+    // Cache the conversations
+    await chatCache.cacheUserConversations(userId, formattedConversations);
 
     res.status(200).json(formattedConversations);
   } catch (error) {
@@ -68,14 +81,43 @@ exports.getMessages = async (req, res) => {
         .json({ message: "Unauthorized access to this conversation" });
     }
 
+    // Try to get from cache first
+    const cachedMessages = await chatCache.getCachedMessages(conversationId);
+    if (cachedMessages) {
+      // Mark as read (but don't wait for it)
+      markMessagesAsReadBackground(conversationId, userId, conversation);
+      return res.status(200).json(cachedMessages);
+    }
+
+    // If not in cache, get from database
     const messages = await Message.find({ conversationId })
       .populate({
         path: "sender",
-        select: "username email role",
+        select: "username email role profileImage",
       })
       .sort({ createdAt: 1 });
 
-    // Mark messages as read
+    // Mark messages as read (but don't wait for it)
+    markMessagesAsReadBackground(conversationId, userId, conversation);
+
+    // Cache the messages
+    await chatCache.cacheConversationMessages(conversationId, messages);
+
+    res.status(200).json(messages);
+  } catch (error) {
+    console.error("Error getting messages:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Helper function to mark messages as read in the background
+const markMessagesAsReadBackground = async (
+  conversationId,
+  userId,
+  conversation
+) => {
+  try {
+    // Update message status to 'read'
     await Message.updateMany(
       {
         conversationId,
@@ -89,10 +131,20 @@ exports.getMessages = async (req, res) => {
     conversation.unreadCount.set(userId.toString(), 0);
     await conversation.save();
 
-    res.status(200).json(messages);
+    // Notify the other participant that messages were read
+    const otherParticipantId = conversation.participants.find(
+      (p) => p.toString() !== userId.toString()
+    );
+
+    if (otherParticipantId) {
+      const io = getIO();
+      io.to(otherParticipantId.toString()).emit("messages_read", {
+        conversationId,
+        readBy: userId,
+      });
+    }
   } catch (error) {
-    console.error("Error getting messages:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Background read-status update error:", error);
   }
 };
 
@@ -104,6 +156,13 @@ exports.sendMessage = async (req, res) => {
   try {
     const { conversationId, text } = req.body;
     const senderId = req.userId;
+
+    // Input validation
+    if (!text || text.trim() === "") {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({ message: "Message text is required" });
+    }
 
     // Check if conversation exists and user is part of it
     let conversation = await Conversation.findOne({
@@ -152,8 +211,44 @@ exports.sendMessage = async (req, res) => {
     // Populate sender info for the response
     const populatedMessage = await Message.findById(newMessage._id).populate({
       path: "sender",
-      select: "username email role",
+      select: "username email role profileImage",
     });
+
+    // Invalidate Redis caches
+    await chatCache.invalidateMessageCache(conversationId);
+    await chatCache.invalidateConversationsCache(
+      conversation.participants.map((p) => p.toString())
+    );
+
+    // Create notification for recipient
+    const recipientId = conversation.participants.find(
+      (p) => p.toString() !== senderId.toString()
+    );
+
+    if (recipientId) {
+      try {
+        // Get sender details
+        const sender = await User.findById(senderId).select("username");
+
+        // Create notification
+        const notification = new Notification({
+          userId: recipientId,
+          type: "message",
+          title: "New Message",
+          message: `${sender.username} sent you a message: "${text.substring(
+            0,
+            50
+          )}${text.length > 50 ? "..." : ""}"`,
+          relatedId: newMessage._id,
+          refModel: "Message",
+        });
+
+        await notification.save();
+      } catch (notifError) {
+        console.error("Error creating notification:", notifError);
+        // Continue even if notification fails
+      }
+    }
 
     // Notify other participants via Socket.IO
     const io = getIO();
@@ -181,6 +276,11 @@ exports.createConversation = async (req, res) => {
     const { recipientId, propertyId, initialMessage } = req.body;
     const userId = req.userId;
 
+    // Input validation
+    if (!recipientId) {
+      return res.status(400).json({ message: "Recipient ID is required" });
+    }
+
     if (recipientId === userId) {
       return res
         .status(400)
@@ -191,6 +291,14 @@ exports.createConversation = async (req, res) => {
     const recipient = await User.findById(recipientId);
     if (!recipient) {
       return res.status(404).json({ message: "Recipient not found" });
+    }
+
+    // If propertyId is provided, check if it exists
+    if (propertyId) {
+      const property = await Listing.findById(propertyId);
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
     }
 
     // Check if conversation already exists between these users
@@ -226,11 +334,38 @@ exports.createConversation = async (req, res) => {
       conversation.updatedAt = new Date();
       await conversation.save();
 
+      // Notify recipient
+      try {
+        // Get sender details
+        const sender = await User.findById(userId).select("username");
+
+        // Create notification
+        const notification = new Notification({
+          userId: recipientId,
+          type: "message",
+          title: "New Message",
+          message: `${
+            sender.username
+          } sent you a message: "${initialMessage.substring(0, 50)}${
+            initialMessage.length > 50 ? "..." : ""
+          }"`,
+          relatedId: newMessage._id,
+          refModel: "Message",
+        });
+
+        await notification.save();
+      } catch (notifError) {
+        console.error("Error creating notification:", notifError);
+        // Continue even if notification fails
+      }
+
       // Notify recipient via Socket.IO
       const io = getIO();
       io.to(recipientId).emit("new_conversation", {
         conversationId: conversation._id,
-        sender: await User.findById(userId).select("username email role"),
+        sender: await User.findById(userId).select(
+          "username email role profileImage"
+        ),
       });
     }
 
@@ -238,7 +373,7 @@ exports.createConversation = async (req, res) => {
     const populatedConversation = await Conversation.findById(conversation._id)
       .populate({
         path: "participants",
-        select: "username email role",
+        select: "username email role profileImage",
       })
       .populate({
         path: "lastMessage",
@@ -246,7 +381,7 @@ exports.createConversation = async (req, res) => {
       })
       .populate({
         path: "propertyId",
-        select: "propertyName",
+        select: "propertyName images",
       });
 
     // Format response similar to getConversations
@@ -263,6 +398,9 @@ exports.createConversation = async (req, res) => {
         populatedConversation.unreadCount.get(userId.toString()) || 0,
       updatedAt: populatedConversation.updatedAt,
     };
+
+    // Invalidate conversations cache for both users
+    await chatCache.invalidateConversationsCache([userId, recipientId]);
 
     res.status(201).json(formattedConversation);
   } catch (error) {
@@ -316,9 +454,35 @@ exports.markAsRead = async (req, res) => {
       });
     }
 
+    // Invalidate conversation cache for the user
+    await chatCache.invalidateConversationsCache([userId]);
+
     res.status(200).json({ message: "Messages marked as read" });
   } catch (error) {
     console.error("Error marking messages as read:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get unread message count for user
+exports.getUnreadCount = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    // Get all conversations for the user
+    const conversations = await Conversation.find({
+      participants: userId,
+    });
+
+    // Calculate total unread count
+    let totalUnread = 0;
+    conversations.forEach((conv) => {
+      totalUnread += conv.unreadCount.get(userId.toString()) || 0;
+    });
+
+    res.status(200).json({ unreadCount: totalUnread });
+  } catch (error) {
+    console.error("Error getting unread count:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
