@@ -32,3 +32,26 @@ exports.addReport = async (req, res) => {
         });
     }
 }
+
+exports.getReport = async (req, res) => {
+    try {
+
+        // Fetch reports for the listing
+        const reports = await ListingReport.find({})
+            .populate("reporterId", "name email") // Populate reporter details
+            .populate("listingId", "propertyName description"); // Populate listing details
+
+        res.status(200).json({
+            success: true,
+            message: "Reports fetched successfully.",
+            reports: reports,
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching reports.",
+            error: error.message
+        });
+    }
+}
