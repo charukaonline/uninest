@@ -1,8 +1,10 @@
 const ListingReport = require("../models/ListingReport");
+const User = require("../models/User"); // Add User model to get reporter info
+const Listing = require("../models/Listing"); // Add Listing model to get listing info
+const { sendReportEmail } = require("../services/emailService");
 
 exports.addReport = async (req, res) => {
     try {
-
         const { reporterId, listingId, type, description } = req.body;
 
         // Validate request body
@@ -17,6 +19,23 @@ exports.addReport = async (req, res) => {
             description,
         });
         await newReport.save();
+
+        // Get reporter and listing information for the email
+        const [reporter, listing] = await Promise.all([
+            User.findById(reporterId).select('name email'),
+            Listing.findById(listingId).select('propertyName')
+        ]);
+
+        // Send email notification
+        if (reporter && listing) {
+            await sendReportEmail(
+                reporter.name || 'User',
+                reporter.email,
+                listing.propertyName || 'Unknown Listing',
+                type,
+                description
+            );
+        }
 
         res.status(201).json({
             success: true,
