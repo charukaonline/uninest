@@ -6,37 +6,13 @@ const universitySchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    code: {
-        type: String,
-        trim: true
+    latitude: {
+        type: Number,
+        required: true
     },
-    shortName: {
-        type: String,
-        trim: true
-    },
-    location: {
-        coordinates: {
-            latitude: {
-                type: Number,
-                required: true
-            },
-            longitude: {
-                type: Number,
-                required: true
-            }
-        },
-        address: {
-            type: String,
-            required: true
-        },
-        city: {
-            type: String,
-            required: true
-        },
-        province: {
-            type: String,
-            required: true
-        }
+    longitude: {
+        type: Number,
+        required: true
     }
 }, { timestamps: true });
 

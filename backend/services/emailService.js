@@ -201,11 +201,39 @@ const sendScheduleStatusEmail = async (studentEmail, studentName, landlordName, 
   }
 };
 
+const sendReportEmail = async (reporterName, reporterEmail, listingName, reportType, description) => {
+  try {
+    // Confirmation email to reporter
+    const reporterMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: reporterEmail,
+      subject: "Your Report Has Been Received - UniNest",
+      html: `
+        <h2>Hello, ${reporterName}!</h2>
+        <p>Thank you for submitting a report. Your report regarding <b>${listingName}</b> has been received.</p>
+        <p><strong>Report Type:</strong> ${reportType}</p>
+        <p>Our administrative team will review your report and take appropriate action. You may be contacted if we need additional information.</p>
+        <br/>
+        <p>Best Regards,<br/>The UniNest Team</p>
+      `,
+    };
+
+    await transporter.sendMail(reporterMailOptions);
+    console.log("Report confirmation sent to reporter:", reporterEmail);
+
+    return true;
+  } catch (error) {
+    console.error("Error sending report notification emails:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendVerificationEmail,
   sendWelcomeEmail,
   sendInquiryEmail,
   informLandlordVerify,
   sendScheduleNotification,
-  sendScheduleStatusEmail
+  sendScheduleStatusEmail,
+  sendReportEmail
 };

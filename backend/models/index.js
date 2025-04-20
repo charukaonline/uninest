@@ -7,7 +7,7 @@ module.exports = {
   Message: require("./Message"),
   Conversation: require("./Conversation"),
   Notification: require("./Notification"),
-  Report: require("./Report"),
+  ListingReport: require("./ListingReport"),
   Listing: require("./Listing"),
   University: require("./University"),
   BookMark: require("./BookMark"),

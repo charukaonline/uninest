@@ -13,16 +13,11 @@ exports.addUniversity = async (req, res) => {
       });
     }
 
-    // Create new university with separate latitude and longitude
+    // Create new university with flat structure matching our updated model
     const university = new University({
       name,
-      location: {
-        type: "Point",
-        coordinates: {
-          latitude: latitude,
-          longitude: longitude,
-        },
-      },
+      latitude,
+      longitude
     });
 
     await university.save();
@@ -45,7 +40,6 @@ exports.addUniversity = async (req, res) => {
 exports.getAllUniversities = async (req, res) => {
   try {
     const universities = await University.find({})
-      .select("name location")
       .sort({ name: 1 });
 
     // Return the array directly without wrapping in an object

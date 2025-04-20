@@ -103,3 +103,4 @@ app.use("/api/schedules", require("./routes/scheduleRoutes")); // Changed from s
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/chat", require("./routes/chat"));
 app.use('/api/page-status', require('./routes/pageStatus'));
+app.use("/api/report", require("./routes/listingReportRoutes")); // Added report route

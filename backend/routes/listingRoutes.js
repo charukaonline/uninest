@@ -20,6 +20,10 @@ router.get('/landlord/:landlordId', listingController.getLandlordListings);
 
 router.get('/:id', listingController.getListingById);
 
+router.get('/:id/clicks', listingController.getListingClicks);
+
 router.post('/:id/track-click', listingController.trackListingClick);
+
+router.get('/:id/views-history', listingController.getViewsHistory);
 
 module.exports = router;
