@@ -20,14 +20,9 @@ const reportSchema = new mongoose.Schema({
     ],
     required: true,
   },
-  targetType: {
-    type: String,
-    enum: ["property", "user", "review"],
-    required: true,
-  },
-  targetId: {
+  listingId: {
     type: mongoose.Schema.Types.ObjectId,
-    refPath: "targetType",
+    ref: "Listing",
     required: true,
   },
   description: {
@@ -47,4 +42,4 @@ const reportSchema = new mongoose.Schema({
   resolvedAt: Date,
 });
 
-module.exports = mongoose.model("Report", reportSchema);
+module.exports = mongoose.model("ListingReport", reportSchema);

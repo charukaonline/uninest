@@ -153,9 +153,11 @@ export function RatingDialog() {
 export function ReportDialog() {
   const [showReportForm, setShowReportForm] = useState(false);
   const [reportForm] = Form.useForm();
-  const { isAuthenticated } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const { listingId } = useParams();
 
   const handleReportClick = () => {
     if (!isAuthenticated) {
@@ -167,20 +169,47 @@ export function ReportDialog() {
   };
 
   const reportReasons = [
-    { value: "wrong_info", label: "Wrong Information" },
-    { value: "performance", label: "Performance Issues Reporting" },
-    { value: "privacy", label: "Privacy Violation Reporting" },
-    { value: "broken_link", label: "Broken Link or Missing Page Reporting" },
-    { value: "scam", label: "Scam or Fraud Reporting" },
+    { value: "inappropriate_content", label: "Inappropriate Content" },
+    { value: "fraudulent_listing", label: "Fraudulent Listing" },
+    { value: "scam", label: "Scam" },
+    { value: "harassment", label: "Harassment" },
+    { value: "misleading_info", label: "Misleading Information" },
+    { value: "terms_violation", label: "Terms Violation" },
+    { value: "duplicate_listing", label: "Duplicate Listing" },
+    { value: "technical_issue", label: "Technical Issue" },
   ];
 
-  const handleReportSubmit = (values) => {
+  const handleReportSubmit = async (values) => {
     try {
-      console.log("Report:", values);
-      reportForm.resetFields();
-      setShowReportForm(false);
+      setLoading(true);
+      const reportData = {
+        reporterId: user._id,
+        listingId: listingId,
+        type: values.reason,
+        description: values.report,
+      };
+
+      const response = await axios.post(
+        "http://localhost:5000/api/report/addReport",
+        reportData
+      );
+
+      if (response.data.success) {
+        notification.success({
+          message: "Success",
+          description: "Your report has been submitted successfully",
+        });
+        reportForm.resetFields();
+        setShowReportForm(false);
+      }
     } catch (error) {
       console.error("Error submitting report:", error);
+      notification.error({
+        message: "Error",
+        description: error.response?.data?.message || "Failed to submit report",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -235,7 +264,7 @@ export function ReportDialog() {
                 >
                   <Input.TextArea
                     rows={4}
-                    placeholder="Explain you report here..."
+                    placeholder="Explain your report here..."
                     className="resize-none focus:border-primaryBgColor"
                   />
                 </Form.Item>
@@ -245,14 +274,16 @@ export function ReportDialog() {
                     type="button"
                     onClick={() => setShowReportForm(false)}
                     className="bg-gray-200 text-black hover:bg-gray-300"
+                    disabled={loading}
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     className="bg-primaryBgColor text-white hover:bg-green-600"
+                    disabled={loading}
                   >
-                    Submit Report
+                    {loading ? "Submitting..." : "Submit Report"}
                   </Button>
                 </div>
               </Form>
@@ -341,9 +372,8 @@ export function AddBookMark() {
 
   return (
     <Button
-      className={`w-full font-semibold hover:bg-gray-100 ${
-        isBookmarked ? "bg-yellow-500 text-black" : "bg-white text-black"
-      }`}
+      className={`w-full font-semibold hover:bg-gray-100 ${isBookmarked ? "bg-yellow-500 text-black" : "bg-white text-black"
+        }`}
       onClick={toggleBookmark}
       disabled={loading}
     >
@@ -351,8 +381,8 @@ export function AddBookMark() {
       {loading
         ? "Processing..."
         : isBookmarked
-        ? "Bookmarked"
-        : "Add to Bookmark"}
+          ? "Bookmarked"
+          : "Add to Bookmark"}
     </Button>
   );
 }
@@ -490,11 +520,8 @@ export function StartConversation({ listing }) {
     console.log("User object:", user); // Debug line to verify the user object structure
 
     if (!isAuthenticated) {
-      notification.info({
-        message: "Please sign in",
-        description: "You need to sign in to chat with landlords",
-      });
-      navigate("/auth/signin");
+      localStorage.setItem("redirectAfterLogin", location.pathname);
+      navigate("/auth/user-signin");
       return;
     }
 

@@ -296,7 +296,7 @@ const ManageListings = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="bg-white p-3 rounded-lg shadow-sm">
                     <div className="mb-4">
                         <Input
                             placeholder="Search by property name, address, landlord or type..."
