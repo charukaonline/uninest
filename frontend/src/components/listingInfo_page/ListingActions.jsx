@@ -397,7 +397,7 @@ export function ScheduleVisit() {
   const [listing, setListing] = useState(null);
   const { addSchedule, loading } = useScheduleStore();
   const [selectedDate, setSelectedDate] = useState(null);
-  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+  const [timeSlots, setTimeSlots] = useState([]);
   const [loadingTimeSlots, setLoadingTimeSlots] = useState(false);
 
   // Fetch listing data to get landlordId
@@ -420,19 +420,19 @@ export function ScheduleVisit() {
 
   // Fetch available time slots when date changes
   useEffect(() => {
-    const fetchAvailableTimeSlots = async () => {
+    const fetchTimeSlots = async () => {
       if (selectedDate && listingId) {
         setLoadingTimeSlots(true);
         try {
           const response = await axios.get(
             `http://localhost:5000/api/schedules/available-time-slots?listingId=${listingId}&date=${selectedDate}`
           );
-          setAvailableTimeSlots(response.data.availableTimeSlots);
+          setTimeSlots(response.data.timeSlots);
         } catch (error) {
-          console.error("Error fetching available time slots:", error);
+          console.error("Error fetching time slots:", error);
           notification.error({
             message: "Error",
-            description: "Failed to fetch available time slots",
+            description: "Failed to fetch time slots",
           });
         } finally {
           setLoadingTimeSlots(false);
@@ -441,7 +441,7 @@ export function ScheduleVisit() {
     };
 
     if (selectedDate) {
-      fetchAvailableTimeSlots();
+      fetchTimeSlots();
     }
   }, [selectedDate, listingId]);
 
@@ -540,18 +540,23 @@ export function ScheduleVisit() {
                   {selectedDate ? (
                     loadingTimeSlots ? (
                       <Spin size="small" />
-                    ) : availableTimeSlots.length > 0 ? (
+                    ) : timeSlots.length > 0 ? (
                       <Select className="w-full">
-                        {availableTimeSlots.map((time) => (
-                          <Select.Option key={time} value={time}>
-                            {time}
+                        {timeSlots.map((slot) => (
+                          <Select.Option
+                            key={slot.time}
+                            value={slot.time}
+                            disabled={!slot.available}
+                            className={!slot.available ? "text-gray-400" : ""}
+                          >
+                            {slot.time}
+                            {!slot.available && " (Booked)"}
                           </Select.Option>
                         ))}
                       </Select>
                     ) : (
                       <div className="text-orange-500 text-sm">
-                        No available time slots for this date. Please select
-                        another date.
+                        No time slots available for this date.
                       </div>
                     )
                   ) : (
@@ -575,7 +580,7 @@ export function ScheduleVisit() {
                     disabled={
                       !selectedDate ||
                       loadingTimeSlots ||
-                      availableTimeSlots.length === 0
+                      timeSlots.length === 0
                     }
                   >
                     Submit Schedule

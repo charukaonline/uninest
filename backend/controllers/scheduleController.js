@@ -294,14 +294,17 @@ exports.getAvailableTimeSlots = async (req, res) => {
       allTimeSlots.push(`${hour.toString().padStart(2, "0")}:30`);
     }
 
-    // Filter out booked slots
-    const bookedTimes = bookedSlots.map((slot) => slot.time);
-    const availableTimeSlots = allTimeSlots.filter(
-      (time) => !bookedTimes.includes(time)
-    );
+    // Convert booked times to a Set for faster lookups
+    const bookedTimesSet = new Set(bookedSlots.map((slot) => slot.time));
+
+    // Create a formatted response with availability status for each time slot
+    const timeSlots = allTimeSlots.map((time) => ({
+      time,
+      available: !bookedTimesSet.has(time),
+    }));
 
     res.status(200).json({
-      availableTimeSlots,
+      timeSlots,
     });
   } catch (error) {
     console.error("Error getting available time slots:", error);
