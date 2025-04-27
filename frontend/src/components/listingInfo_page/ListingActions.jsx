@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Form, Rate, Input, Select, notification } from "antd";
+import { Form, Rate, Input, Select, notification, Spin } from "antd";
 import { MdRateReview, MdReport } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
@@ -372,8 +372,9 @@ export function AddBookMark() {
 
   return (
     <Button
-      className={`w-full font-semibold hover:bg-gray-100 ${isBookmarked ? "bg-yellow-500 text-black" : "bg-white text-black"
-        }`}
+      className={`w-full font-semibold hover:bg-gray-100 ${
+        isBookmarked ? "bg-yellow-500 text-black" : "bg-white text-black"
+      }`}
       onClick={toggleBookmark}
       disabled={loading}
     >
@@ -381,8 +382,8 @@ export function AddBookMark() {
       {loading
         ? "Processing..."
         : isBookmarked
-          ? "Bookmarked"
-          : "Add to Bookmark"}
+        ? "Bookmarked"
+        : "Add to Bookmark"}
     </Button>
   );
 }
@@ -395,6 +396,9 @@ export function ScheduleVisit() {
   const { listingId } = useParams();
   const [listing, setListing] = useState(null);
   const { addSchedule, loading } = useScheduleStore();
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+  const [loadingTimeSlots, setLoadingTimeSlots] = useState(false);
 
   // Fetch listing data to get landlordId
   useEffect(() => {
@@ -414,6 +418,33 @@ export function ScheduleVisit() {
     fetchListing();
   }, [listingId]);
 
+  // Fetch available time slots when date changes
+  useEffect(() => {
+    const fetchAvailableTimeSlots = async () => {
+      if (selectedDate && listingId) {
+        setLoadingTimeSlots(true);
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/schedules/available-time-slots?listingId=${listingId}&date=${selectedDate}`
+          );
+          setAvailableTimeSlots(response.data.availableTimeSlots);
+        } catch (error) {
+          console.error("Error fetching available time slots:", error);
+          notification.error({
+            message: "Error",
+            description: "Failed to fetch available time slots",
+          });
+        } finally {
+          setLoadingTimeSlots(false);
+        }
+      }
+    };
+
+    if (selectedDate) {
+      fetchAvailableTimeSlots();
+    }
+  }, [selectedDate, listingId]);
+
   const handleScheduleClick = () => {
     if (!isAuthenticated) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
@@ -423,11 +454,25 @@ export function ScheduleVisit() {
     setShowScheduleForm(true);
   };
 
+  const handleDateChange = (e) => {
+    setSelectedDate(e.target.value);
+  };
+
   const handleSubmit = async (values) => {
     if (!listing || !listing.landlord) {
       notification.error({
         message: "Error",
         description: "Missing listing or landlord information",
+      });
+      return;
+    }
+
+    // Check if time is between 7am and 6pm
+    const [hours, minutes] = values.time.split(":").map(Number);
+    if (hours < 7 || hours >= 18) {
+      notification.error({
+        message: "Invalid Time",
+        description: "Booking time must be between 7:00 AM and 6:00 PM",
       });
       return;
     }
@@ -470,13 +515,21 @@ export function ScheduleVisit() {
               className="bg-white p-6 rounded-lg w-[400px]"
             >
               <h2 className="text-xl font-semibold mb-4">Schedule a Visit</h2>
+              <p className="text-sm text-gray-500 mb-4">
+                Note: Visits can only be scheduled between 7:00 AM and 6:00 PM
+              </p>
               <Form layout="vertical" onFinish={handleSubmit}>
                 <Form.Item
                   name="date"
                   label="Select Date"
                   rules={[{ required: true, message: "Please select a date" }]}
                 >
-                  <Input type="date" className="focus:border-primaryBgColor" />
+                  <Input
+                    type="date"
+                    className="focus:border-primaryBgColor"
+                    onChange={handleDateChange}
+                    min={new Date().toISOString().split("T")[0]} // Can't select dates in the past
+                  />
                 </Form.Item>
 
                 <Form.Item
@@ -484,7 +537,28 @@ export function ScheduleVisit() {
                   label="Select Time"
                   rules={[{ required: true, message: "Please select a time" }]}
                 >
-                  <Input type="time" className="focus:border-primaryBgColor" />
+                  {selectedDate ? (
+                    loadingTimeSlots ? (
+                      <Spin size="small" />
+                    ) : availableTimeSlots.length > 0 ? (
+                      <Select className="w-full">
+                        {availableTimeSlots.map((time) => (
+                          <Select.Option key={time} value={time}>
+                            {time}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    ) : (
+                      <div className="text-orange-500 text-sm">
+                        No available time slots for this date. Please select
+                        another date.
+                      </div>
+                    )
+                  ) : (
+                    <div className="text-gray-500 text-sm">
+                      Please select a date first to see available times
+                    </div>
+                  )}
                 </Form.Item>
 
                 <div className="flex justify-end space-x-2 mt-4">
@@ -498,6 +572,11 @@ export function ScheduleVisit() {
                   <Button
                     type="submit"
                     className="bg-primaryBgColor text-white hover:bg-green-600"
+                    disabled={
+                      !selectedDate ||
+                      loadingTimeSlots ||
+                      availableTimeSlots.length === 0
+                    }
                   >
                     Submit Schedule
                   </Button>
