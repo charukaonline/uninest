@@ -6,6 +6,14 @@ const nodemailer = require("nodemailer");
 
 exports.getSubscription = async (req, res) => {
   try {
+    // Make sure we don't try to query with 'success' or 'cancel' as userId
+    if (req.params.userId === "success" || req.params.userId === "cancel") {
+      return res.status(400).json({
+        message: "Invalid user ID parameter",
+        error: "Cannot use reserved words as user ID",
+      });
+    }
+
     const subscription = await Subscription.findOne({
       userId: req.params.userId,
     });
@@ -32,12 +40,13 @@ exports.getSubscription = async (req, res) => {
 
     res.json(subscription || { planType: "free" });
   } catch (err) {
+    console.error("Error in getSubscription:", err);
     res.status(500).json({ message: "Server Error", error: err });
   }
 };
 
 exports.createOrder = async (req, res) => {
-  const { userId, planType, amount } = req.body;
+  const { userId, planType, amount, landlordId, email } = req.body;
 
   if (planType !== "premium")
     return res.status(400).json({ message: "Invalid plan" });
@@ -58,7 +67,17 @@ exports.createOrder = async (req, res) => {
     };
 
     const orderId = `UN-${Date.now()}-${userId.slice(-4)}`;
-    const paymentData = getPaymentUrl(orderId, user, amount);
+
+    // Pass landlord parameters to PayHere integration
+    const landlordParams = { landlordId, email };
+    const paymentData = getPaymentUrl(orderId, user, amount, landlordParams);
+
+    // Log the URLs for debugging
+    console.log("Payment URLs:", {
+      return: paymentData.formData.return_url,
+      cancel: paymentData.formData.cancel_url,
+      notify: paymentData.formData.notify_url,
+    });
 
     res.json(paymentData);
   } catch (error) {
@@ -121,7 +140,7 @@ exports.paymentNotify = async (req, res) => {
 };
 
 exports.renewSubscription = async (req, res) => {
-  const { userId, planType, amount } = req.body;
+  const { userId, planType, amount, landlordId, email } = req.body;
 
   if (planType !== "premium")
     return res.status(400).json({ message: "Invalid plan" });
@@ -142,7 +161,10 @@ exports.renewSubscription = async (req, res) => {
     };
 
     const orderId = `UN-RNW-${Date.now()}-${userId.slice(-4)}`;
-    const paymentData = getPaymentUrl(orderId, user, amount);
+
+    // Pass landlord parameters to PayHere integration
+    const landlordParams = { landlordId, email };
+    const paymentData = getPaymentUrl(orderId, user, amount, landlordParams);
 
     res.json(paymentData);
   } catch (error) {

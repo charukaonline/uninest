@@ -22,12 +22,25 @@ function generateHash(orderId, amount, currency) {
   return hash;
 }
 
-function getPaymentUrl(orderId, user, amount) {
+function getPaymentUrl(orderId, user, amount, landlordParams = {}) {
+  // Ensure we have full absolute URLs with protocol
+  const baseUrl = process.env.BACKEND_URL.startsWith("http")
+    ? process.env.BACKEND_URL
+    : `http://${process.env.BACKEND_URL}`;
+
+  // Add landlord parameters to return and cancel URLs if provided
+  const landlordQueryParams =
+    landlordParams.landlordId && landlordParams.email
+      ? `?landlordId=${landlordParams.landlordId}&email=${encodeURIComponent(
+          landlordParams.email
+        )}`
+      : "";
+
   const data = {
     merchant_id: PAYHERE_MERCHANT_ID,
-    return_url: "http://localhost:5000/api/subscription/success",
-    cancel_url: "http://localhost:5000/api/subscription/cancel",
-    notify_url: "http://localhost:5000/api/subscription/notify",
+    return_url: `${baseUrl}/api/subscription/success${landlordQueryParams}`,
+    cancel_url: `${baseUrl}/api/subscription/cancel${landlordQueryParams}`,
+    notify_url: `${baseUrl}/api/subscription/notify`,
     order_id: orderId,
     items: "Landlord Premium Subscription (30 days)",
     currency: "LKR",

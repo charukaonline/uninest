@@ -1,11 +1,11 @@
 import Sidebar from "@/components/landlord_dashboard/Sidebar";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { IoPricetags } from "react-icons/io5";
 import { FaCheck, FaClock } from "react-icons/fa";
 import { notification, Spin, Alert, Tag } from "antd";
 import axios from "axios";
 import { useAuthStore } from "@/store/authStore";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 const Pricing = () => {
   const [currentPlan, setCurrentPlan] = useState("free");
@@ -13,24 +13,47 @@ const Pricing = () => {
   const [subscriptionData, setSubscriptionData] = useState(null);
   const { user } = useAuthStore();
   const location = useLocation();
+  const { landlordId, email } = useParams();
+  // Add a ref to track if notifications have been shown
+  const notificationShownRef = useRef({
+    success: false,
+    cancelled: false,
+  });
 
   // Premium plan price in LKR
   const PREMIUM_PRICE = 2500;
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (params.get("success") === "true") {
+
+    if (
+      params.get("success") === "true" &&
+      !notificationShownRef.current.success
+    ) {
       notification.success({
         message: "Payment Successful",
         description:
           "Your premium subscription has been activated successfully!",
       });
-    } else if (params.get("cancelled") === "true") {
+      // Mark that we've shown the success notification
+      notificationShownRef.current.success = true;
+      // Clear the URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (
+      params.get("cancelled") === "true" &&
+      !notificationShownRef.current.cancelled
+    ) {
       notification.info({
         message: "Payment Cancelled",
         description:
           "You cancelled the payment process. Your plan remains unchanged.",
       });
+      // Mark that we've shown the cancelled notification
+      notificationShownRef.current.cancelled = true;
+      // Clear the URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Ensure loading state is reset if someone navigates back from PayHere
+      setLoading(false);
     }
   }, [location]);
 
@@ -74,6 +97,8 @@ const Pricing = () => {
         userId: user._id,
         planType: "premium",
         amount: PREMIUM_PRICE,
+        landlordId, // Pass the landlord ID from URL params
+        email, // Pass the email from URL params
       });
 
       // Instead of redirecting, create and submit a form
@@ -107,6 +132,15 @@ const Pricing = () => {
       } else {
         throw new Error("Invalid payment data received from server");
       }
+
+      // Add error handling for aborted requests
+      window.addEventListener(
+        "beforeunload",
+        () => {
+          setLoading(false);
+        },
+        { once: true }
+      );
     } catch (error) {
       console.error("Error initiating payment:", error);
       notification.error({
