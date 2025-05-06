@@ -14,6 +14,7 @@ const preferenceRoutes = require("./routes/preference");
 const notificationRoutes = require("./routes/notificationRoutes");
 const http = require("http");
 const { initializeSocket } = require("./config/socket");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
 
 dotenv.config();
 
@@ -84,6 +85,22 @@ const startServer = async () => {
 
 startServer();
 
+// Schedule job to check for expiring subscriptions (runs daily at 8:00 AM)
+const cron = require("node-cron");
+const {
+  checkExpiringSubscriptions,
+} = require("./controllers/subscriptionController");
+
+cron.schedule("0 8 * * *", async () => {
+  console.log("Running scheduled job: checking expiring subscriptions");
+  try {
+    const result = await checkExpiringSubscriptions();
+    console.log("Expiring subscriptions check completed:", result);
+  } catch (error) {
+    console.error("Error in subscription check job:", error);
+  }
+});
+
 // Test route
 app.get("/", (req, res) => {
   res.send("Welcome to UniNest Backend!");
@@ -102,5 +119,6 @@ app.use("/api/bookmark", require("./routes/bookmarkRoutes"));
 app.use("/api/schedules", require("./routes/scheduleRoutes")); // Changed from schedule to schedules
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/chat", require("./routes/chat"));
-app.use('/api/page-status', require('./routes/pageStatus'));
+app.use("/api/page-status", require("./routes/pageStatus"));
 app.use("/api/report", require("./routes/listingReportRoutes")); // Added report route
+app.use("/api/subscription", subscriptionRoutes);

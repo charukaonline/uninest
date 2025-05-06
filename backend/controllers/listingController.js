@@ -3,13 +3,50 @@ const User = require("../models/User"); // Add User model import
 const fs = require("fs");
 const s3 = require("../config/awsS3");
 const { getIO } = require("../config/socket");
-const { calculateInitialEloRating, calculateClickEloIncrease } = require("../utils/eloCalculator");
+const {
+  calculateInitialEloRating,
+  calculateClickEloIncrease,
+} = require("../utils/eloCalculator");
+const { checkListingLimit } = require("./subscriptionController");
+
+// Helper function to check listing limit for free plan users
+async function checkListingLimitForUser(userId) {
+  // Check if user has premium subscription
+  const isPremium = await checkListingLimit(userId);
+
+  if (isPremium) {
+    // Premium users have unlimited listings
+    return { canAddListing: true };
+  }
+
+  // For free plan users, check existing listing count
+  const listingsCount = await Listing.countDocuments({ landlord: userId });
+
+  if (listingsCount >= 1) {
+    return {
+      canAddListing: false,
+      message:
+        "Free plan users can only create 1 listing. Please upgrade to Premium plan for unlimited listings.",
+    };
+  }
+
+  return { canAddListing: true };
+}
 
 exports.addListing = async (req, res) => {
   try {
     const landlord = req.user;
     if (!landlord) {
       return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Check if user has reached their listing limit
+    const limitCheck = await checkListingLimitForUser(landlord._id);
+    if (!limitCheck.canAddListing) {
+      return res.status(403).json({
+        success: false,
+        message: limitCheck.message,
+      });
     }
 
     // Debug log
@@ -37,10 +74,14 @@ exports.addListing = async (req, res) => {
     } = req.body;
 
     // Validate gender preference
-    if (!genderPreference || !['boys', 'girls', 'mixed'].includes(genderPreference)) {
+    if (
+      !genderPreference ||
+      !["boys", "girls", "mixed"].includes(genderPreference)
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid gender preference. Must be one of: boys, girls, mixed'
+        message:
+          "Invalid gender preference. Must be one of: boys, girls, mixed",
       });
     }
 
@@ -145,14 +186,14 @@ exports.getListings = async (req, res) => {
       .populate({
         path: "landlord",
         select: "username email phoneNumber isFlagged",
-        match: { isFlagged: { $ne: true } } // Only include listings where landlord is not flagged
+        match: { isFlagged: { $ne: true } }, // Only include listings where landlord is not flagged
       })
       .populate("nearestUniversity", "name location")
       .sort({ eloRating: -1 })
       .exec();
 
     // Filter out listings where landlord is null (due to the match condition)
-    const filteredListings = listings.filter(listing => listing.landlord);
+    const filteredListings = listings.filter((listing) => listing.landlord);
 
     res.status(200).json(filteredListings);
   } catch (err) {
@@ -181,7 +222,7 @@ exports.getListingById = async (req, res) => {
     // If landlord is flagged, don't show the listing
     if (listing.landlord && listing.landlord.isFlagged) {
       return res.status(403).json({
-        message: "This listing is currently unavailable"
+        message: "This listing is currently unavailable",
       });
     }
 
@@ -201,37 +242,44 @@ exports.trackListingClick = async (req, res) => {
     const listing = await Listing.findById(id);
 
     if (!listing) {
-      return res.status(404).json({ success: false, message: 'Listing not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Listing not found" });
     }
 
     // Increment the views count
     listing.views += 1;
-    
+
     // Update the ELO rating based on the click with dynamic calculation
-    const calculatedEloIncrease = calculateClickEloIncrease(listing.eloRating, listing);
-    
+    const calculatedEloIncrease = calculateClickEloIncrease(
+      listing.eloRating,
+      listing
+    );
+
     // Add fixed 2 additional marks per click
     const bonusMarks = 2;
     listing.eloRating = calculatedEloIncrease + bonusMarks;
-    
+
     await listing.save();
 
     // Emit socket event for real-time updates
     const io = getIO();
-    io.emit('listing_update', {
+    io.emit("listing_update", {
       listingId: id,
       clickCount: listing.views,
-      eloRating: listing.eloRating
+      eloRating: listing.eloRating,
     });
 
-    return res.status(200).json({ 
-      success: true, 
+    return res.status(200).json({
+      success: true,
       clicks: listing.views,
-      eloRating: listing.eloRating
+      eloRating: listing.eloRating,
     });
   } catch (err) {
-    console.error('Error tracking click:', err);
-    return res.status(500).json({ success: false, message: 'Error tracking click' });
+    console.error("Error tracking click:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error tracking click" });
   }
 };
 
@@ -243,14 +291,16 @@ exports.getPopularListings = async (req, res) => {
       .populate({
         path: "landlord",
         select: "username email phoneNumber isFlagged",
-        match: { isFlagged: { $ne: true } }
+        match: { isFlagged: { $ne: true } },
       })
       .populate("nearestUniversity", "name location")
       .sort({ eloRating: -1 })
       .limit(limit * 2)
       .exec();
 
-    const filteredListings = popularListings.filter(listing => listing.landlord);
+    const filteredListings = popularListings.filter(
+      (listing) => listing.landlord
+    );
 
     const limitedListings = filteredListings.slice(0, limit);
 
@@ -270,7 +320,7 @@ exports.getLandlordListings = async (req, res) => {
 
     if (!landlordId) {
       return res.status(400).json({
-        message: "Landlord ID is required"
+        message: "Landlord ID is required",
       });
     }
 
@@ -278,13 +328,13 @@ exports.getLandlordListings = async (req, res) => {
     const landlord = await User.findById(landlordId);
     if (!landlord) {
       return res.status(404).json({
-        message: "Landlord not found"
+        message: "Landlord not found",
       });
     }
 
-    const isAdminOrOwner = req.user &&
-      (req.user.role === 'admin' ||
-        req.user._id.toString() === landlordId);
+    const isAdminOrOwner =
+      req.user &&
+      (req.user.role === "admin" || req.user._id.toString() === landlordId);
 
     if (!isAdminOrOwner && landlord.isFlagged) {
       return res.status(200).json([]);
@@ -320,10 +370,14 @@ exports.updateListing = async (req, res) => {
     const updates = req.body;
 
     // Validate gender preference if it's being updated
-    if (updates.genderPreference && !['boys', 'girls', 'mixed'].includes(updates.genderPreference)) {
+    if (
+      updates.genderPreference &&
+      !["boys", "girls", "mixed"].includes(updates.genderPreference)
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid gender preference. Must be one of: boys, girls, mixed'
+        message:
+          "Invalid gender preference. Must be one of: boys, girls, mixed",
       });
     }
 
@@ -333,21 +387,25 @@ exports.updateListing = async (req, res) => {
     if (!listing) {
       return res.status(404).json({
         success: false,
-        message: 'Listing not found'
+        message: "Listing not found",
       });
     }
 
     // Check if user is authorized to update this listing
-    if (req.user.role !== 'admin' && listing.landlord.toString() !== req.user._id.toString()) {
+    if (
+      req.user.role !== "admin" &&
+      listing.landlord.toString() !== req.user._id.toString()
+    ) {
       return res.status(403).json({
         success: false,
-        message: 'You are not authorized to update this listing'
+        message: "You are not authorized to update this listing",
       });
     }
 
     // Apply updates to the listing
-    Object.keys(updates).forEach(key => {
-      if (key !== 'landlord' && key !== '_id') { // Prevent changing landlord or _id
+    Object.keys(updates).forEach((key) => {
+      if (key !== "landlord" && key !== "_id") {
+        // Prevent changing landlord or _id
         listing[key] = updates[key];
       }
     });
@@ -356,15 +414,15 @@ exports.updateListing = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Listing updated successfully',
-      listing
+      message: "Listing updated successfully",
+      listing,
     });
   } catch (error) {
-    console.error('Error updating listing:', error);
+    console.error("Error updating listing:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update listing',
-      error: error.message
+      message: "Failed to update listing",
+      error: error.message,
     });
   }
 };
@@ -375,17 +433,21 @@ exports.getListingClicks = async (req, res) => {
     const listing = await Listing.findById(id);
 
     if (!listing) {
-      return res.status(404).json({ success: false, message: 'Listing not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Listing not found" });
     }
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       clicks: listing.views || 0,
-      eloRating: listing.eloRating || 1400
+      eloRating: listing.eloRating || 1400,
     });
   } catch (err) {
-    console.error('Error fetching listing clicks:', err);
-    res.status(500).json({ success: false, message: 'Error fetching listing clicks' });
+    console.error("Error fetching listing clicks:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching listing clicks" });
   }
 };
 
@@ -396,15 +458,17 @@ exports.getViewsHistory = async (req, res) => {
     const listing = await Listing.findById(id);
 
     if (!listing) {
-      return res.status(404).json({ success: false, message: 'Listing not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Listing not found" });
     }
 
     // Get historical click data - this assumes you've added a viewsHistory field to your schema
     // If you don't have this field, you can implement a solution that approximates historical data
     // based on the total views and creation date
-    
+
     const viewsHistory = listing.viewsHistory || [];
-    
+
     // If no history exists, generate simulated weekly data
     if (!viewsHistory.length) {
       const weeks = 8;
@@ -413,40 +477,47 @@ exports.getViewsHistory = async (req, res) => {
       let remainingViews = totalViews;
       const now = new Date();
       const baseViewsPerWeek = Math.floor(totalViews / weeks);
-      
+
       for (let i = 0; i < weeks; i++) {
         const weekDate = new Date(now);
         weekDate.setDate(now.getDate() - (weeks - 1 - i) * 7);
-        
+
         let weekViews;
         if (i === weeks - 1) {
           weekViews = remainingViews;
         } else {
           const weightFactor = 0.7 + (i / weeks) * 0.6;
-          weekViews = Math.floor(baseViewsPerWeek * weightFactor * (0.8 + Math.random() * 0.4));
+          weekViews = Math.floor(
+            baseViewsPerWeek * weightFactor * (0.8 + Math.random() * 0.4)
+          );
           weekViews = Math.min(weekViews, remainingViews);
           remainingViews -= weekViews;
         }
-        
+
         result.push({
           week: `Week ${i + 1}`,
-          date: weekDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          clicks: weekViews
+          date: weekDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          }),
+          clicks: weekViews,
         });
       }
-      
-      return res.status(200).json({ 
-        success: true, 
-        history: result
+
+      return res.status(200).json({
+        success: true,
+        history: result,
       });
     }
-    
-    return res.status(200).json({ 
-      success: true, 
-      history: viewsHistory
+
+    return res.status(200).json({
+      success: true,
+      history: viewsHistory,
     });
   } catch (err) {
-    console.error('Error fetching views history:', err);
-    res.status(500).json({ success: false, message: 'Error fetching views history' });
+    console.error("Error fetching views history:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching views history" });
   }
 };
