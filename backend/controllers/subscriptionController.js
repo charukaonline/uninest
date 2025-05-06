@@ -58,9 +58,9 @@ exports.createOrder = async (req, res) => {
     };
 
     const orderId = `UN-${Date.now()}-${userId.slice(-4)}`;
-    const paymentUrl = getPaymentUrl(orderId, user, amount);
+    const paymentData = getPaymentUrl(orderId, user, amount);
 
-    res.json({ paymentUrl });
+    res.json(paymentData);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
@@ -142,9 +142,9 @@ exports.renewSubscription = async (req, res) => {
     };
 
     const orderId = `UN-RNW-${Date.now()}-${userId.slice(-4)}`;
-    const paymentUrl = getPaymentUrl(orderId, user, amount);
+    const paymentData = getPaymentUrl(orderId, user, amount);
 
-    res.json({ paymentUrl });
+    res.json(paymentData);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }

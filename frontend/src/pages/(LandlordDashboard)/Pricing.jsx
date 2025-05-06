@@ -76,9 +76,36 @@ const Pricing = () => {
         amount: PREMIUM_PRICE,
       });
 
-      // Redirect to PayHere payment page
-      if (response.data && response.data.paymentUrl) {
-        window.location.href = response.data.paymentUrl;
+      // Instead of redirecting, create and submit a form
+      if (
+        response.data &&
+        response.data.checkoutUrl &&
+        response.data.formData
+      ) {
+        const { checkoutUrl, formData } = response.data;
+
+        // Create a form element
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = checkoutUrl;
+        form.style.display = "none"; // Hide the form
+
+        // Add form fields
+        Object.entries(formData).forEach(([key, value]) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
+        });
+
+        // Add form to document body
+        document.body.appendChild(form);
+
+        // Submit the form
+        form.submit();
+      } else {
+        throw new Error("Invalid payment data received from server");
       }
     } catch (error) {
       console.error("Error initiating payment:", error);
@@ -86,7 +113,6 @@ const Pricing = () => {
         message: "Payment Error",
         description: "Failed to initiate payment. Please try again.",
       });
-    } finally {
       setLoading(false);
     }
   };

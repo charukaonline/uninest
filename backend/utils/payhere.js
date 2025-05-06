@@ -32,7 +32,6 @@ function getPaymentUrl(orderId, user, amount) {
     items: "Landlord Premium Subscription (30 days)",
     currency: "LKR",
     amount: amount.toFixed(2),
-    // Removed recurrence and duration parameters for one-time payment
     first_name: user.firstName,
     last_name: user.lastName,
     email: user.email,
@@ -43,8 +42,11 @@ function getPaymentUrl(orderId, user, amount) {
     hash: generateHash(orderId, amount.toFixed(2), "LKR"),
   };
 
-  const form = new URLSearchParams(data).toString();
-  return `${PAYHERE_BASE}?${form}`;
+  // Instead of constructing a URL, return the payment data and checkout URL
+  return {
+    checkoutUrl: PAYHERE_BASE,
+    formData: data,
+  };
 }
 
 module.exports = { getPaymentUrl };
