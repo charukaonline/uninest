@@ -8,15 +8,16 @@ const ChatBubble = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [hasNewMessage, setHasNewMessage] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
   const chatRef = useRef(null);
   const bubbleRef = useRef(null);
 
-  // Simulate new message notification (for demo purposes)
+  // Simulate new message notification
   useEffect(() => {
     if (!isOpen) {
       const timer = setTimeout(() => {
         setHasNewMessage(true);
-      }, 10000);
+      }, 5000);
       return () => clearTimeout(timer);
     } else {
       setHasNewMessage(false);
@@ -42,6 +43,29 @@ const ChatBubble = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, [isOpen]);
+
+  // Show tooltip message after 5 seconds
+  useEffect(() => {
+    const tooltipTimer = setTimeout(() => {
+      if (!isOpen) {
+        setShowTooltip(true);
+        // Hide tooltip after 10 seconds
+        const hideTimer = setTimeout(() => {
+          setShowTooltip(false);
+        }, 10000);
+        return () => clearTimeout(hideTimer);
+      }
+    }, 5000);
+
+    return () => clearTimeout(tooltipTimer);
+  }, []);
+
+  // Hide tooltip when chat is opened
+  useEffect(() => {
+    if (isOpen) {
+      setShowTooltip(false);
+    }
   }, [isOpen]);
 
   // Simplified toggle function
@@ -92,6 +116,25 @@ const ChatBubble = ({
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Tooltip Message */}
+      <AnimatePresence>
+        {showTooltip && !isOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 30, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 20, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+            className="fixed bottom-20 sm:bottom-24 md:bottom-28 right-4 sm:right-6 md:right-8 lg:right-10 
+                     bg-white px-4 py-3 rounded-xl shadow-lg z-40 max-w-[220px]"
+          >
+            <div className="text-gray-700 text-sm font-medium">
+              UniNest AI here.. Need assistance?
+            </div>
+            <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white transform rotate-45"></div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Popup Chat Window - Enhanced Responsive Size */}
       <AnimatePresence>
