@@ -188,10 +188,12 @@ async function sendSubscriptionConfirmationEmail(userId) {
     if (!user) return;
 
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.zoho.com",
+      port: 465, // SSL port (use 587 for TLS)
+      secure: true,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
+        user: process.env.EMAIL_USER, // Zoho email
+        pass: process.env.EMAIL_PASS, // Zoho App Password
       },
     });
 
@@ -343,10 +345,12 @@ async function sendSubscriptionExpiredNotification(userId) {
 
     // Send email notification
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.zoho.com",
+      port: 465, // SSL port (use 587 for TLS)
+      secure: true,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
+        user: process.env.EMAIL_USER, // Zoho email
+        pass: process.env.EMAIL_PASS, // Zoho App Password
       },
     });
 
@@ -394,10 +398,12 @@ async function sendExpirationNotification(userId) {
     });
 
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.zoho.com",
+      port: 465, // SSL port (use 587 for TLS)
+      secure: true,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
+        user: process.env.EMAIL_USER, // Zoho email
+        pass: process.env.EMAIL_PASS, // Zoho App Password
       },
     });
 
@@ -477,7 +483,6 @@ exports.updateSubscriptionOnSuccess = async (userId, expirationDate) => {
       { isHeldForPayment: false }
     );
 
-    // No need to send confirmation email here since paymentNotify will handle that
     console.log(`Subscription updated on success return for user ${userId}`);
     return true;
   } catch (error) {
