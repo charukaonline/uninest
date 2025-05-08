@@ -6,7 +6,6 @@ import LandingSection3 from "@/components/landing_page/LandingSection3";
 import React, { useEffect } from "react";
 
 const Home = () => {
-
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "UniNest 🏠";
@@ -19,7 +18,7 @@ const Home = () => {
       <LandingSection3 />
       <HomeContactSection />
     </div>
-  )
+  );
 };
 
 export default Home;

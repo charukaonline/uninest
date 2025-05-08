@@ -134,3 +134,6 @@ uploads/
 
 # recommendation_server
 recommendation_server/__pycache__/
+
+# Google drive secret files
+backend/uninest-447920-2c1c14a33f00.json
