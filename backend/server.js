@@ -92,10 +92,12 @@ const {
 } = require("./controllers/subscriptionController");
 
 cron.schedule("0 8 * * *", async () => {
-  console.log("Running scheduled job: checking expiring subscriptions");
+  console.log(
+    "Running scheduled job: checking expiring and expired subscriptions"
+  );
   try {
     const result = await checkExpiringSubscriptions();
-    console.log("Expiring subscriptions check completed:", result);
+    console.log("Subscription check completed:", result);
   } catch (error) {
     console.error("Error in subscription check job:", error);
   }

@@ -182,7 +182,7 @@ exports.addListing = async (req, res) => {
 
 exports.getListings = async (req, res) => {
   try {
-    const listings = await Listing.find()
+    const listings = await Listing.find({ isHeldForPayment: { $ne: true } })
       .populate({
         path: "landlord",
         select: "username email phoneNumber isFlagged",
@@ -354,7 +354,23 @@ exports.getLandlordListings = async (req, res) => {
 
     const listings = await listingsQuery.exec();
 
-    res.status(200).json(listings);
+    // If user is owner or admin, include "held" status for each listing
+    if (isAdminOrOwner) {
+      // Add isHeld flag to each listing in the response for UI display
+      const listingsWithStatus = listings.map((listing) => {
+        const listingObj = listing.toObject();
+        listingObj.isHeld = listing.isHeldForPayment || false;
+        return listingObj;
+      });
+
+      return res.status(200).json(listingsWithStatus);
+    }
+
+    // For non-owners, filter out held listings
+    const visibleListings = listings.filter(
+      (listing) => !listing.isHeldForPayment
+    );
+    res.status(200).json(visibleListings);
   } catch (err) {
     console.error("Error fetching landlord listings:", err);
     res.status(500).json({

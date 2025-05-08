@@ -33,8 +33,14 @@ function getPaymentUrl(orderId, user, amount, landlordParams = {}) {
     landlordParams.landlordId && landlordParams.email
       ? `?landlordId=${landlordParams.landlordId}&email=${encodeURIComponent(
           landlordParams.email
-        )}`
-      : "";
+        )}&order_id=${orderId}`
+      : `?order_id=${orderId}`;
+
+  // Determine if this is a renewal from order_id format
+  const isRenewal = orderId.includes("-RNW-");
+  const itemName = isRenewal
+    ? "Landlord Premium Subscription Renewal (30 days)"
+    : "Landlord Premium Subscription (30 days)";
 
   const data = {
     merchant_id: PAYHERE_MERCHANT_ID,
@@ -42,7 +48,7 @@ function getPaymentUrl(orderId, user, amount, landlordParams = {}) {
     cancel_url: `${baseUrl}/api/subscription/cancel${landlordQueryParams}`,
     notify_url: `${baseUrl}/api/subscription/notify`,
     order_id: orderId,
-    items: "Landlord Premium Subscription (30 days)",
+    items: itemName,
     currency: "LKR",
     amount: amount.toFixed(2),
     first_name: user.firstName,
@@ -53,6 +59,8 @@ function getPaymentUrl(orderId, user, amount, landlordParams = {}) {
     city: "Colombo",
     country: "Sri Lanka",
     hash: generateHash(orderId, amount.toFixed(2), "LKR"),
+    custom_1: isRenewal ? "renewal" : "new_subscription",
+    custom_2: user.email,
   };
 
   // Instead of constructing a URL, return the payment data and checkout URL
