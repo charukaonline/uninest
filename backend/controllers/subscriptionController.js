@@ -1,6 +1,8 @@
 const Subscription = require("../models/Subscription");
 const User = require("../models/User");
 const LandlordProfile = require("../models/LandlordProfile");
+const Listing = require("../models/Listing");
+const Notification = require("../models/Notification");
 const { getPaymentUrl } = require("../utils/payhere");
 const nodemailer = require("nodemailer");
 
@@ -111,6 +113,7 @@ exports.paymentNotify = async (req, res) => {
         {
           planType: "premium",
           nextBillingDate: expirationDate,
+          status: "active", // Ensure status is set to active
         },
         { upsert: true }
       );
@@ -128,6 +131,12 @@ exports.paymentNotify = async (req, res) => {
           }
         );
       }
+
+      // Unhide all listings that were on hold
+      await Listing.updateMany(
+        { landlord: userId, isHeldForPayment: true },
+        { isHeldForPayment: false }
+      );
 
       // Send confirmation email
       await sendSubscriptionConfirmationEmail(userId);
@@ -216,6 +225,7 @@ exports.checkExpiringSubscriptions = async () => {
     // Find subscriptions expiring in 3 days
     const expiringSubscriptions = await Subscription.find({
       planType: "premium",
+      status: "active",
       nextBillingDate: {
         $gte: new Date(),
         $lte: threeDaysFromNow,
@@ -227,12 +237,145 @@ exports.checkExpiringSubscriptions = async () => {
       await sendExpirationNotification(subscription.userId);
     }
 
+    // HANDLE EXPIRED SUBSCRIPTIONS
+    await handleExpiredSubscriptions();
+
     return { success: true, count: expiringSubscriptions.length };
   } catch (error) {
     console.error("Error checking expiring subscriptions:", error);
     return { success: false, error: error.message };
   }
 };
+
+// New function to handle expired subscriptions
+async function handleExpiredSubscriptions() {
+  try {
+    const now = new Date();
+
+    // Find expired subscriptions that are still marked as active
+    const expiredSubscriptions = await Subscription.find({
+      planType: "premium",
+      status: "active",
+      nextBillingDate: { $lt: now },
+    });
+
+    console.log(
+      `Found ${expiredSubscriptions.length} expired subscriptions to process`
+    );
+
+    for (const subscription of expiredSubscriptions) {
+      // Update subscription status to expired
+      await Subscription.findByIdAndUpdate(subscription._id, {
+        planType: "free",
+        status: "expired",
+      });
+
+      // Update landlord profile if exists
+      await LandlordProfile.findOneAndUpdate(
+        { userId: subscription.userId },
+        {
+          "subscription.plan": "free",
+          "subscription.status": "expired",
+        }
+      );
+
+      // Process the user's listings - keeping only the oldest one active
+      await processListingsForExpiredSubscription(subscription.userId);
+
+      // Send expiration notification
+      await sendSubscriptionExpiredNotification(subscription.userId);
+    }
+
+    return expiredSubscriptions.length;
+  } catch (error) {
+    console.error("Error handling expired subscriptions:", error);
+    return 0;
+  }
+}
+
+// Process listings for a user with expired subscription
+async function processListingsForExpiredSubscription(userId) {
+  try {
+    // Get all listings for this landlord, sorted by creation date (oldest first)
+    const listings = await Listing.find({ landlord: userId }).sort({
+      createdAt: 1,
+    });
+
+    if (listings.length <= 1) {
+      // User has 0 or 1 listings, no action needed
+      return;
+    }
+
+    // Keep the first/oldest listing active, mark others as held
+    for (let i = 1; i < listings.length; i++) {
+      await Listing.findByIdAndUpdate(listings[i]._id, {
+        isHeldForPayment: true,
+      });
+    }
+
+    console.log(
+      `Processed ${listings.length} listings for user ${userId}, marked ${
+        listings.length - 1
+      } as held`
+    );
+  } catch (error) {
+    console.error(`Error processing listings for user ${userId}:`, error);
+  }
+}
+
+// New function to send notification when subscription expires
+async function sendSubscriptionExpiredNotification(userId) {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return;
+
+    // Create in-app notification
+    const notification = new Notification({
+      userId: userId,
+      type: "account",
+      title: "Subscription Expired",
+      message:
+        "Your premium subscription has expired. Some of your listings are now on hold. Please renew your subscription to make them active again.",
+      read: false,
+    });
+
+    await notification.save();
+
+    // Send email notification
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "Your UniNest Premium Subscription Has Expired",
+      html: `
+        <h2>Your Premium Subscription Has Expired</h2>
+        <p>Dear ${user.username},</p>
+        <p>Your UniNest premium subscription has expired. Your account has been downgraded to the free plan.</p>
+        <p>What this means:</p>
+        <ul>
+          <li>Your oldest property listing remains active</li>
+          <li>Additional listings are now on hold and not visible to students</li>
+          <li>You no longer have access to premium features</li>
+        </ul>
+        <p>To restore all your listings and premium features, please renew your subscription.</p>
+        <p><a href="${process.env.FRONTEND_URL}/landlord/pricing" style="background-color:#006845; color:white; padding:10px 15px; text-decoration:none; border-radius:5px; display:inline-block; margin-top:10px;">Renew Now</a></p>
+        <p>Thank you for choosing UniNest.</p>
+        <p>Best regards,<br>The UniNest Team</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending subscription expired notification:", error);
+  }
+}
 
 // Helper function to send expiration notification
 async function sendExpirationNotification(userId) {
@@ -296,6 +439,49 @@ exports.checkListingLimit = async (userId) => {
     return false; // Free plan or expired premium
   } catch (error) {
     console.error("Error checking subscription:", error);
+    return false;
+  }
+};
+
+// New function to update subscription when user returns from successful payment
+exports.updateSubscriptionOnSuccess = async (userId, expirationDate) => {
+  try {
+    // Update subscription in database (similar to what we do in paymentNotify)
+    await Subscription.findOneAndUpdate(
+      { userId },
+      {
+        planType: "premium",
+        nextBillingDate: expirationDate,
+        status: "active",
+      },
+      { upsert: true }
+    );
+
+    // Also update the user's profile with subscription info
+    const user = await User.findById(userId);
+    if (user && user.role === "landlord") {
+      await LandlordProfile.findOneAndUpdate(
+        { userId },
+        {
+          "subscription.plan": "premium",
+          "subscription.status": "active",
+          "subscription.startDate": new Date(),
+          "subscription.endDate": expirationDate,
+        }
+      );
+    }
+
+    // Unhide all listings that were on hold
+    await Listing.updateMany(
+      { landlord: userId, isHeldForPayment: true },
+      { isHeldForPayment: false }
+    );
+
+    // No need to send confirmation email here since paymentNotify will handle that
+    console.log(`Subscription updated on success return for user ${userId}`);
+    return true;
+  } catch (error) {
+    console.error("Error updating subscription on success:", error);
     return false;
   }
 };

@@ -14,6 +14,7 @@ const Pricing = () => {
   const { user } = useAuthStore();
   const location = useLocation();
   const { landlordId, email } = useParams();
+  const [heldListings, setHeldListings] = useState(0);
   // Add a ref to track if notifications have been shown
   const notificationShownRef = useRef({
     success: false,
@@ -67,6 +68,21 @@ const Pricing = () => {
         );
         setSubscriptionData(response.data);
         setCurrentPlan(response.data.planType || "free");
+
+        // If user is a landlord, fetch their listings to check for held listings
+        if (user?.role === "landlord") {
+          const listingsResponse = await axios.get(
+            `${import.meta.env.VITE_BACKEND_URL}/api/listings/landlord/${
+              user._id
+            }`
+          );
+
+          // Count held listings
+          const heldCount = listingsResponse.data.filter(
+            (listing) => listing.isHeld
+          ).length;
+          setHeldListings(heldCount);
+        }
       } catch (error) {
         console.error("Error fetching subscription data:", error);
         notification.error({
@@ -209,6 +225,33 @@ const Pricing = () => {
             type="warning"
             showIcon
             icon={<FaClock />}
+            className="mb-6"
+          />
+        )}
+
+        {/* Show held listings alert if any */}
+        {heldListings > 0 && currentPlan === "free" && (
+          <Alert
+            message="Listings On Hold"
+            description={
+              <div>
+                <p>
+                  You have {heldListings}{" "}
+                  {heldListings === 1 ? "listing" : "listings"} on hold due to
+                  your subscription expiration. Upgrade to Premium to make{" "}
+                  {heldListings === 1 ? "it" : "them"} visible again.
+                </p>
+                <button
+                  onClick={handleSubscriptionAction}
+                  className="mt-2 px-4 py-2 bg-primaryBgColor text-white rounded-lg hover:bg-green-700 transition"
+                  disabled={loading}
+                >
+                  {loading ? "Processing..." : "Upgrade Now"}
+                </button>
+              </div>
+            }
+            type="warning"
+            showIcon
             className="mb-6"
           />
         )}
