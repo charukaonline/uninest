@@ -21,11 +21,38 @@ const sendVerificationEmail = async (to, code) => {
       to: to,
       subject: "Verify Your UniNest Account",
       html: `
-        <h2>Welcome to UniNest!</h2>
-        <p>Your verification code is: <b>${code}</b></p>
-        <p>Please enter this code in the app to verify your email.</p>
-        <br/>
-        <p>Best Regards,<br/>The UniNest Team</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .code { display: inline-block; padding: 10px 20px; background-color: #006845; color: white; font-weight: bold; font-size: 20px; border-radius: 4px; margin: 10px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+            .button { background-color: #006845; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 20px 0; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Welcome to UniNest!</h2>
+              <p>Thank you for joining our community. To complete your registration, please verify your email address with the code below:</p>
+              <div class="code">${code}</div>
+              <p>Please enter this code in the app to verify your email.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+              <p>If you did not create an account, please ignore this email.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
@@ -46,11 +73,36 @@ const sendWelcomeEmail = async (to, name) => {
       to: to,
       subject: "Welcome to UniNest!",
       html: `
-        <h2>Hello, ${name}!</h2>
-        <p>Thank you for verifying your email. Welcome to UniNest!</p>
-        <p>We’re excited to help you find your perfect boarding house.</p>
-        <br/>
-        <p>Best Regards,<br/>The UniNest Team</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+            .name { color: #006845; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Hello, <span class="name">${name}</span>!</h2>
+              <p>Thank you for verifying your email. Welcome to UniNest!</p>
+              <p>We're excited to help you find your perfect boarding house. Our platform connects students with quality accommodation options near your university.</p>
+              <p>Feel free to explore listings and reach out if you need any assistance.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
@@ -69,12 +121,41 @@ const sendInquiryEmail = async (inquiryType, email, name, phone, message) => {
       subject: `New Inquiry: ${inquiryType}`,
       replyTo: email,
       html: `
-        <h2>New Inquiry from Website</h2>
-        <p><strong>From:</strong> ${name} (${email})</p>
-        <p><strong>Phone:</strong> ${phone || "Not provided"}</p>
-        <p><strong>Inquiry Type:</strong> ${inquiryType}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+            .label { font-weight: bold; color: #006845; }
+            .message { background-color: white; padding: 15px; border-left: 4px solid #006845; margin: 10px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest Inquiry</h1>
+            </div>
+            <div class="content">
+              <h2>New Inquiry from Website</h2>
+              <p><span class="label">From:</span> ${name} (${email})</p>
+              <p><span class="label">Phone:</span> ${
+                phone || "Not provided"
+              }</p>
+              <p><span class="label">Inquiry Type:</span> ${inquiryType}</p>
+              <p><span class="label">Message:</span></p>
+              <div class="message">${message}</div>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
@@ -94,11 +175,34 @@ const informLandlordVerify = async (email, name) => {
       to: email,
       subject: "UniNest Account Verification",
       html: `
-        <h2>Hello, ${name}!</h2>
-        <p>Your account has been verified</p>
-        <p>Now you can log into your dashboard and add listings</p>
-        <br/>
-        <p>Best Regards,<br/>The UniNest Team</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Hello, ${name}!</h2>
+              <p>Your account has been verified</p>
+              <p>Now you can log into your dashboard and add listings</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
@@ -125,13 +229,36 @@ const sendScheduleNotification = async (
       to: studentEmail,
       subject: "Visit Schedule Confirmation - UniNest",
       html: `
-        <h2>Hello, ${studentName}!</h2>
-        <p>Your visit to <b>${listingName}</b> has been scheduled successfully.</p>
-        <p><strong>Date:</strong> ${date}</p>
-        <p><strong>Time:</strong> ${time}</p>
-        <p>The landlord has been notified of your visit. Please make sure to arrive on time.</p>
-        <br/>
-        <p>Best Regards,<br/>The UniNest Team</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Hello, ${studentName}!</h2>
+              <p>Your visit to <b>${listingName}</b> has been scheduled successfully.</p>
+              <p><strong>Date:</strong> ${date}</p>
+              <p><strong>Time:</strong> ${time}</p>
+              <p>The landlord has been notified of your visit. Please make sure to arrive on time.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
@@ -141,14 +268,37 @@ const sendScheduleNotification = async (
       to: landlordEmail,
       subject: "New Visit Schedule - UniNest",
       html: `
-        <h2>Hello, ${landlordName}!</h2>
-        <p>A student has scheduled a visit to your property <b>${listingName}</b>.</p>
-        <p><strong>Student:</strong> ${studentName}</p>
-        <p><strong>Date:</strong> ${date}</p>
-        <p><strong>Time:</strong> ${time}</p>
-        <p>Please ensure you or your representative is available at the specified time.</p>
-        <br/>
-        <p>Best Regards,<br/>The UniNest Team</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Hello, ${landlordName}!</h2>
+              <p>A student has scheduled a visit to your property <b>${listingName}</b>.</p>
+              <p><strong>Student:</strong> ${studentName}</p>
+              <p><strong>Date:</strong> ${date}</p>
+              <p><strong>Time:</strong> ${time}</p>
+              <p>Please ensure you or your representative is available at the specified time.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
@@ -197,16 +347,38 @@ const sendScheduleStatusEmail = async (
       to: studentEmail,
       subject: subject,
       html: `
-        <h2>Hello, ${studentName}!</h2>
-        ${statusMessage}
-        <p><strong>Property:</strong> ${listingName}</p>
-        <p><strong>Landlord:</strong> ${landlordName}</p>
-        <p><strong>Date:</strong> ${date}</p>
-        <p><strong>Time:</strong> ${time}</p>
-        <br/>
-        <p>If you have any questions, please contact us or the landlord directly.</p>
-        <br/>
-        <p>Best Regards,<br/>The UniNest Team</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Hello, ${studentName}!</h2>
+              ${statusMessage}
+              <p><strong>Property:</strong> ${listingName}</p>
+              <p><strong>Landlord:</strong> ${landlordName}</p>
+              <p><strong>Date:</strong> ${date}</p>
+              <p><strong>Time:</strong> ${time}</p>
+              <p>If you have any questions, please contact us or the landlord directly.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
@@ -239,12 +411,35 @@ const sendReportEmail = async (
       to: reporterEmail,
       subject: "Your Report Has Been Received - UniNest",
       html: `
-        <h2>Hello, ${reporterName}!</h2>
-        <p>Thank you for submitting a report. Your report regarding <b>${listingName}</b> has been received.</p>
-        <p><strong>Report Type:</strong> ${reportType}</p>
-        <p>Our administrative team will review your report and take appropriate action. You may be contacted if we need additional information.</p>
-        <br/>
-        <p>Best Regards,<br/>The UniNest Team</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Hello, ${reporterName}!</h2>
+              <p>Thank you for submitting a report. Your report regarding <b>${listingName}</b> has been received.</p>
+              <p><strong>Report Type:</strong> ${reportType}</p>
+              <p>Our administrative team will review your report and take appropriate action. You may be contacted if we need additional information.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
@@ -268,13 +463,38 @@ const sendPasswordResetEmail = async (to, code) => {
       to: to,
       subject: "Reset Your UniNest Password",
       html: `
-        <h2>Password Reset Request</h2>
-        <p>You requested to reset your password for your UniNest account.</p>
-        <p>Your verification code is: <b>${code}</b></p>
-        <p>This code will expire in 1 hour.</p>
-        <p>If you didn't request this, please ignore this email.</p>
-        <br/>
-        <p>Best Regards,<br/>The UniNest Team</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .code { display: inline-block; padding: 10px 20px; background-color: #006845; color: white; font-weight: bold; font-size: 20px; border-radius: 4px; margin: 10px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+            .button { background-color: #006845; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 20px 0; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Password Reset Request</h2>
+              <p>You requested to reset your password for your UniNest account.</p>
+              <div class="code">${code}</div>
+              <p>This code will expire in 1 hour.</p>
+              <p>If you didn't request this, please ignore this email.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
@@ -295,13 +515,38 @@ exports.sendPasswordResetEmail = async (to, code) => {
       to,
       subject: "Reset Your UniNest Password",
       html: `
-        <h2>Password Reset Request</h2>
-        <p>You requested to reset your password for your UniNest landlord account.</p>
-        <p>Your verification code is: <b>${code}</b></p>
-        <p>This code will expire in 1 hour.</p>
-        <p>If you didn't request this, please ignore this email.</p>
-        <br/>
-        <p>Best Regards,<br/>The UniNest Team</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .code { display: inline-block; padding: 10px 20px; background-color: #006845; color: white; font-weight: bold; font-size: 20px; border-radius: 4px; margin: 10px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+            .button { background-color: #006845; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 20px 0; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Password Reset Request</h2>
+              <p>You requested to reset your password for your UniNest landlord account.</p>
+              <div class="code">${code}</div>
+              <p>This code will expire in 1 hour.</p>
+              <p>If you didn't request this, please ignore this email.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
