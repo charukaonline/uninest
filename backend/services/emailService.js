@@ -1,6 +1,9 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
+const User = require("../models/User");
+const Subscription = require("../models/Subscription");
+
 const transporter = nodemailer.createTransport({
   host: "smtp.zoho.com",
   port: 465, // SSL port (use 587 for TLS)
@@ -559,6 +562,201 @@ exports.sendPasswordResetEmail = async (to, code) => {
   }
 };
 
+/**
+ * Send subscription confirmation email
+ */
+const sendSubscriptionConfirmationEmail = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "UniNest Premium Subscription Confirmation",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+            .name { color: #006845; font-weight: bold; }
+            .button { background-color: #006845; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 20px 0; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Thank you for subscribing to UniNest Premium!</h2>
+              <p>Dear ${user.username},</p>
+              <p>Your premium subscription has been activated successfully. You now have access to unlimited property listings and all premium features.</p>
+              <p>Your subscription will expire in 30 days. We will send you a reminder 3 days before expiration.</p>
+              <p>Thank you for choosing UniNest.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Subscription confirmation email sent to:", user.email);
+    return true;
+  } catch (error) {
+    console.error("Error sending subscription confirmation email:", error);
+    return false;
+  }
+};
+
+/**
+ * Send subscription expiration reminder email
+ */
+const sendSubscriptionExpirationReminder = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return false;
+
+    const subscription = await Subscription.findOne({ userId });
+    if (!subscription) return false;
+
+    const expirationDate = new Date(subscription.nextBillingDate);
+    const formattedDate = expirationDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "Your UniNest Premium Subscription is Expiring Soon",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+            .button { background-color: #006845; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 20px 0; font-weight: bold; }
+            .date { font-weight: bold; color: #006845; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Your Premium Subscription is Expiring Soon</h2>
+              <p>Dear ${user.username},</p>
+              <p>Your UniNest premium subscription will expire on <span class="date">${formattedDate}</span>.</p>
+              <p>To continue enjoying unlimited property listings and all premium features, please log in to your dashboard and renew your subscription.</p>
+              <a href="${
+                process.env.FRONTEND_URL
+              }/landlord/pricing" class="button">Renew Now</a>
+              <p>If you choose not to renew, your account will be downgraded to the free plan with limited features.</p>
+              <p>Thank you for choosing UniNest.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Subscription expiration reminder sent to:", user.email);
+    return true;
+  } catch (error) {
+    console.error("Error sending subscription expiration reminder:", error);
+    return false;
+  }
+};
+
+/**
+ * Send subscription expired notification email
+ */
+const sendSubscriptionExpiredEmail = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return false;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "Your UniNest Premium Subscription Has Expired",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #006845; padding: 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; }
+            .content { padding: 30px; background-color: #f9f9f9; border-radius: 4px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+            .button { background-color: #006845; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 20px 0; font-weight: bold; }
+            ul { padding-left: 20px; }
+            li { margin-bottom: 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>UniNest</h1>
+            </div>
+            <div class="content">
+              <h2>Your Premium Subscription Has Expired</h2>
+              <p>Dear ${user.username},</p>
+              <p>Your UniNest premium subscription has expired. Your account has been downgraded to the free plan.</p>
+              <p>What this means:</p>
+              <ul>
+                <li>Your oldest property listing remains active</li>
+                <li>Additional listings are now on hold and not visible to students</li>
+                <li>You no longer have access to premium features</li>
+              </ul>
+              <p>To restore all your listings and premium features, please renew your subscription.</p>
+              <a href="${
+                process.env.FRONTEND_URL
+              }/landlord/pricing" class="button">Renew Now</a>
+              <p>Thank you for choosing UniNest.</p>
+            </div>
+            <div class="footer">
+              <p>© ${new Date().getFullYear()} UniNest. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Subscription expired email sent to:", user.email);
+    return true;
+  } catch (error) {
+    console.error("Error sending subscription expired email:", error);
+    return false;
+  }
+};
+
 module.exports = {
   sendVerificationEmail,
   sendWelcomeEmail,
@@ -567,5 +765,8 @@ module.exports = {
   sendScheduleNotification,
   sendScheduleStatusEmail,
   sendReportEmail,
-  sendPasswordResetEmail, // Add this to the exports
+  sendPasswordResetEmail,
+  sendSubscriptionConfirmationEmail,
+  sendSubscriptionExpirationReminder,
+  sendSubscriptionExpiredEmail,
 };

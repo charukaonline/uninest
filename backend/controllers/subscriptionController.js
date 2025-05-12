@@ -4,7 +4,11 @@ const LandlordProfile = require("../models/LandlordProfile");
 const Listing = require("../models/Listing");
 const Notification = require("../models/Notification");
 const { getPaymentUrl } = require("../utils/payhere");
-const nodemailer = require("nodemailer");
+const {
+  sendSubscriptionConfirmationEmail,
+  sendSubscriptionExpirationReminder,
+  sendSubscriptionExpiredEmail,
+} = require("../services/emailService");
 
 exports.getSubscription = async (req, res) => {
   try {
@@ -138,7 +142,7 @@ exports.paymentNotify = async (req, res) => {
         { isHeldForPayment: false }
       );
 
-      // Send confirmation email
+      // Send confirmation email - now using emailService
       await sendSubscriptionConfirmationEmail(userId);
     } catch (error) {
       console.error("Error processing payment notification:", error);
@@ -181,42 +185,6 @@ exports.renewSubscription = async (req, res) => {
   }
 };
 
-// Helper function to send subscription confirmation
-async function sendSubscriptionConfirmationEmail(userId) {
-  try {
-    const user = await User.findById(userId);
-    if (!user) return;
-
-    const transporter = nodemailer.createTransport({
-      host: "smtp.zoho.com",
-      port: 465, // SSL port (use 587 for TLS)
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER, // Zoho email
-        pass: process.env.EMAIL_PASS, // Zoho App Password
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: "UniNest Premium Subscription Confirmation",
-      html: `
-        <h2>Thank you for subscribing to UniNest Premium!</h2>
-        <p>Dear ${user.username},</p>
-        <p>Your premium subscription has been activated successfully. You now have access to unlimited property listings and all premium features.</p>
-        <p>Your subscription will expire in 30 days. We will send you a reminder 3 days before expiration.</p>
-        <p>Thank you for choosing UniNest.</p>
-        <p>Best regards,<br>The UniNest Team</p>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-  } catch (error) {
-    console.error("Error sending confirmation email:", error);
-  }
-}
-
 // Function to check for expiring subscriptions and send notifications
 // This should be called by a scheduled job
 exports.checkExpiringSubscriptions = async () => {
@@ -236,7 +204,7 @@ exports.checkExpiringSubscriptions = async () => {
 
     // Send notifications to each user
     for (const subscription of expiringSubscriptions) {
-      await sendExpirationNotification(subscription.userId);
+      await sendSubscriptionExpirationReminder(subscription.userId);
     }
 
     // HANDLE EXPIRED SUBSCRIPTIONS
@@ -325,7 +293,7 @@ async function processListingsForExpiredSubscription(userId) {
   }
 }
 
-// New function to send notification when subscription expires
+// Send notification when subscription expires - using emailService now
 async function sendSubscriptionExpiredNotification(userId) {
   try {
     const user = await User.findById(userId);
@@ -343,89 +311,10 @@ async function sendSubscriptionExpiredNotification(userId) {
 
     await notification.save();
 
-    // Send email notification
-    const transporter = nodemailer.createTransport({
-      host: "smtp.zoho.com",
-      port: 465, // SSL port (use 587 for TLS)
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER, // Zoho email
-        pass: process.env.EMAIL_PASS, // Zoho App Password
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: "Your UniNest Premium Subscription Has Expired",
-      html: `
-        <h2>Your Premium Subscription Has Expired</h2>
-        <p>Dear ${user.username},</p>
-        <p>Your UniNest premium subscription has expired. Your account has been downgraded to the free plan.</p>
-        <p>What this means:</p>
-        <ul>
-          <li>Your oldest property listing remains active</li>
-          <li>Additional listings are now on hold and not visible to students</li>
-          <li>You no longer have access to premium features</li>
-        </ul>
-        <p>To restore all your listings and premium features, please renew your subscription.</p>
-        <p><a href="${process.env.FRONTEND_URL}/landlord/pricing" style="background-color:#006845; color:white; padding:10px 15px; text-decoration:none; border-radius:5px; display:inline-block; margin-top:10px;">Renew Now</a></p>
-        <p>Thank you for choosing UniNest.</p>
-        <p>Best regards,<br>The UniNest Team</p>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    // Send email notification using the migrated function
+    await sendSubscriptionExpiredEmail(userId);
   } catch (error) {
     console.error("Error sending subscription expired notification:", error);
-  }
-}
-
-// Helper function to send expiration notification
-async function sendExpirationNotification(userId) {
-  try {
-    const user = await User.findById(userId);
-    if (!user) return;
-
-    const subscription = await Subscription.findOne({ userId });
-    if (!subscription) return;
-
-    const expirationDate = new Date(subscription.nextBillingDate);
-    const formattedDate = expirationDate.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-    const transporter = nodemailer.createTransport({
-      host: "smtp.zoho.com",
-      port: 465, // SSL port (use 587 for TLS)
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER, // Zoho email
-        pass: process.env.EMAIL_PASS, // Zoho App Password
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: "Your UniNest Premium Subscription is Expiring Soon",
-      html: `
-        <h2>Your Premium Subscription is Expiring Soon</h2>
-        <p>Dear ${user.username},</p>
-        <p>Your UniNest premium subscription will expire on <strong>${formattedDate}</strong>.</p>
-        <p>To continue enjoying unlimited property listings and all premium features, please log in to your dashboard and renew your subscription.</p>
-        <p><a href="${process.env.FRONTEND_URL}/landlord/pricing" style="background-color:#006845; color:white; padding:10px 15px; text-decoration:none; border-radius:5px; display:inline-block; margin-top:10px;">Renew Now</a></p>
-        <p>If you choose not to renew, your account will be downgraded to the free plan with limited features.</p>
-        <p>Thank you for choosing UniNest.</p>
-        <p>Best regards,<br>The UniNest Team</p>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-  } catch (error) {
-    console.error("Error sending expiration notification:", error);
   }
 }
 
@@ -482,6 +371,9 @@ exports.updateSubscriptionOnSuccess = async (userId, expirationDate) => {
       { landlord: userId, isHeldForPayment: true },
       { isHeldForPayment: false }
     );
+
+    // Send confirmation email - add this line to ensure email is sent
+    await sendSubscriptionConfirmationEmail(userId);
 
     console.log(`Subscription updated on success return for user ${userId}`);
     return true;
