@@ -54,7 +54,7 @@ function UserSigninPage() {
           message: "Access Denied",
           description: userResponse.message,
           duration: 0, // Make notification persist until manually closed
-          className: "custom-notification-error"
+          className: "custom-notification-error",
         });
         return;
       }
@@ -70,7 +70,6 @@ function UserSigninPage() {
 
       const userId = userResponse?.user?._id;
       navigate(`/student/${userId}/${email}`);
-      
     } catch (error) {
       notification.error({
         message: "Login Failed",
@@ -161,7 +160,11 @@ function UserSigninPage() {
 
             {/* Forgot Password */}
             <div className="flex justify-end mb-6 mt-1">
-              <button className="text-sm font-semibold text-white hover:underline">
+              <button
+                type="button"
+                className="text-sm font-semibold text-white hover:underline"
+                onClick={() => navigate("/auth/forgot-password")}
+              >
                 Forgot your password?
               </button>
             </div>

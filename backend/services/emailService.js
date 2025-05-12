@@ -109,7 +109,15 @@ const informLandlordVerify = async (email, name) => {
   }
 };
 
-const sendScheduleNotification = async (studentEmail, studentName, landlordEmail, landlordName, listingName, date, time) => {
+const sendScheduleNotification = async (
+  studentEmail,
+  studentName,
+  landlordEmail,
+  landlordName,
+  listingName,
+  date,
+  time
+) => {
   try {
     // Email to student
     const studentMailOptions = {
@@ -161,17 +169,27 @@ const sendScheduleNotification = async (studentEmail, studentName, landlordEmail
 /**
  * Send schedule status update email to student when landlord accepts or rejects
  */
-const sendScheduleStatusEmail = async (studentEmail, studentName, landlordName, listingName, date, time, status) => {
+const sendScheduleStatusEmail = async (
+  studentEmail,
+  studentName,
+  landlordName,
+  listingName,
+  date,
+  time,
+  status
+) => {
   try {
     // Email content will differ based on whether the schedule was accepted or rejected
-    const subject = status === 'confirmed'
-      ? "Visit Schedule Confirmed - UniNest"
-      : "Visit Schedule Rejected - UniNest";
+    const subject =
+      status === "confirmed"
+        ? "Visit Schedule Confirmed - UniNest"
+        : "Visit Schedule Rejected - UniNest";
 
-    const statusMessage = status === 'confirmed'
-      ? `<p>Your scheduled visit to <b>${listingName}</b> has been <span style="color: green; font-weight: bold;">CONFIRMED</span> by the landlord.</p>
+    const statusMessage =
+      status === "confirmed"
+        ? `<p>Your scheduled visit to <b>${listingName}</b> has been <span style="color: green; font-weight: bold;">CONFIRMED</span> by the landlord.</p>
          <p>Please make sure to arrive at the property on time.</p>`
-      : `<p>We regret to inform you that your scheduled visit to <b>${listingName}</b> has been <span style="color: red; font-weight: bold;">REJECTED</span> by the landlord.</p>
+        : `<p>We regret to inform you that your scheduled visit to <b>${listingName}</b> has been <span style="color: red; font-weight: bold;">REJECTED</span> by the landlord.</p>
          <p>This could be due to schedule conflicts or other reasons. You may want to contact the landlord directly for more information or schedule a different time.</p>`;
 
     const mailOptions = {
@@ -193,15 +211,27 @@ const sendScheduleStatusEmail = async (studentEmail, studentName, landlordName, 
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`Schedule ${status} notification sent to student:`, studentEmail);
+    console.log(
+      `Schedule ${status} notification sent to student:`,
+      studentEmail
+    );
     return true;
   } catch (error) {
-    console.error(`Error sending schedule ${status} notification email:`, error);
+    console.error(
+      `Error sending schedule ${status} notification email:`,
+      error
+    );
     throw error;
   }
 };
 
-const sendReportEmail = async (reporterName, reporterEmail, listingName, reportType, description) => {
+const sendReportEmail = async (
+  reporterName,
+  reporterEmail,
+  listingName,
+  reportType,
+  description
+) => {
   try {
     // Confirmation email to reporter
     const reporterMailOptions = {
@@ -228,6 +258,62 @@ const sendReportEmail = async (reporterName, reporterEmail, listingName, reportT
   }
 };
 
+/**
+ * Send password reset email with verification code
+ */
+const sendPasswordResetEmail = async (to, code) => {
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: "Reset Your UniNest Password",
+      html: `
+        <h2>Password Reset Request</h2>
+        <p>You requested to reset your password for your UniNest account.</p>
+        <p>Your verification code is: <b>${code}</b></p>
+        <p>This code will expire in 1 hour.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+        <br/>
+        <p>Best Regards,<br/>The UniNest Team</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Password reset email sent to:", to);
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    throw error;
+  }
+};
+
+// Add this function to your email service
+
+exports.sendPasswordResetEmail = async (to, code) => {
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to,
+      subject: "Reset Your UniNest Password",
+      html: `
+        <h2>Password Reset Request</h2>
+        <p>You requested to reset your password for your UniNest landlord account.</p>
+        <p>Your verification code is: <b>${code}</b></p>
+        <p>This code will expire in 1 hour.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+        <br/>
+        <p>Best Regards,<br/>The UniNest Team</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Password reset email sent to:", to);
+    return true;
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendVerificationEmail,
   sendWelcomeEmail,
@@ -235,5 +321,6 @@ module.exports = {
   informLandlordVerify,
   sendScheduleNotification,
   sendScheduleStatusEmail,
-  sendReportEmail
+  sendReportEmail,
+  sendPasswordResetEmail, // Add this to the exports
 };
