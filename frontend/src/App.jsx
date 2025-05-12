@@ -48,6 +48,8 @@ import LandlordSchedules from "./pages/(LandlordDashboard)/LandlordSchedules";
 import HandlePages from "./pages/(AdminDashboard)/HandlePages";
 import PageStatusWrapper from "./components/include/PageStatusWrapper";
 import ListingsAnalytics from "./pages/(LandlordDashboard)/ListingsAnalytics";
+import ForgotPasswordPage from "./pages/(auth)/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/(auth)/ResetPasswordPage";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -72,7 +74,6 @@ function App() {
             }
           />
           <Route path="*" element={<NotFound />} />
-
           <Route
             path="/search"
             element={
@@ -81,7 +82,6 @@ function App() {
               </Layout>
             }
           />
-
           {/* Student signup and signin */}
           <Route
             path="/auth/user-signup"
@@ -111,8 +111,10 @@ function App() {
               </Layout>
             }
           />
-          <Route path="/auth/email-verify" element={<EmailVerificationPage />} />
-
+          <Route
+            path="/auth/email-verify"
+            element={<EmailVerificationPage />}
+          />
           {/* House owners signup and signin */}
           <Route
             path="/auth/houseowner-signup"
@@ -142,7 +144,6 @@ function App() {
               </AuthenticatedLandlord>
             }
           />
-
           {/* All Listings */}
           <Route
             path="/all-listings"
@@ -152,7 +153,6 @@ function App() {
               </Layout>
             }
           />
-
           {/* One Listing Details */}
           <Route
             path="/listing/:listingId"
@@ -162,7 +162,6 @@ function App() {
               </Layout>
             }
           />
-
           {/* Privacy Policy */}
           <Route
             path="/privacy-policy"
@@ -172,7 +171,6 @@ function App() {
               </Layout>
             }
           />
-
           {/* Student Dashboard */}
           <Route
             path="/student/:userId/:email"
@@ -182,7 +180,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/:userId/:email/settings"
             element={
@@ -191,7 +188,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/:userId/:email/inbox"
             element={
@@ -200,7 +196,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/:userId/:email/schedule"
             element={
@@ -209,7 +204,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/:userId/:email/notifications"
             element={
@@ -218,7 +212,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           {/* Landlord Dashboard - Update this route */}
           <Route
             path="/landlord/:landlordId/:email"
@@ -228,7 +221,6 @@ function App() {
               </LandlordProtectedRoute>
             }
           />
-
           <Route
             path="/landlord/:landlordId/:email/add-listings"
             element={
@@ -237,7 +229,6 @@ function App() {
               </LandlordProtectedRoute>
             }
           />
-
           <Route
             path="/landlord/:landlordId/:email/my-listings"
             element={
@@ -246,7 +237,6 @@ function App() {
               </LandlordProtectedRoute>
             }
           />
-
           <Route
             path="/landlord/:landlordId/:email/inbox"
             element={
@@ -255,7 +245,6 @@ function App() {
               </LandlordProtectedRoute>
             }
           />
-
           <Route
             path="/landlord/:landlordId/:email/schedule"
             element={
@@ -264,7 +253,6 @@ function App() {
               </LandlordProtectedRoute>
             }
           />
-
           <Route
             path="/landlord/:landlordId/:email/pricing"
             element={
@@ -273,7 +261,6 @@ function App() {
               </LandlordProtectedRoute>
             }
           />
-
           <Route
             path="/landlord/:landlordId/:email/my-listings/:listingId"
             element={
@@ -282,7 +269,6 @@ function App() {
               </LandlordProtectedRoute>
             }
           />
-
           {/* Admin Login */}
           <Route
             path="/auth/uninest-admin"
@@ -292,7 +278,6 @@ function App() {
               </AuthenticatedAdmin>
             }
           />
-
           {/* Admin Dashboard */}
           <Route
             path="/admin/:adminId/:email"
@@ -302,7 +287,6 @@ function App() {
               </AdminProtectedRoute>
             }
           />
-
           <Route
             path="/admin/:adminId/:email/users"
             element={
@@ -311,7 +295,6 @@ function App() {
               </AdminProtectedRoute>
             }
           />
-
           <Route
             path="/admin/:adminId/:email/listings"
             element={
@@ -320,7 +303,6 @@ function App() {
               </AdminProtectedRoute>
             }
           />
-
           <Route
             path="/admin/:adminId/:email/add-university"
             element={
@@ -329,7 +311,6 @@ function App() {
               </AdminProtectedRoute>
             }
           />
-
           <Route
             path="/admin/:adminId/:email/reports"
             element={
@@ -338,7 +319,6 @@ function App() {
               </AdminProtectedRoute>
             }
           />
-
           <Route
             path="/admin/:adminId/:email/feedbacks"
             element={
@@ -347,7 +327,6 @@ function App() {
               </AdminProtectedRoute>
             }
           />
-
           <Route
             path="/admin/:adminId/:email/handle-pages"
             element={
@@ -356,7 +335,12 @@ function App() {
               </AdminProtectedRoute>
             }
           />
-
+          // Add these routes to your router
+          <Route
+            path="/auth/forgot-password"
+            element={<ForgotPasswordPage />}
+          />
+          <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
           {/* <Route path="/admin/analytics" element={<Analytics />} /> */}
         </Routes>
       </PageStatusWrapper>

@@ -17,6 +17,8 @@ const {
   verifyEmail,
   checkAuth,
   googleCallback,
+  forgotPassword,
+  resetPassword,
 } = require("../controllers/authController");
 
 const {
@@ -83,5 +85,9 @@ router.get("/admin/checkAdminAuth", verifyToken, checkAdminAuth);
 router.post("/admin/register", registerAdmin);
 router.post("/admin/login", loginAdmin);
 router.post("/admin/logout", logoutAdmin);
+
+// Add these routes to your auth.js
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 module.exports = router;
