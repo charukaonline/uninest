@@ -50,6 +50,8 @@ import PageStatusWrapper from "./components/include/PageStatusWrapper";
 import ListingsAnalytics from "./pages/(LandlordDashboard)/ListingsAnalytics";
 import ForgotPasswordPage from "./pages/(auth)/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/(auth)/ResetPasswordPage";
+import LandlordForgotPasswordPage from "./pages/(auth)/LandlordForgotPasswordPage";
+import LandlordResetPasswordPage from "./pages/(auth)/LandlordResetPasswordPage";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -342,6 +344,15 @@ function App() {
           />
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
           {/* <Route path="/admin/analytics" element={<Analytics />} /> */}
+          // Add these routes to your router configuration
+          <Route
+            path="/auth/landlord-forgot-password"
+            element={<LandlordForgotPasswordPage />}
+          />
+          <Route
+            path="/auth/landlord-reset-password"
+            element={<LandlordResetPasswordPage />}
+          />
         </Routes>
       </PageStatusWrapper>
     </>

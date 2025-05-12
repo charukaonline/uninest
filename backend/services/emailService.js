@@ -286,6 +286,34 @@ const sendPasswordResetEmail = async (to, code) => {
   }
 };
 
+// Add this function to your email service
+
+exports.sendPasswordResetEmail = async (to, code) => {
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to,
+      subject: "Reset Your UniNest Password",
+      html: `
+        <h2>Password Reset Request</h2>
+        <p>You requested to reset your password for your UniNest landlord account.</p>
+        <p>Your verification code is: <b>${code}</b></p>
+        <p>This code will expire in 1 hour.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+        <br/>
+        <p>Best Regards,<br/>The UniNest Team</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Password reset email sent to:", to);
+    return true;
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendVerificationEmail,
   sendWelcomeEmail,

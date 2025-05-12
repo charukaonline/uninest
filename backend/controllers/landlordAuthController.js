@@ -317,3 +317,107 @@ exports.logoutLandlord = async (req, res) => {
   res.clearCookie("landlordToken"); // Change to landlordToken
   res.status(200).json({ success: true, message: "Logged out successfully" });
 };
+
+// Add these functions to your landlordAuthController.js
+
+exports.landlordForgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is required" });
+    }
+
+    // Log for debugging
+    console.log(`Processing forgot password request for: ${email}`);
+
+    // FIXED: Use User model with role: "landlord" instead of Landlord model
+    const landlord = await User.findOne({ email, role: "landlord" });
+
+    // For security reasons, always return the same response even if user doesn't exist
+    if (!landlord) {
+      console.log(`No landlord found with email: ${email}`);
+      return res.status(200).json({
+        success: true,
+        message:
+          "If an account with this email exists, a password reset code has been sent",
+      });
+    }
+
+    // Generate 6-digit code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Update landlord with reset token
+    landlord.resetPasswordToken = resetCode;
+    landlord.resetPasswordExpiresAt = new Date(Date.now() + 3600000); // 1 hour
+    await landlord.save();
+
+    // Make sure you've defined this function and imported it
+    const { sendPasswordResetEmail } = require("../services/emailService");
+
+    // Send email with reset code - add try/catch specifically for email sending
+    try {
+      await sendPasswordResetEmail(landlord.email, resetCode);
+      console.log(`Reset code sent to: ${email}`);
+    } catch (emailError) {
+      console.error("Error sending password reset email:", emailError);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send reset email. Please try again later.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset code has been sent to your email",
+    });
+  } catch (error) {
+    console.error("Landlord forgot password error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.landlordResetPassword = async (req, res) => {
+  try {
+    const { email, code, password } = req.body;
+
+    if (!code || !password || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email, verification code and new password are required",
+      });
+    }
+
+    // Find landlord with the reset token and matching email
+    const landlord = await User.findOne({
+      email,
+      resetPasswordToken: code,
+      resetPasswordExpiresAt: { $gt: Date.now() },
+      role: "landlord",
+    });
+
+    if (!landlord) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired reset code",
+      });
+    }
+
+    // Update password
+    const hashedPassword = await bcryptjs.hash(password, 10);
+    landlord.password = hashedPassword;
+    landlord.resetPasswordToken = undefined;
+    landlord.resetPasswordExpiresAt = undefined;
+    await landlord.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password has been reset successfully",
+    });
+  } catch (error) {
+    console.error("Landlord reset password error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
