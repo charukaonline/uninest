@@ -155,7 +155,7 @@ const AddListings = () => {
                       to Premium plan for unlimited listings.
                     </p>
                     <button
-                      onClick={() => navigate("/landlord/pricing")}
+                      onClick={() => navigate(`/landlord/${landlord._id}/${landlord.email}/pricing`)}
                       className="px-4 py-2 bg-primaryBgColor text-white rounded-lg hover:bg-green-700 transition"
                     >
                       Upgrade Now
