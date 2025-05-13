@@ -17,6 +17,8 @@ const {
   getReportStats,
   getReviewStats,
   getScheduleStats,
+  getUserStats,
+  getCommunicationStats,
 } = require("../controllers/adminStatsController");
 
 // Protected admin routes
@@ -34,5 +36,7 @@ router.get("/listing-stats", verifyToken, getListingStats);
 router.get("/report-stats", verifyToken, getReportStats);
 router.get("/review-stats", verifyToken, getReviewStats);
 router.get("/schedule-stats", verifyToken, getScheduleStats);
+router.get("/user-stats", verifyToken, getUserStats);
+router.get("/communication-stats", verifyToken, getCommunicationStats);
 
 module.exports = router;

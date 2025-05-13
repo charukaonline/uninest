@@ -9,33 +9,93 @@ const API_URL =
 export const useAdminStore = create((set, get) => ({
   unverifiedLandlords: [],
   allUsers: [],
-  userStats: { total: 0, students: 0, landlords: 0, flagged: 0, verified: 0 },
+  userStats: {
+    total: 0,
+    students: 0,
+    landlords: 0,
+    admins: 0,
+    flagged: 0,
+    verified: 0,
+    monthlyGrowth: {},
+    studentPreferences: { propertyTypes: {}, areas: {} },
+    subscriptions: { premium: 0, premiumRate: 0 },
+    landlordVerification: { pending: 0, verified: 0, rejected: 0 },
+    activity: {
+      activeLast24h: 0,
+      activeLast7d: 0,
+      activeLast30d: 0,
+      activeRate24h: 0,
+      activeRate7d: 0,
+      activeRate30d: 0,
+    },
+  },
   listingStats: {
     total: 0,
     byPropertyType: {},
     averageRent: 0,
     highestViewed: null,
+    mostBookmarked: null,
+    averageElo: 0,
+    cityDistribution: {},
+    priceRanges: {},
+    recentListings: 0,
+    newListingsRate: 0,
   },
   reportStats: {
     total: 0,
     pending: 0,
+    investigating: 0,
+    resolved: 0,
+    dismissed: 0,
     byType: {},
+    recentReports: 0,
+    weeklyTrend: 0,
+    topReportedListings: [],
+    averageResolutionTime: 0,
   },
   reviewStats: {
     total: 0,
     spam: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
     averageRating: 0,
     sentiments: { positive: 0, neutral: 0, negative: 0 },
+    ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    recentReviews: 0,
+    monthlyRate: 0,
+    topReviewedListings: [],
   },
   scheduleStats: {
     total: 0,
     pending: 0,
     confirmed: 0,
     rejected: 0,
+    popularDays: {},
+    popularTimes: {},
+    recentSchedules: 0,
+    weeklyRate: 0,
+    conversionRate: 0,
+    topScheduledListings: [],
+    topLandlords: [],
+  },
+  communicationStats: {
+    messaging: {
+      totalConversations: 0,
+      totalMessages: 0,
+      avgMessagesPerConversation: 0,
+      recentMessages: 0,
+      messageVolumeTrend: {},
+    },
+    notifications: {
+      total: 0,
+      byType: {},
+      readRate: 0,
+    },
   },
   isLoading: false,
   error: null,
-  shouldRefresh: true, // New state to control refresh
+  shouldRefresh: true,
 
   fetchUnverifiedLandlords: async (signal) => {
     const isInitialLoad = get().unverifiedLandlords.length === 0;
@@ -113,6 +173,16 @@ export const useAdminStore = create((set, get) => ({
       set({ isLoading: true });
       const token = localStorage.getItem("adminToken");
 
+      // Fetch user statistics
+      const userStatsResponse = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/admin/user-stats`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       // Fetch listing statistics
       const listingStatsResponse = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/api/admin/listing-stats`,
@@ -153,29 +223,100 @@ export const useAdminStore = create((set, get) => ({
         }
       );
 
+      // Fetch communication statistics
+      const communicationStatsResponse = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/admin/communication-stats`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       set({
+        userStats: userStatsResponse.data || {
+          total: 0,
+          students: 0,
+          landlords: 0,
+          admins: 0,
+          flagged: 0,
+          verified: 0,
+          monthlyGrowth: {},
+          studentPreferences: { propertyTypes: {}, areas: {} },
+          subscriptions: { premium: 0, premiumRate: 0 },
+          landlordVerification: { pending: 0, verified: 0, rejected: 0 },
+          activity: {
+            activeLast24h: 0,
+            activeLast7d: 0,
+            activeLast30d: 0,
+            activeRate24h: 0,
+            activeRate7d: 0,
+            activeRate30d: 0,
+          },
+        },
         listingStats: listingStatsResponse.data || {
           total: 0,
           byPropertyType: {},
           averageRent: 0,
           highestViewed: null,
+          mostBookmarked: null,
+          averageElo: 0,
+          cityDistribution: {},
+          priceRanges: {},
+          recentListings: 0,
+          newListingsRate: 0,
         },
         reportStats: reportStatsResponse.data || {
           total: 0,
           pending: 0,
+          investigating: 0,
+          resolved: 0,
+          dismissed: 0,
           byType: {},
+          recentReports: 0,
+          weeklyTrend: 0,
+          topReportedListings: [],
+          averageResolutionTime: 0,
         },
         reviewStats: reviewStatsResponse.data || {
           total: 0,
           spam: 0,
+          pending: 0,
+          approved: 0,
+          rejected: 0,
           averageRating: 0,
           sentiments: { positive: 0, neutral: 0, negative: 0 },
+          ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+          recentReviews: 0,
+          monthlyRate: 0,
+          topReviewedListings: [],
         },
         scheduleStats: scheduleStatsResponse.data || {
           total: 0,
           pending: 0,
           confirmed: 0,
           rejected: 0,
+          popularDays: {},
+          popularTimes: {},
+          recentSchedules: 0,
+          weeklyRate: 0,
+          conversionRate: 0,
+          topScheduledListings: [],
+          topLandlords: [],
+        },
+        communicationStats: communicationStatsResponse.data || {
+          messaging: {
+            totalConversations: 0,
+            totalMessages: 0,
+            avgMessagesPerConversation: 0,
+            recentMessages: 0,
+            messageVolumeTrend: {},
+          },
+          notifications: {
+            total: 0,
+            byType: {},
+            readRate: 0,
+          },
         },
         isLoading: false,
       });
