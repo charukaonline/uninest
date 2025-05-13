@@ -172,10 +172,12 @@ export const useAdminStore = create((set, get) => ({
     try {
       set({ isLoading: true });
       const token = localStorage.getItem("adminToken");
+      const backendUrl =
+        import.meta.env.VITE_BACKEND_URL || API_URL.replace("/api/admin", "");
 
       // Fetch user statistics
       const userStatsResponse = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/admin/user-stats`,
+        `${backendUrl}/api/admin/user-stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -185,7 +187,7 @@ export const useAdminStore = create((set, get) => ({
 
       // Fetch listing statistics
       const listingStatsResponse = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/admin/listing-stats`,
+        `${backendUrl}/api/admin/listing-stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -195,7 +197,7 @@ export const useAdminStore = create((set, get) => ({
 
       // Fetch report statistics
       const reportStatsResponse = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/admin/report-stats`,
+        `${backendUrl}/api/admin/report-stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -205,7 +207,7 @@ export const useAdminStore = create((set, get) => ({
 
       // Fetch review statistics
       const reviewStatsResponse = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/admin/review-stats`,
+        `${backendUrl}/api/admin/review-stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -215,7 +217,7 @@ export const useAdminStore = create((set, get) => ({
 
       // Fetch schedule statistics
       const scheduleStatsResponse = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/admin/schedule-stats`,
+        `${backendUrl}/api/admin/schedule-stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -225,7 +227,7 @@ export const useAdminStore = create((set, get) => ({
 
       // Fetch communication statistics
       const communicationStatsResponse = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/admin/communication-stats`,
+        `${backendUrl}/api/admin/communication-stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
