@@ -8,10 +8,12 @@ import { MdDashboard, MdFeedback } from 'react-icons/md';
 import { RiCalendarScheduleFill, RiLogoutBoxLine } from 'react-icons/ri';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios';
+import FeedbackForm from '@/components/include/FeedbackForm';
 
 const StudentSidebar = () => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [showFeedbackForm, setShowFeedbackForm] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -28,9 +30,13 @@ const StudentSidebar = () => {
         }
     }
 
+    const handleFeedbackClick = (e) => {
+        e.preventDefault();
+        setShowFeedbackForm(true);
+    };
+
     const isActive = (path) => location.pathname === path;
 
-    // Fetch notifications to get unread count
     useEffect(() => {
         const fetchNotifications = async () => {
             if (!user?._id) return;
@@ -50,10 +56,8 @@ const StudentSidebar = () => {
 
         fetchNotifications();
 
-        // Set up interval to check for new notifications (every 60 seconds)
         const intervalId = setInterval(fetchNotifications, 60000);
 
-        // Clean up the interval on component unmount
         return () => clearInterval(intervalId);
     }, [user]);
 
@@ -72,7 +76,13 @@ const StudentSidebar = () => {
     ];
 
     const lastLinks = [
-        { name: 'Give Feedback', path: `/student/${userId}/${email}/feedback`, icon: <MdFeedback />, txtColor: '#7F7F7F' },
+        { 
+            name: 'Give Feedback', 
+            path: `/student/${userId}/${email}/feedback`, 
+            icon: <MdFeedback />, 
+            txtColor: '#7F7F7F',
+            onClick: handleFeedbackClick 
+        },
         { name: 'Help & Support', path: `/student/${userId}/${email}/help-support`, icon: <IoMdHelpCircle />, txtColor: '#7F7F7F' },
         { name: 'Logout', icon: <RiLogoutBoxLine />, txtColor: '#F10A0A', onclick: handleLogout },
     ];
@@ -124,6 +134,15 @@ const StudentSidebar = () => {
                                     <span className="text-lg">{link.icon}</span>
                                     <span className="text-base">{link.name}</span>
                                 </button>
+                            ) : link.name === 'Give Feedback' ? (
+                                <button
+                                    onClick={handleFeedbackClick}
+                                    style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
+                                    className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#212121] border-r-4 border-green-500" : "hover:text-white"}`}
+                                >
+                                    <span className="text-lg">{link.icon}</span>
+                                    <span className="text-base">{link.name}</span>
+                                </button>
                             ) : (
                                 <Link
                                     to={link.path}
@@ -139,6 +158,13 @@ const StudentSidebar = () => {
                 ))}
             </ul>
 
+            {/* Feedback Form Modal */}
+            <FeedbackForm 
+                isOpen={showFeedbackForm}
+                onClose={() => setShowFeedbackForm(false)}
+                userType="student"
+                userId={user?._id}
+            />
         </div>
     )
 }

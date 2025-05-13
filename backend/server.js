@@ -118,9 +118,10 @@ app.use("/api/review", reviewRoutes);
 app.use("/api/search", require("./routes/search"));
 app.use("/api/preferences", preferenceRoutes);
 app.use("/api/bookmark", require("./routes/bookmarkRoutes"));
-app.use("/api/schedules", require("./routes/scheduleRoutes")); // Changed from schedule to schedules
+app.use("/api/schedules", require("./routes/scheduleRoutes"));
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/chat", require("./routes/chat"));
 app.use("/api/page-status", require("./routes/pageStatus"));
 app.use("/api/report", require("./routes/listingReportRoutes")); // Added report route
 app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/feedback", require("./routes/feedbackRoutes")); // Added feedback route

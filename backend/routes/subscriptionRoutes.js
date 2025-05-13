@@ -14,22 +14,33 @@ router.get("/success", async (req, res) => {
     // Extract userId from order_id if available (as backup)
     let userId = landlordId;
     if (order_id && typeof order_id === "string") {
-      // Add type check
       const orderParts = order_id.split("-");
-      if (orderParts.length >= 3) {
-        // The format is UN-{timestamp}-{userId} or UN-RNW-{timestamp}-{userId}
-        userId = orderParts[orderParts.length - 2];
+      // Check which format we have - regular or renewal
+      if (order_id.includes("-RNW-")) {
+        // Format is UN-RNW-{timestamp}-{userId}
+        if (orderParts.length >= 4) {
+          userId = orderParts[orderParts.length - 1];
+        }
+      } else {
+        // Regular format UN-{timestamp}-{userId}
+        if (orderParts.length >= 3) {
+          userId = orderParts[orderParts.length - 1];
+        }
       }
     }
 
     // If we have a valid userId, update subscription as backup to notify webhook
     if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      console.log(`Processing successful payment for user: ${userId}`);
+
       // Calculate expiration date (30 days from now)
       const expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() + 30);
 
-      // Update subscription record
+      // Update subscription record and send email
       await controller.updateSubscriptionOnSuccess(userId, expirationDate);
+    } else {
+      console.warn(`Invalid or missing userId in success redirect: ${userId}`);
     }
 
     // Redirect to the pricing page with success parameter

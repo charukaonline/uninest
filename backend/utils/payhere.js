@@ -42,6 +42,16 @@ function getPaymentUrl(orderId, user, amount, landlordParams = {}) {
     ? "Landlord Premium Subscription Renewal (30 days)"
     : "Landlord Premium Subscription (30 days)";
 
+  // Extract the userId from the orderId for consistent handling
+  let userId = "";
+  if (isRenewal) {
+    // Format: UN-RNW-{timestamp}-{userId}
+    userId = orderId.split("-")[3];
+  } else {
+    // Format: UN-{timestamp}-{userId}
+    userId = orderId.split("-")[2];
+  }
+
   const data = {
     merchant_id: PAYHERE_MERCHANT_ID,
     return_url: `${baseUrl}/api/subscription/success${landlordQueryParams}`,
@@ -61,6 +71,7 @@ function getPaymentUrl(orderId, user, amount, landlordParams = {}) {
     hash: generateHash(orderId, amount.toFixed(2), "LKR"),
     custom_1: isRenewal ? "renewal" : "new_subscription",
     custom_2: user.email,
+    custom_3: userId, // Add userId as a custom field for easier retrieval
   };
 
   // Instead of constructing a URL, return the payment data and checkout URL
