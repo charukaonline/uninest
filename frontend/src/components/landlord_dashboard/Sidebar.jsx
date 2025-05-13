@@ -1,7 +1,7 @@
 import { useLandlordAuthStore } from '@/store/landlordAuthStore';
 import { LayoutDashboard, Users } from 'lucide-react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-
+import { useState } from 'react';
 import { MdDashboard } from "react-icons/md";
 import { MdAddLocationAlt } from "react-icons/md";
 import { FaHouseChimney, FaInbox } from "react-icons/fa6";
@@ -11,6 +11,7 @@ import { MdFeedback } from "react-icons/md";
 import { IoMdHelpCircle } from "react-icons/io";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { notification } from 'antd';
+import FeedbackForm from '@/components/include/FeedbackForm';
 
 const Sidebar = () => {
 
@@ -18,6 +19,7 @@ const Sidebar = () => {
     const location = useLocation();
     const { landlordId, email } = useParams();
     const { landlord, landlordLogout } = useLandlordAuthStore();
+    const [showFeedbackForm, setShowFeedbackForm] = useState(false);
 
     const handleLogout = async () => {
         try {
@@ -28,6 +30,11 @@ const Sidebar = () => {
             notification.error({ message: 'Logout failed', description: 'An error occurred while trying to logout' });
         }
     }
+
+    const handleFeedbackClick = (e) => {
+        e.preventDefault();
+        setShowFeedbackForm(true);
+    };
 
     const isActive = (path) => location.pathname === path;
 
@@ -41,7 +48,13 @@ const Sidebar = () => {
     ];
 
     const lastLinks = [
-        { name: 'Give Feedback', path: '/house-owner/feedback', icon: <MdFeedback />, txtColor: '#7F7F7F' },
+        { 
+            name: 'Give Feedback', 
+            path: '/house-owner/feedback', 
+            icon: <MdFeedback />, 
+            txtColor: '#7F7F7F', 
+            onClick: handleFeedbackClick
+        },
         // { name: 'Help & Support', path: '/house-owner/help-support', icon: <IoMdHelpCircle />, txtColor: '#7F7F7F' },
         { name: 'Logout', icon: <RiLogoutBoxLine />, txtColor: '#F10A0A', onclick: handleLogout },
     ];
@@ -86,6 +99,15 @@ const Sidebar = () => {
                                     <span className="text-lg">{link.icon}</span>
                                     <span className="text-base">{link.name}</span>
                                 </button>
+                            ) : link.name === 'Give Feedback' ? (
+                                <button
+                                    onClick={handleFeedbackClick}
+                                    style={{ color: isActive(link.path) ? '#FFFFFF' : link.txtColor }}
+                                    className={`flex items-center gap-5 p-1 rounded ${isActive(link.path) ? "bg-[#212121] border-r-4 border-green-500" : "hover:text-white"}`}
+                                >
+                                    <span className="text-lg">{link.icon}</span>
+                                    <span className="text-base">{link.name}</span>
+                                </button>
                             ) : (
                                 <Link
                                     to={link.path}
@@ -100,6 +122,14 @@ const Sidebar = () => {
                     </li>
                 ))}
             </ul>
+
+            {/* Feedback Form Modal */}
+            <FeedbackForm 
+                isOpen={showFeedbackForm}
+                onClose={() => setShowFeedbackForm(false)}
+                userType="landlord"
+                userId={landlord?._id}
+            />
         </div>
     )
 }
