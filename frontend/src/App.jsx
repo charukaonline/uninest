@@ -52,6 +52,7 @@ import ForgotPasswordPage from "./pages/(auth)/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/(auth)/ResetPasswordPage";
 import LandlordForgotPasswordPage from "./pages/(auth)/LandlordForgotPasswordPage";
 import LandlordResetPasswordPage from "./pages/(auth)/LandlordResetPasswordPage";
+import Analytics from "./pages/(AdminDashboard)/Analytics";
 
 function App() {
   const { isCheckingAuth, checkAuth, isAuthenticated, user } = useAuthStore();
@@ -310,6 +311,14 @@ function App() {
             element={
               <AdminProtectedRoute>
                 <AddUniversity />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/:adminId/:email/analytics"
+            element={
+              <AdminProtectedRoute>
+                <Analytics />
               </AdminProtectedRoute>
             }
           />

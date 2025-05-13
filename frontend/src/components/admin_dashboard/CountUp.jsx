@@ -1,36 +1,42 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from "react";
 
-const CountUp = ({ end, duration = 2000 }) => {
-    const [count, setCount] = useState(0);
+const CountUp = ({ end, duration = 1000, decimals = 0 }) => {
+  const [count, setCount] = useState(0);
 
-    useEffect(() => {
-        if (count === end) return;
+  useEffect(() => {
+    let startTime;
+    let requestId;
+    let startValue = count;
 
-        let startTime;
-        let animationFrame;
+    const easeOutQuad = (t) => t * (2 - t);
 
-        const startCount = 0;
-        const easeOutQuad = t => t * (2 - t);
+    const animateCount = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const easedProgress = easeOutQuad(progress);
+      const nextCount = Math.floor(
+        startValue + (end - startValue) * easedProgress
+      );
 
-        const updateCount = (timestamp) => {
-            if (!startTime) startTime = timestamp;
+      setCount(nextCount);
 
-            const progress = Math.min((timestamp - startTime) / duration, 1);
-            const easedProgress = easeOutQuad(progress);
+      if (progress < 1) {
+        requestId = requestAnimationFrame(animateCount);
+      } else {
+        setCount(end);
+      }
+    };
 
-            setCount(Math.floor(startCount + easedProgress * (end - startCount)));
+    requestId = requestAnimationFrame(animateCount);
 
-            if (progress < 1) {
-                animationFrame = requestAnimationFrame(updateCount);
-            }
-        };
+    return () => cancelAnimationFrame(requestId);
+  }, [end, duration]);
 
-        animationFrame = requestAnimationFrame(updateCount);
-
-        return () => cancelAnimationFrame(animationFrame);
-    }, [end, duration]);
-
-    return <>{count}</>;
+  return (
+    <span>
+      {decimals > 0 ? count.toFixed(decimals) : count.toLocaleString()}
+    </span>
+  );
 };
 
-export default CountUp
+export default CountUp;
