@@ -4,15 +4,15 @@ import { useLandlordAuthStore } from '@/store/landlordAuthStore';
 import useListingStore from '@/store/listingStore';
 import LoadingSpinner from '@/components/include/LoadingSpinner';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { FaEdit, FaEye, FaTrash, FaPlus, FaBuilding, FaHome, FaChartLine } from 'react-icons/fa';
 import { Input, Button, Popconfirm, notification, Tag, Modal, Card, Avatar, Row, Col, Pagination, Empty } from 'antd';
-import { SearchOutlined, ExclamationCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { SearchOutlined, ExclamationCircleOutlined, EnvironmentOutlined, EyeOutlined, EditOutlined, DeleteOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
+import { FaEdit, FaEye, FaTrash, FaPlus, FaBuilding, FaHome, FaChartLine } from 'react-icons/fa';
 import { FaCirclePause } from 'react-icons/fa6';
 
 const LandlordListings = () => {
     const { landlordId, email } = useParams();
     const { landlord, isLandlordAuthenticated, checkLandlordAuth, isCheckingLandlordAuth } = useLandlordAuthStore();
-    const { fetchLandlordListings, landlordListings, loading } = useListingStore();
+    const { fetchLandlordListings, landlordListings, loading, toggleHoldListing, deleteListing } = useListingStore();
     const [searchText, setSearchText] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(6);
@@ -65,22 +65,59 @@ const LandlordListings = () => {
             cancelText: 'No, Cancel',
             centered: true,
             onOk() {
-                notification.info({
-                    message: 'Delete feature coming soon',
-                    description: 'This feature will be available in the next update.'
-                });
+                handleDeleteListing(record._id);
             },
         });
     };
 
-    // Filter listings based on search text
+    const handleToggleHoldListing = async (listingId) => {
+        try {
+            const response = await toggleHoldListing(listingId);
+            if (response.success) {
+                notification.success({
+                    message: response.message,
+                    description: 'Listing status has been updated successfully.'
+                });
+                
+                // Force a refresh of the listings to ensure UI is up to date
+                if (landlord && landlord._id) {
+                    fetchLandlordListings(landlord._id);
+                }
+            } else {
+                notification.error({
+                    message: 'Operation failed',
+                    description: response.message || 'An error occurred while updating the listing'
+                });
+            }
+        } catch (error) {
+            notification.error({
+                message: 'Operation failed',
+                description: error.response?.data?.message || 'An error occurred while updating the listing'
+            });
+        }
+    };
+
+    const handleDeleteListing = async (listingId) => {
+        try {
+            const response = await deleteListing(listingId);
+            notification.success({
+                message: 'Listing deleted',
+                description: 'The listing has been deleted successfully.'
+            });
+        } catch (error) {
+            notification.error({
+                message: 'Delete failed',
+                description: error.response?.data?.message || 'An error occurred while deleting the listing'
+            });
+        }
+    };
+
     const filteredListings = landlordListings.filter(listing =>
         listing.propertyName.toLowerCase().includes(searchText.toLowerCase()) ||
         listing.address.toLowerCase().includes(searchText.toLowerCase()) ||
         listing.city.toLowerCase().includes(searchText.toLowerCase())
     );
 
-    // Pagination calculation
     const paginatedListings = filteredListings.slice(
         (currentPage - 1) * pageSize,
         currentPage * pageSize
@@ -212,11 +249,11 @@ const LandlordListings = () => {
                                                     <Button
                                                         type="primary"
                                                         size="small"
-                                                        icon={<FaCirclePause />}
-                                                        style={{ backgroundColor: '#006845' }}
-                                                        onClick={() => notification.info({ message: 'Hold feature coming soon' })}
+                                                        icon={listing.isHeld ? <UnlockOutlined /> : <LockOutlined />}
+                                                        style={{ backgroundColor: listing.isHeld ? '#006845' : '#FFA500' }}
+                                                        onClick={() => handleToggleHoldListing(listing._id)}
                                                     >
-                                                        Hold
+                                                        {listing.isHeld ? 'Release Hold' : 'Hold Listing'}
                                                     </Button>
                                                     <Button
                                                         type="primary"
@@ -233,7 +270,6 @@ const LandlordListings = () => {
                                     </Col>
                                 ))}
                             </Row>
-
                             <div className="mt-6 flex justify-center">
                                 <Pagination
                                     current={currentPage}
@@ -248,7 +284,7 @@ const LandlordListings = () => {
                     )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

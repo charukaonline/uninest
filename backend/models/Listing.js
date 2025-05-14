@@ -42,6 +42,10 @@ const listingSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isHeld: {
+      type: Boolean,
+      default: false,
+    },
     createdAt: { type: Date, default: Date.now },
     eloRating: { type: Number, default: 1400 },
     views: { type: Number, default: 0 },

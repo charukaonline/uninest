@@ -125,3 +125,4 @@ app.use("/api/page-status", require("./routes/pageStatus"));
 app.use("/api/report", require("./routes/listingReportRoutes")); // Added report route
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/feedback", require("./routes/feedbackRoutes")); // Added feedback route
+app.use("/api/manage-listings", require("./routes/listingsManageRoutes")); // Added manage listings route

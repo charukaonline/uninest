@@ -182,7 +182,10 @@ exports.addListing = async (req, res) => {
 
 exports.getListings = async (req, res) => {
   try {
-    const listings = await Listing.find({ isHeldForPayment: { $ne: true } })
+    const listings = await Listing.find({
+      isHeldForPayment: { $ne: true },
+      isHeld: { $ne: true }
+    })
       .populate({
         path: "landlord",
         select: "username email phoneNumber isFlagged",
