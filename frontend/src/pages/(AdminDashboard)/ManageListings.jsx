@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Sidebar from '@/components/admin_dashboard/Sidebar'
 import useListingStore from '@/store/listingStore';
-import { FaMapMarkerAlt, FaBuilding, FaHome, FaEye, FaFlag, FaTrash } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaBuilding, FaHome, FaEye, FaFlag, FaTrash, FaLock, FaUnlock } from 'react-icons/fa';
 import { X, Building2 } from 'lucide-react';
 import Map from '@/components/include/Map';
 import { Button } from '@/components/ui/button';
@@ -15,8 +15,16 @@ const ManageListings = () => {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [showMap, setShowMap] = React.useState(false);
     const [searchText, setSearchText] = useState('');
+    const [localListings, setLocalListings] = useState([]);
     const modalRef = React.useRef(null);
     const { confirm } = Modal;
+
+    // Update local listings when the fetched listings change
+    useEffect(() => {
+        if (listings && listings.length > 0) {
+            setLocalListings(listings);
+        }
+    }, [listings]);
 
     // Close modal when clicking outside
     React.useEffect(() => {
@@ -56,10 +64,11 @@ const ManageListings = () => {
         };
     }, [isModalOpen]);
 
+    // Use this effect only for initial fetch
     useEffect(() => {
         fetchAllListings();
         document.title = `(${listings.length}) Manage Listings`;
-    }, [fetchAllListings])
+    }, [])
 
     const handleRowClick = (listing) => {
         setSelectedListing(listing);
@@ -85,6 +94,86 @@ const ManageListings = () => {
         setSearchText(value);
     };
 
+    // Updated function to handle hold toggle without immediate refetch
+    const handleToggleHoldByAdmin = async (listingId) => {
+        try {
+            const response = await axios.post(
+                `http://localhost:5000/api/manage-listings/admin/${listingId}/hold`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                notification.success({
+                    message: "Success",
+                    description: response.data.message,
+                });
+
+                // Update the listing status locally only
+                setLocalListings(prevListings => 
+                    prevListings.map(listing => 
+                        listing._id === listingId 
+                            ? { ...listing, isHeld: !listing.isHeld } 
+                            : listing
+                    )
+                );
+                
+                // Also update the selected listing if it's the one being modified
+                if (selectedListing && selectedListing._id === listingId) {
+                    setSelectedListing(prevSelected => ({
+                        ...prevSelected,
+                        isHeld: !prevSelected.isHeld
+                    }));
+                }
+            }
+        } catch (error) {
+            notification.error({
+                message: "Error",
+                description: error.response?.data?.message || "Error updating listing status",
+            });
+        }
+    };
+
+    // Updated function to handle delete with local state update
+    const handleDeleteListingByAdmin = async (listingId) => {
+        try {
+            const response = await axios.delete(
+                `http://localhost:5000/api/manage-listings/admin/${listingId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                notification.success({
+                    message: "Success",
+                    description: "Listing has been deleted successfully",
+                });
+
+                // Update local state by removing the deleted listing
+                setLocalListings(prevListings => 
+                    prevListings.filter(listing => listing._id !== listingId)
+                );
+                
+                // Close modal if the deleted listing was being viewed
+                if (selectedListing && selectedListing._id === listingId) {
+                    setIsModalOpen(false);
+                }
+            }
+        } catch (error) {
+            notification.error({
+                message: "Error",
+                description: error.response?.data?.message || "Error deleting listing",
+            });
+        }
+    };
+
     const showDeleteConfirm = (record) => {
         confirm({
             title: 'Are you sure you want to delete this listing?',
@@ -95,10 +184,7 @@ const ManageListings = () => {
             cancelText: 'No, Cancel',
             centered: true,
             onOk() {
-                notification.info({
-                    message: 'Delete feature coming soon',
-                    description: 'This feature will be available in the next update.'
-                });
+                handleDeleteListingByAdmin(record._id);
             },
         });
     };
@@ -120,7 +206,7 @@ const ManageListings = () => {
                     message: "Success",
                     description: "Landlord account has been flagged and their listings are now hidden",
                 });
-                
+
                 // Refresh the listings list
                 fetchAllListings();
             }
@@ -150,6 +236,21 @@ const ManageListings = () => {
                         description: "Landlord information is missing",
                     });
                 }
+            },
+        });
+    };
+
+    const showHoldConfirm = (record) => {
+        confirm({
+            title: `${record.isHeld ? 'Release' : 'Hold'} this listing?`,
+            icon: <ExclamationCircleOutlined />,
+            content: `Are you sure you want to ${record.isHeld ? 'release' : 'hold'} "${record.propertyName}"?`,
+            okText: record.isHeld ? 'Yes, Release' : 'Yes, Hold',
+            okType: record.isHeld ? 'primary' : 'warning',
+            cancelText: 'Cancel',
+            centered: true,
+            onOk() {
+                handleToggleHoldByAdmin(record._id);
             },
         });
     };
@@ -236,12 +337,15 @@ const ManageListings = () => {
             key: 'status',
             render: (_, record) => {
                 const isLandlordFlagged = record.landlord?.isFlagged;
-                
-                return (
-                    <Tag color={isLandlordFlagged ? 'red' : 'green'}>
-                        {isLandlordFlagged ? 'Hidden (Landlord Flagged)' : 'Active'}
-                    </Tag>
-                )
+                const isHeld = record.isHeld;
+
+                if (isLandlordFlagged) {
+                    return <Tag color='red'>Hidden (Landlord Flagged)</Tag>;
+                } else if (isHeld) {
+                    return <Tag color='orange'>On Hold</Tag>;
+                } else {
+                    return <Tag color='green'>Active</Tag>;
+                }
             },
         },
         {
@@ -259,14 +363,16 @@ const ManageListings = () => {
                         <FaEye className="mr-1" /> View
                     </button>
                     <button
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded text-xs flex items-center"
+                        className={`${record.isHeld ? 'bg-green-500 hover:bg-green-600' : 'bg-yellow-500 hover:bg-yellow-600'} text-white px-2 py-1 rounded text-xs flex items-center`}
                         onClick={(e) => {
                             e.stopPropagation();
-                            showFlagConfirm(record);
+                            showHoldConfirm(record);
                         }}
                     >
-                        <FaFlag className="mr-1" /> Flag
+                        {record.isHeld ? <FaUnlock className="mr-1" /> : <FaLock className="mr-1" />}
+                        {record.isHeld ? 'Release' : 'Hold'}
                     </button>
+
                     <button
                         className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs flex items-center"
                         onClick={(e) => {
@@ -307,7 +413,7 @@ const ManageListings = () => {
                     </div>
 
                     <Table
-                        dataSource={listings}
+                        dataSource={localListings.length > 0 ? localListings : listings}
                         columns={columns}
                         rowKey="_id"
                         loading={loading}
@@ -522,6 +628,17 @@ const ManageListings = () => {
                                     className="mr-2"
                                 >
                                     Close
+                                </Button>
+                                <Button
+                                    variant={selectedListing.isHeld ? "default" : "outline"}
+                                    size="sm"
+                                    className={selectedListing.isHeld ? "bg-green-500 mr-2" : "bg-yellow-500 mr-2"}
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        showHoldConfirm(selectedListing);
+                                    }}
+                                >
+                                    {selectedListing.isHeld ? "Release Listing" : "Hold Listing"}
                                 </Button>
                                 <Button
                                     variant="default"

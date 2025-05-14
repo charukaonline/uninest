@@ -30,7 +30,7 @@ exports.holdListing = async (req, res) => {
         );
 
         return res.status(200).json({
-            success: true, 
+            success: true,
             message: updatedListing.isHeld ? "Listing has been put on hold" : "Listing is now active",
             isHeld: updatedListing.isHeld
         });
@@ -70,6 +70,58 @@ exports.deleteListing = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in deleteListing:", error);
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+}
+
+// Hold listing by Admin
+exports.holdListingByAdmin = async (req, res) => {
+    try {
+        const { listingId } = req.params;
+
+        // Find the listing
+        const listing = await Listing.findById(listingId);
+        if (!listing) {
+            return res.status(404).json({ success: false, message: "Listing not found" });
+        }
+
+        // Toggle the hold status - using findByIdAndUpdate instead of save to avoid validation
+        const updatedListing = await Listing.findByIdAndUpdate(
+            listingId,
+            { $set: { isHeld: !listing.isHeld } },
+            { new: true, runValidators: false }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: updatedListing.isHeld ? "Listing has been put on hold" : "Listing is now active",
+            isHeld: updatedListing.isHeld
+        });
+    } catch (error) {
+        console.error("Error in holdListingByAdmin:", error);
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+}
+
+exports.deleteListingByAdmin = async (req, res) => {
+    try {
+        const { listingId } = req.params;
+
+        // Find the listing
+        const listing = await Listing.findById(listingId);
+        if (!listing) {
+            return res.status(404).json({ success: false, message: "Listing not found" });
+        }
+
+        // Delete the listing
+        await Listing.findByIdAndDelete(listingId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Listing has been deleted successfully"
+        });
+    } catch (error) {
+        console.error("Error in deleteListingByAdmin:", error);
         return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 }
